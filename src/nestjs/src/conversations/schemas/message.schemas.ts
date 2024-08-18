@@ -10,11 +10,11 @@ export class Message {
     @Prop([String])
     images: string[];
     @Prop()
-    patient_sender_id;
+    patient_sender_id: string;
     @Prop()
-    doctor_sender_id;
+    doctor_sender_id: string;
     @Prop()
-    conversation_id;
+    conversation_id: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
