@@ -18,4 +18,4 @@ export class Doctor {
     person_id: string;
 }
 
-export const PersonSchema = SchemaFactory.createForClass(Doctor);
+export const DoctorSchema = SchemaFactory.createForClass(Doctor);
