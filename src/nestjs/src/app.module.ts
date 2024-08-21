@@ -6,14 +6,24 @@ import { ContractModule } from './contract/contract.module';
 import { RatingModule } from './ratings/rating.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { MedicineModule } from './medicine/medicine.module';
+import { ConfigModule } from '@nestjs/config';
+import { UploadModule } from './upload/upload.module';
 @Module({
-  imports: [MongooseModule.forRoot('mongodb+srv://Anhngo2208:Anhngole.123@cluster0.onhfeyv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'),
+  imports: [
+    MongooseModule.forRoot(
+      'mongodb+srv://Anhngo2208:Anhngole.123@cluster0.onhfeyv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+    ),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     ContractModule,
     RatingModule,
     ScheduleModule,
     PersonModule,
     ContractModule,
     AppointmentModule,
-    MedicineModule],
+    MedicineModule,
+    UploadModule
+  ],
 })
-export class AppModule { }
+export class AppModule {}

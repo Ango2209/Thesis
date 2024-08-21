@@ -5,16 +5,20 @@ export type PersonDocument = HydratedDocument<Person>;
 
 @Schema()
 export class Person {
-    @Prop()
-    username: string;
-    @Prop()
-    dob: Date;
-    @Prop()
-    address: string;
-    @Prop()
-    gender: boolean;
-    @Prop()
-    avatar: string;
+  @Prop()
+  fullname: string;
+  @Prop()
+  dob: Date;
+  @Prop()
+  address: string;
+  @Prop()
+  gender: boolean;
+  @Prop()
+  avatar: string;
+  @Prop()
+  phone: string;
+  @Prop()
+  email: string;
 }
 
 export const PersonSchema = SchemaFactory.createForClass(Person);
