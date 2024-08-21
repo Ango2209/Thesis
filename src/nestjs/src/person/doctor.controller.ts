@@ -2,6 +2,8 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
+  Param,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -12,7 +14,7 @@ import {
 import { BaseController } from '../common/base.controller';
 import { DoctorService } from './doctor.services';
 import { Doctor, DoctorDocument } from './schemas/doctor.schema';
-import { CreateDoctorDto } from './dto/CreateDoctorDto';
+import { CreateDoctorDto } from './dto/createDoctorDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from 'src/upload/upload.service';
 
@@ -41,5 +43,12 @@ export class DoctorController extends BaseController<DoctorDocument> {
       : 'defaultAvatar.jpg'; //check file
 
     return this.doctorService.create({ ...createDto, avatar: filePath });
+  }
+
+  @Get('findByName/:name')
+  async findDoctorByName(
+    @Param('name') name: string,
+  ): Promise<DoctorDocument[]> {
+    return this.doctorService.findByName(name);
   }
 }

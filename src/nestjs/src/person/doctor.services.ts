@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -17,7 +17,7 @@ export class DoctorService extends BaseServices<DoctorDocument> {
     // find max id doctor
     const lastDoctor = await this.doctorModel
       .findOne()
-      .sort({ doctor_code: -1 })
+      .sort({ doctor_id: -1 })
       .exec();
 
     let newDoctorCode = 'DR000001';
@@ -34,5 +34,23 @@ export class DoctorService extends BaseServices<DoctorDocument> {
       doctor_id: newDoctorCode,
     });
     return createdEntity.save();
+  }
+
+  async findByDoctorId(doctor_id: string): Promise<DoctorDocument> {
+    const doctor = await this.doctorModel.findOne({ doctor_id }).exec();
+    if (!doctor) {
+      throw new NotFoundException(`Doctor with ID ${doctor_id} not found`);
+    }
+    return doctor;
+  }
+
+  async findByName(fullname: string): Promise<DoctorDocument[]> {
+    const doctors = await this.doctorModel
+      .find({ fullname: new RegExp(fullname, 'i') })
+      .exec();
+    // if (!doctors || doctors.length === 0) {
+    //   throw new NotFoundException(`No doctors found with the name "${fullname}"`);
+    // }
+    return doctors;
   }
 }

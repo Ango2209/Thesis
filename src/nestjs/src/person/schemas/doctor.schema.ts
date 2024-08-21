@@ -14,7 +14,7 @@ export class Doctor extends Person {
   @Prop()
   work_type: string;
 
-  @Prop()
+  @Prop({ unique: true })
   doctor_id: string;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Patient' }], default: [] })
