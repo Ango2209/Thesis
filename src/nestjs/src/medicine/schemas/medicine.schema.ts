@@ -3,20 +3,16 @@ import { HydratedDocument } from 'mongoose';
 
 export type MedicineDocument = HydratedDocument<Medicine>;
 
-
 @Schema()
 export class Medicine {
-    @Prop()
-    name: string;
-    @Prop()
-    price: number;
-    @Prop()
-    status: string;
-    @Prop()
-    inStock: number;
-    @Prop()
-    measure: string;
-
+  @Prop()
+  name: string;
+  @Prop()
+  basePrice: number;
+  @Prop()
+  measure: string;
+  @Prop()
+  description: string;
 }
 
 export const MedicineSchema = SchemaFactory.createForClass(Medicine);
