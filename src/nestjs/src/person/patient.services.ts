@@ -82,6 +82,24 @@ export class PatientService extends BaseServices<PatientDocument> {
     return patient.save();
   }
 
+  async findAllPatients(page: number, limit: number): Promise<any> {
+    const skip = (page - 1) * limit;
+    const patients = await this.patientModel
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const totalPatients = await this.patientModel.countDocuments();
+
+    return {
+      totalPatients,
+      totalPages: Math.ceil(totalPatients / limit),
+      currentPage: page,
+      patients,
+    };
+  }
+
   async getMedicalRecordsByPatientIdObj(id: string) {
     const patient = await this.patientModel.findById(id).exec();
     if (!patient) {

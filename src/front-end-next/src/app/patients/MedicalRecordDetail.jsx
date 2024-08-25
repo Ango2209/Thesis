@@ -1,6 +1,6 @@
 import React from "react";
 
-const MedicalRecordDetail = ({ isOpen, onClose }) => {
+const MedicalRecordDetail = ({ isOpen, onClose, record }) => {
   if (!isOpen) return null;
   const handleBackgroundClick = (e) => {
     if (e.target === e.currentTarget) {
@@ -8,36 +8,26 @@ const MedicalRecordDetail = ({ isOpen, onClose }) => {
     }
   };
 
+  const formatDate = (date) => {
+    const options = { day: "numeric", month: "short", year: "numeric" };
+    return new Date(date).toLocaleDateString("en-GB", options);
+  };
+
   return (
-    <div
-      className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center"
-      onClick={handleBackgroundClick}
-    >
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center" onClick={handleBackgroundClick}>
       <div className="bg-white p-8 rounded-lg shadow-xl max-w-2xl w-full">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">12 May 2021</h2>
-          <button
-            onClick={onClose}
-            className="text-red-500 font-bold text-2xl hover:text-red-700"
-          >
+          <h2 className="text-xl font-bold">{formatDate(record.record_date)}</h2>
+          <button onClick={onClose} className="text-red-500 font-bold text-2xl hover:text-red-700">
             x
           </button>
         </div>
 
         <div className=" space-y-4">
-          <Field
-            label="Complaint"
-            value="Bleeding Gums, Toothache, bad breath"
-          />
-          <Field label="Diagnosis" value="Gingivitis, Caries, Periodontitis" />
-          <Field
-            label="Treatment"
-            value="Filling, Post&Core, Implant, Extraction"
-          />
-          <Field
-            label="Vital Signs"
-            value="Blood Pressure: 120/80 mmHg, Pulse Rate: 80 bpm, Respiratory Rate: 16 bpm, Temperature: 36.5 °C, Oxygen Saturation: 98%"
-          />
+          <Field label="Complaint" value={record.complaint} />
+          <Field label="Diagnosis" value={record.diagnosis} />
+          <Field label="Treatment" value={record.treatment} />
+          <Field label="Vital Signs" value={record.vital_signs} />
 
           <div>
             <h3 className="font-bold mb-2">Prescriptions</h3>
@@ -53,30 +43,9 @@ const MedicalRecordDetail = ({ isOpen, onClose }) => {
                 </tr>
               </thead>
               <tbody>
-                <PrescriptionRow
-                  item="Paracetamol"
-                  price={1000}
-                  dosage="1 - M/A/E"
-                  instruction="After meal"
-                  quantity={1}
-                  amount={1000}
-                />
-                <PrescriptionRow
-                  item="Amoxicillin"
-                  price={2300}
-                  dosage="2 - M/A/E"
-                  instruction="After meal"
-                  quantity={2}
-                  amount={4600}
-                />
-                <PrescriptionRow
-                  item="Ibuprofen"
-                  price={5000}
-                  dosage="3 - M/A/E"
-                  instruction="Before meal"
-                  quantity={3}
-                  amount={15000}
-                />
+                <PrescriptionRow item="Paracetamol" price={1000} dosage="1 - M/A/E" instruction="After meal" quantity={1} amount={1000} />
+                <PrescriptionRow item="Amoxicillin" price={2300} dosage="2 - M/A/E" instruction="After meal" quantity={2} amount={4600} />
+                <PrescriptionRow item="Ibuprofen" price={5000} dosage="3 - M/A/E" instruction="Before meal" quantity={3} amount={15000} />
               </tbody>
             </table>
           </div>
@@ -93,14 +62,7 @@ const Field = ({ label, value }) => (
   </div>
 );
 
-const PrescriptionRow = ({
-  item,
-  price,
-  dosage,
-  instruction,
-  quantity,
-  amount,
-}) => (
+const PrescriptionRow = ({ item, price, dosage, instruction, quantity, amount }) => (
   <tr className="border-b">
     <td className="p-2">{item}</td>
     <td className="p-2">{price}</td>
