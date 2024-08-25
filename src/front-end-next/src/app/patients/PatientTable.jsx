@@ -7,7 +7,7 @@ const PatientTable = () => {
   const [patients] = useState([
     {
       id: 1,
-      name: "Hugo Lloris",
+      name: "Nguyen Van Ngo",
       phone: "+1 234 567 890",
       createdAt: "20 Aug 2021",
       gender: "Male",
@@ -17,7 +17,7 @@ const PatientTable = () => {
     },
     {
       id: 2,
-      name: "Mauris auctor",
+      name: "Nguyen Thanh Sang",
       phone: "+1 456 789 123",
       createdAt: "22 Nov 2023",
       gender: "Female",

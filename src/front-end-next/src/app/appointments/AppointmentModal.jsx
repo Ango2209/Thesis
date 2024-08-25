@@ -22,7 +22,7 @@ const AppointmentModal = ({ isOpen, onClose, appointment }) => {
             className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 text-white">
+            <div className="bg-gradient-to-r from-green-400 to-green-700 p-6 text-white">
               <h2 className="text-3xl font-bold mb-2">
                 {appointment.patientName}
               </h2>
@@ -49,9 +49,9 @@ const AppointmentModal = ({ isOpen, onClose, appointment }) => {
             <div className="bg-gray-100 px-6 py-4 flex justify-end">
               <button
                 onClick={onClose}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full 
-                           hover:from-blue-600 hover:to-purple-700 transition duration-300 ease-in-out 
-                           transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full 
+                           hover:from-green-600 hover:to-green-700 transition duration-300 ease-in-out 
+                           transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
               >
                 Close
               </button>
