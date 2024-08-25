@@ -8,11 +8,11 @@ export class Medicine {
   @Prop()
   name: string;
   @Prop()
-  price: number;
-  @Prop()
-  inStock: number;
+  basePrice: number;
   @Prop()
   measure: string;
+  @Prop()
+  description: string;
 }
 
 export const MedicineSchema = SchemaFactory.createForClass(Medicine);
