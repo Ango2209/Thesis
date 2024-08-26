@@ -14,5 +14,6 @@ import { Batch, BatchSchema } from './schemas/batch.schema';
   ],
   controllers: [MedicineController],
   providers: [MedicineService],
+  exports: [MedicineService]
 })
 export class MedicineModule {}

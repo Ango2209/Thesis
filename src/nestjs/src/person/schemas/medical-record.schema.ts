@@ -15,7 +15,7 @@ export class MedicalRecord {
   @Prop()
   vital_signs: string;
   @Prop()
-  prescription: string;
+  prescriptions: [];
   @Prop({ default: [] })
   attachments: string[];
   @Prop({ type: Types.ObjectId, ref: Doctor.name })

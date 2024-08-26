@@ -7,6 +7,7 @@ import {
   IsMongoId,
   IsDateString,
 } from 'class-validator';
+import { CreatePrescriptionItemDto } from 'src/medicine/dto/createPrescriptionDto';
 
 export class MedicalRecordDto {
   @IsDateString()
@@ -29,9 +30,9 @@ export class MedicalRecordDto {
   @IsNotEmpty()
   vital_signs: string;
 
-  @IsString()
-  @IsNotEmpty()
-  prescription: string;
+  @IsArray()
+  @IsOptional()
+  prescriptions: CreatePrescriptionItemDto[] = [];
 
   @IsArray()
   @IsOptional()

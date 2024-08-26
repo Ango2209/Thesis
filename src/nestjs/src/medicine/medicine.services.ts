@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Document, Model, Types } from 'mongoose';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { ClientSession, Connection, Document, Model, Types } from 'mongoose';
 import { BaseServices } from 'src/common/base.services';
 import { Medicine, MedicineDocument } from './schemas/medicine.schema';
 import { Batch, BatchDocument } from './schemas/batch.schema';
 import { AddNewBatchDto } from './dto/addNewBatchDto';
+import { CreatePrescriptionItemDto } from './dto/createPrescriptionDto';
 
 @Injectable()
 export class MedicineService extends BaseServices<MedicineDocument> {
@@ -12,6 +17,7 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     @InjectModel(Medicine.name)
     private readonly medicineModel: Model<MedicineDocument>,
     @InjectModel(Batch.name) private readonly batchModel: Model<BatchDocument>,
+    @InjectConnection() private readonly connection: Connection,
   ) {
     super(medicineModel);
   }
@@ -72,7 +78,7 @@ export class MedicineService extends BaseServices<MedicineDocument> {
       medicineId: new Types.ObjectId(medicineId),
       ...addNewBatchDto,
     });
-    await newBatch.save();
+    const batchSaved = await newBatch.save();
 
     //calculate base price
     const newAveragePrice = await this.calculateAveragePriceForMedicine(
@@ -87,12 +93,70 @@ export class MedicineService extends BaseServices<MedicineDocument> {
       basePrice: newBasePrice,
     });
 
-    return { ...newBatch, medicineId };
+    return batchSaved;
   }
 
-  async dispenseMedicine(
+  async createPrescription(
+    createPrescriptionsDto: CreatePrescriptionItemDto[],
+  ): Promise<CreatePrescriptionItemDto[]> {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+
+    const processedItems: CreatePrescriptionItemDto[] = [];
+
+    try {
+      for (const item of createPrescriptionsDto) {
+        //Check valid medicine
+        const medicine = await this.medicineModel
+          .findById(item.medicineId)
+          .session(session)
+          .exec();
+        if (!medicine) {
+          throw new NotFoundException(
+            `Medicine with ID ${item.medicineId} not found`,
+          );
+        }
+
+        item.itemName = medicine.name;
+        item.itemPrice = medicine.basePrice;
+        item.amount = item.quantity * item.itemPrice;
+        try {
+          await this.dispenseMedicine(item.medicineId, item.quantity, session);
+          processedItems.push(item);
+        } catch (error) {
+          // Handle case when not enough stock is available
+          if (error.message.includes('Not enough drugs to prescribe')) {
+            throw new BadRequestException(
+              `Not enough stock for medicine ID ${item.medicineId}`,
+            );
+          } else {
+            throw error; // Re-throw if it's not a known error
+          }
+        }
+      }
+      await session.commitTransaction();
+      return processedItems;
+    } catch (error) {
+      //roll back
+      await session.abortTransaction();
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      } else if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw new BadRequestException(
+          'An unexpected error occurred while processing prescriptions',
+        );
+      }
+    } finally {
+      session.endSession();
+    }
+  }
+
+  private async dispenseMedicine(
     medicineId: string,
     prescribedQuantity: number,
+    session: any,
   ): Promise<void> {
     const now = new Date();
     const limitDate = new Date();
@@ -104,14 +168,15 @@ export class MedicineService extends BaseServices<MedicineDocument> {
         medicineId: new Types.ObjectId(medicineId),
         expiryDate: { $gt: limitDate },
       })
-      .sort({ expiryDate: 1 });
+      .sort({ expiryDate: 1 })
+      .session(session);
 
     for (const batch of batches) {
       if (remainingQuantity <= 0) break;
 
       const quantityToUse = Math.min(batch.quantity, remainingQuantity);
       batch.quantity -= quantityToUse;
-      await batch.save();
+      await batch.save({ session });
 
       remainingQuantity -= quantityToUse;
     }
