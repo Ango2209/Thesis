@@ -7,71 +7,12 @@ import { useGetMedicaRecordsQuery } from "@/state/api";
 const PatientProfile = ({ patient, onBack }) => {
   // Dummy medical records
   const { data, error, isLoading } = useGetMedicaRecordsQuery(patient._id);
-  console.log(data);
   const formatDate = (date) => {
     const options = { day: "numeric", month: "short", year: "numeric" };
     return new Date(date).toLocaleDateString("en-GB", options);
   };
-  const records = [
-    {
-      date: "13, Jan 2021",
-      complaint: "Bleeding Gums, Toothache, bad breath",
-      diagnosis: "Gingivitis, Caries, Periodontitis",
-      treatment: "Filling, Post&Core, Implant, Extraction",
-      prescription: "Paracetamol, Amoxicillin, Ibuprofen, Asp...",
-      cost: "150000",
-    },
-    {
-      date: "13, Jan 2021",
-      complaint: "Bleeding Gums, Toothache, bad breath",
-      diagnosis: "Gingivitis, Caries, Periodontitis",
-      treatment: "Filling, Post&Core, Implant, Extraction",
-      prescription: "Paracetamol, Amoxicillin, Ibuprofen, Asp...",
-      cost: "150000",
-    },
-    {
-      date: "13, Jan 2021",
-      complaint: "Bleeding Gums, Toothache, bad breath",
-      diagnosis: "Gingivitis, Caries, Periodontitis",
-      treatment: "Filling, Post&Core, Implant, Extraction",
-      prescription: "Paracetamol, Amoxicillin, Ibuprofen, Asp...",
-      cost: "150000",
-    },
-    // ...other records
-  ];
-  const popupData = {
-    date: "12 May 2021",
-    complaint: "Bleeding Gums, Toothache, bad breath",
-    diagnosis: "Gingivitis, Caries, Periodontitis",
-    treatment: "Filling, Post&Core, Implant, Extraction",
-    vitalSigns: "Blood Pressure: 120/80 mmHg, Pulse Rate: 80 bpm, Respiratory Rate: 16 bpm, Temperature: 36.5 °C, Oxygen Saturation: 98%",
-    prescriptions: [
-      {
-        item: "Paracetamol",
-        itemPrice: 1000,
-        dosage: "1 - M/A/E",
-        instruction: "After meal",
-        quantity: 1,
-        amount: 1000,
-      },
-      {
-        item: "Amoxicillin",
-        itemPrice: 2300,
-        dosage: "2 - M/A/E",
-        instruction: "After meal",
-        quantity: 2,
-        amount: 4600,
-      },
-      {
-        item: "Ibuprofen",
-        itemPrice: 5000,
-        dosage: "3 - M/A/E",
-        instruction: "Before meal",
-        quantity: 3,
-        amount: 15000,
-      },
-    ],
-  };
+
+  const [selectedRecord, setSelectedRecord] = useState(null);
 
   const [isOpenPopup, setIsOpenPopup] = useState(false);
   const handleClosePopUp = () => {
@@ -106,15 +47,21 @@ const PatientProfile = ({ patient, onBack }) => {
                   <div className="font-semibold">Complaint: {record.complaint}</div>
                   <div>Diagnosis: {record.diagnosis}</div>
                   <div>Treatment: {record.treatment}</div>
-                  <div>Prescription: {record.prescription}</div>
+                  <div>Prescription: {record.prescriptions.map((p) => p.itemName).join(",")}</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-teal-500">(Tsh) {record.cost}</div>
                   <div className="flex mt-4 space-x-2">
-                    <button className="text-gray-500 hover:text-gray-700" onClick={() => setIsOpenPopup(true)}>
+                    <button
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => {
+                        setSelectedRecord(record);
+                        setIsOpenPopup(true);
+                      }}
+                    >
                       <Eye />
                     </button>
-                    <MedicalRecordDetail isOpen={isOpenPopup} onClose={handleClosePopUp} record={record} />
+                    {isOpenPopup && <MedicalRecordDetail isOpen={isOpenPopup} onClose={handleClosePopUp} record={selectedRecord} />}
                     <button className="text-gray-500 hover:text-red-500">
                       <Trash2 />
                     </button>

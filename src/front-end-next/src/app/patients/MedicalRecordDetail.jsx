@@ -24,10 +24,10 @@ const MedicalRecordDetail = ({ isOpen, onClose, record }) => {
         </div>
 
         <div className=" space-y-4">
-          <Field label="Complaint" value={record.complaint} />
-          <Field label="Diagnosis" value={record.diagnosis} />
-          <Field label="Treatment" value={record.treatment} />
-          <Field label="Vital Signs" value={record.vital_signs} />
+          <Field label="Complaint" value={record?.complaint} />
+          <Field label="Diagnosis" value={record?.diagnosis} />
+          <Field label="Treatment" value={record?.treatment} />
+          <Field label="Vital Signs" value={record?.vital_signs} />
 
           <div>
             <h3 className="font-bold mb-2">Prescriptions</h3>
@@ -43,9 +43,9 @@ const MedicalRecordDetail = ({ isOpen, onClose, record }) => {
                 </tr>
               </thead>
               <tbody>
-                <PrescriptionRow item="Paracetamol" price={1000} dosage="1 - M/A/E" instruction="After meal" quantity={1} amount={1000} />
-                <PrescriptionRow item="Amoxicillin" price={2300} dosage="2 - M/A/E" instruction="After meal" quantity={2} amount={4600} />
-                <PrescriptionRow item="Ibuprofen" price={5000} dosage="3 - M/A/E" instruction="Before meal" quantity={3} amount={15000} />
+                {record.prescriptions.map((p, index) => (
+                  <PrescriptionRow key={index} item={p.itemName} price={p.itemPrice} dosage={p.dosage} instruction={p.instruction} quantity={p.quantity} amount={p.amount} />
+                ))}
               </tbody>
             </table>
           </div>
