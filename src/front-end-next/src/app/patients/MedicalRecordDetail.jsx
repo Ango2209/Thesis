@@ -37,14 +37,14 @@ const MedicalRecordDetail = ({ isOpen, onClose, record }) => {
                   <th className="text-left p-2">Item</th>
                   <th className="text-left p-2">Item Price (Tsh)</th>
                   <th className="text-left p-2">Dosage</th>
-                  <th className="text-left p-2">Instruction</th>
+                  <th className="text-left p-2">Instraction</th>
                   <th className="text-left p-2">Quantity</th>
                   <th className="text-left p-2">Amount (Tsh)</th>
                 </tr>
               </thead>
               <tbody>
                 {record.prescriptions.map((p, index) => (
-                  <PrescriptionRow key={index} item={p.itemName} price={p.itemPrice} dosage={p.dosage} instruction={p.instruction} quantity={p.quantity} amount={p.amount} />
+                  <PrescriptionRow key={index} item={p.itemName} price={p.itemPrice} dosage={p.dosage} instraction={p.instraction} quantity={p.quantity} amount={p.amount} />
                 ))}
               </tbody>
             </table>
@@ -62,12 +62,12 @@ const Field = ({ label, value }) => (
   </div>
 );
 
-const PrescriptionRow = ({ item, price, dosage, instruction, quantity, amount }) => (
+const PrescriptionRow = ({ item, price, dosage, instraction, quantity, amount }) => (
   <tr className="border-b">
     <td className="p-2">{item}</td>
     <td className="p-2">{price}</td>
     <td className="p-2">{dosage}</td>
-    <td className="p-2">{instruction}</td>
+    <td className="p-2">{instraction}</td>
     <td className="p-2">{quantity}</td>
     <td className="p-2">{amount}</td>
   </tr>
