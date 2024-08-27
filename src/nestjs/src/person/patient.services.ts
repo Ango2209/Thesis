@@ -9,6 +9,7 @@ import { Patient, PatientDocument } from './schemas/patient.schemas';
 import { BaseServices } from 'src/common/base.services';
 import { MedicalRecord } from './schemas/medical-record.schema';
 import { DoctorService } from './doctor.services';
+import { MedicineService } from 'src/medicine/medicine.services';
 
 @Injectable()
 export class PatientService extends BaseServices<PatientDocument> {
@@ -16,6 +17,7 @@ export class PatientService extends BaseServices<PatientDocument> {
     @InjectModel(Patient.name)
     private readonly patientModel: Model<PatientDocument>,
     private readonly doctorService: DoctorService,
+    private readonly medicineService: MedicineService,
   ) {
     super(patientModel);
   }
@@ -78,8 +80,48 @@ export class PatientService extends BaseServices<PatientDocument> {
       }
     }
 
+    // Handle prescription if provided
+    if (record.prescriptions && record.prescriptions.length > 0) {
+      try {
+        const processedItems = await this.medicineService.createPrescription(
+          record.prescriptions,
+        );
+        record.prescriptions = processedItems; // Update with item name
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          throw new NotFoundException(
+            `One or more medicines not found: ${error.message}`,
+          );
+        } else if (error instanceof BadRequestException) {
+          throw new BadRequestException(`Prescription error: ${error.message}`);
+        } else {
+          throw new BadRequestException(
+            'An unexpected error occurred while processing prescriptions',
+          );
+        }
+      }
+    }
+
     patient.medical_records.push(record);
     return patient.save();
+  }
+
+  async findAllPatients(page: number, limit: number): Promise<any> {
+    const skip = (page - 1) * limit;
+    const patients = await this.patientModel
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .exec();
+
+    const totalPatients = await this.patientModel.countDocuments();
+
+    return {
+      totalPatients,
+      totalPages: Math.ceil(totalPatients / limit),
+      currentPage: page,
+      patients,
+    };
   }
 
   async getMedicalRecordsByPatientIdObj(id: string) {

@@ -8,6 +8,8 @@ import { Patient, PatientSchema } from './schemas/patient.schemas';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Person, PersonSchema } from './schemas/person.schemas';
 import { UploadModule } from 'src/upload/upload.module';
+import { MedicineService } from 'src/medicine/medicine.services';
+import { MedicineModule } from 'src/medicine/medicine.module';
 
 @Module({
   imports: [
@@ -17,6 +19,7 @@ import { UploadModule } from 'src/upload/upload.module';
       { name: Person.name, schema: PersonSchema },
     ]),
     UploadModule,
+    MedicineModule,
   ],
   controllers: [PatientController, DoctorController],
   providers: [PatientService, DoctorService],
