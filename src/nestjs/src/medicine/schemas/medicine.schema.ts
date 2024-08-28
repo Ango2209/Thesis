@@ -13,6 +13,8 @@ export class Medicine {
   measure: string;
   @Prop()
   description: string;
+  @Prop()
+  avgPurchasePrice: number;
 }
 
 export const MedicineSchema = SchemaFactory.createForClass(Medicine);
