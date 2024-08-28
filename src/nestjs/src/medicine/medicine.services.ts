@@ -77,6 +77,7 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     const newBatch = new this.batchModel({
       medicineId: new Types.ObjectId(medicineId),
       ...addNewBatchDto,
+      quantity: addNewBatchDto.quantityEntered,
     });
     const batchSaved = await newBatch.save();
 
@@ -91,6 +92,7 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     // update base price
     await this.medicineModel.findByIdAndUpdate(newBatch.medicineId, {
       basePrice: newBasePrice,
+      avgPurchasePrice: newAveragePrice,
     });
 
     return batchSaved;
@@ -184,5 +186,113 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     if (remainingQuantity > 0) {
       throw new Error('Not enough drugs to prescribe');
     }
+  }
+
+  async getMedicinesWithAvailableQuantity(
+    page: number,
+    limit: number,
+  ): Promise<any> {
+    const skip = (page - 1) * limit;
+    const now = new Date();
+    const limitDate = new Date();
+    limitDate.setMonth(now.getMonth() + 6);
+
+    //get medicines with available quantity
+    const medicines = await this.medicineModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'batches', // collection name
+            localField: '_id', // medicine id
+            foreignField: 'medicineId', // medicine id from batches collection
+            as: 'batches', // array name
+          },
+        },
+        {
+          $addFields: {
+            // add fields to result
+            availableQuantity: {
+              // field name
+              $sum: {
+                $map: {
+                  //loop
+                  input: '$batches', // array name
+                  as: 'batch', // item name
+                  in: {
+                    $cond: {
+                      if: { $gt: ['$$batch.expiryDate', limitDate] }, // expiration date is at least 6 months
+                      then: '$$batch.quantity', // plus quantity
+                      else: 0,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            basePrice: 1,
+            measure: 1,
+            description: 1,
+            availableQuantity: 1,
+          },
+        },
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ])
+      .exec();
+
+    const totalMedicines = await this.medicineModel.countDocuments();
+
+    return {
+      totalMedicines,
+      totalPages: Math.ceil(totalMedicines / limit),
+      currentPage: page,
+      medicines,
+    };
+  }
+
+  async getBatchesByMedicineId(medicineId: string): Promise<any> {
+    // Validate medicineId
+    if (!Types.ObjectId.isValid(medicineId)) {
+      throw new BadRequestException('Invalid medicine ID');
+    }
+
+    // Check if medicine exists
+    const medicineExists = await this.medicineModel.exists({ _id: medicineId });
+    if (!medicineExists) {
+      throw new NotFoundException(`Medicine with ID ${medicineId} not found`);
+    }
+
+    // Fetch all batches for the given medicineId
+    const batches = await this.batchModel.find({
+      medicineId: new Types.ObjectId(medicineId),
+    });
+
+    if (batches.length === 0) {
+      return batches;
+    }
+
+    // Process each batch to determine if it can be prescribed
+    const currentDate = new Date();
+    const sixMonthsLater = new Date();
+    sixMonthsLater.setMonth(currentDate.getMonth() + 6);
+
+    const processedBatches = batches.map((batch) => {
+      const canBePrescribed =
+        batch.expiryDate > sixMonthsLater && batch.quantity > 0;
+      return {
+        ...batch.toObject(),
+        canBePrescribed,
+      };
+    });
+
+    return processedBatches;
   }
 }

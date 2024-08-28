@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Get,
   Injectable,
   Param,
   Post,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -32,5 +34,24 @@ export class MedicineController extends BaseController<MedicineDocument> {
     @Body() addNewBatchDto: AddNewBatchDto,
   ): Promise<any> {
     return this.medicineService.addNewBatch(id, addNewBatchDto);
+  }
+
+  @Get('available')
+  async getMedicinesWithAvailableQuantity(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+  ): Promise<any> {
+    const pageNumber = parseInt(page, 10) || 1; // default page = 1
+    const limitNumber = parseInt(limit, 10) || 10; // default quantity limit = 1
+    return this.medicineService.getMedicinesWithAvailableQuantity(
+      pageNumber,
+      limitNumber,
+    );
+  }
+
+  // get batches by medicine id
+  @Get(':id/batches')
+  async getBatchesByMedicineId(@Param('id') medicineId: string): Promise<any> {
+    return this.medicineService.getBatchesByMedicineId(medicineId);
   }
 }
