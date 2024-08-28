@@ -65,7 +65,7 @@ function CategorySearch() {
         <Button type="submit">Search</Button>
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 mt-5 lg:grid-cols-6">
-        {categoryList.map((category, index) => (
+        {categoryList.length>0? categoryList.map((category, index) => (
           <div
             key={index}
             className="flex flex-col text-center cursor-pointer
@@ -75,7 +75,13 @@ function CategorySearch() {
             <Image src={category.icons} alt="icon" width={50} height={50} />
             <label className="text-blue-600 text-sm">{category.name}</label>
           </div>
-        ))}
+        )):[1,2,3,4,5,6].map((item,index)=>{
+          return <div key={index} className="h-[120px] w-[130px] m-2 bg-slate-200 animate-pulse rounded-lg">
+
+          </div>
+        })
+       
+        }
       </div>
     </div>
   );

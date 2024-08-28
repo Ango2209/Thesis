@@ -49,7 +49,7 @@ function DoctorList() {
     <div className="mb-10 px-8">
       <h2 className="font-bold text-xl">Popular Doctors</h2>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-4">
-        {doctorList &&
+        {doctorList?.length>0?
           doctorList.map((doctor, index) => (
             <div
               className="border-[1px] rounded-lg p-3 cursor-pointer "
@@ -78,7 +78,15 @@ function DoctorList() {
                 </h2>
               </div>
             </div>
-          ))}
+          ))
+          :
+          [1,2,3,4,5,6].map((item,index)=>{
+            
+            return <div key={index} className="h-[220px] bg-slate-200 w-full rounded-lg animate-pulse">
+            
+            </div>
+          })
+     }
       </div>
     </div>
   );
