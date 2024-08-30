@@ -11,7 +11,7 @@ export class AddNewBatchDto {
   @IsNotEmpty()
   batchNumber: string;
   @IsNumber()
-  quantity: number;
+  quantityEntered: number;
   @IsDateString()
   expiryDate: Date;
   @IsNumber()

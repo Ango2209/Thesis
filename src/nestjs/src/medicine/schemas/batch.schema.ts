@@ -12,6 +12,8 @@ export class Batch {
   @Prop({ required: true })
   quantity: number;
   @Prop({ required: true })
+  quantityEntered: number;
+  @Prop({ required: true })
   expiryDate: Date;
   @Prop({ required: true })
   purchasePrice: number;
