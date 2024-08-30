@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function CategorySearch() {
@@ -65,22 +66,25 @@ function CategorySearch() {
         <Button type="submit">Search</Button>
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 mt-5 lg:grid-cols-6">
-        {categoryList.length>0? categoryList.map((category, index) => (
-          <div
-            key={index}
-            className="flex flex-col text-center cursor-pointer
+        {categoryList.length > 0 ? categoryList.map((category, index) => (
+          <Link key={index} href={`/search/${category.name}`}>
+            <div
+
+              className="flex flex-col text-center cursor-pointer
             items-center p-5 bg-blue-50 m-2 rounded-lg gap-2 
             hover:scale-110 transition-all ease-in-out"
-          >
-            <Image src={category.icons} alt="icon" width={50} height={50} />
-            <label className="text-blue-600 text-sm">{category.name}</label>
-          </div>
-        )):[1,2,3,4,5,6].map((item,index)=>{
+            >
+              <Image src={category.icons} alt="icon" width={50} height={50} />
+              <label className="text-blue-600 text-sm">{category.name}</label>
+            </div>
+          </Link>
+
+        )) : [1, 2, 3, 4, 5, 6].map((item, index) => {
           return <div key={index} className="h-[120px] w-[130px] m-2 bg-slate-200 animate-pulse rounded-lg">
 
           </div>
         })
-       
+
         }
       </div>
     </div>

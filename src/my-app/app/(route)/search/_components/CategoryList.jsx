@@ -1,4 +1,5 @@
-import React from 'react'
+"use client"
+import React, { useEffect, useState } from 'react'
 import {
     Command,
     CommandDialog,
@@ -12,7 +13,18 @@ import {
 } from "@/components/ui/command"
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 function CategoryList() {
+
+  const params=usePathname()
+  const category= params.split('/')[2]
+
+    useEffect(()=>{
+      console.log(params);
+      console.log(category);
+      
+    },[])
+
     const categoryList = [
         {
           id: 1,
@@ -69,16 +81,19 @@ function CategoryList() {
                     <CommandGroup heading="Suggestions" >
                         {categoryList&& categoryList.map((item,index)=>{
                             return <CommandItem key={index}>
-                                    <Link href={''} className='p-2 flex gap-2 text-[14px] text-blue-600 rounded-md cursor-pointer w-full'>
+                                    <Link
+                                     href={'/search/'+item?.name} 
+                                     className={`p-2 flex gap-2 text-[14px]
+                                      text-blue-600 rounded-md cursor-pointer 
+                                      items-center
+                                      w-full ${category==item.name&&'bg-blue-100'}`}>
                                     <Image src={item.icons} alt='icon' width={25} height={25}/>
                                     <label>{item.name}</label>
                                     </Link>
                                 </CommandItem>
                            
                         })}
-                        <CommandItem>Calendar</CommandItem>
-                        <CommandItem>Search Emoji</CommandItem>
-                        <CommandItem>Calculator</CommandItem>
+                   
                     </CommandGroup>
                 
                 </CommandList>

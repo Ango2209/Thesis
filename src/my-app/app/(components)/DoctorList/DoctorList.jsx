@@ -1,53 +1,12 @@
 import Image from "next/image";
 import React from "react";
 
-function DoctorList() {
-  const doctorList = [
-    {
-      id: 1,
-      image: "https://cdn-icons-png.flaticon.com/512/2810/2810101.png",
-      title: "Cardiologist",
-      name: "Dr. John Doe",
-      yearOfExp: "15 years of experience",
-      address: "123 Heartbeat Street, New York, NY",
-    },
-    {
-      id: 2,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095137.png",
-      title: "Dentist",
-      name: "Dr. Jane Smith",
-      yearOfExp: "10 years of experience",
-      address: "456 Smile Avenue, Los Angeles, CA",
-    },
-    {
-      id: 3,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095128.png",
-      title: "Neurologist",
-      name: "Dr. Sam Brown",
-      yearOfExp: "8 years of experience",
-      address: "789 Brainy Blvd, Chicago, IL",
-    },
-    {
-      id: 4,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095135.png",
-      title: "Orthopedic",
-      name: "Dr. Emily White",
-      yearOfExp: "12 years of experience",
-      address: "321 Bone Road, Houston, TX",
-    },
-    {
-      id: 5,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095120.png",
-      title: "General Doctor",
-      name: "Dr. Michael Green",
-      yearOfExp: "20 years of experience",
-      address: "654 Health Lane, Miami, FL",
-    },
-  ];
+function DoctorList({doctorList,heading='Popular Doctors'}) {
+  
 
   return (
     <div className="mb-10 px-8">
-      <h2 className="font-bold text-xl">Popular Doctors</h2>
+      <h2 className="font-bold text-xl">{heading}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-4">
         {doctorList?.length>0?
           doctorList.map((doctor, index) => (
