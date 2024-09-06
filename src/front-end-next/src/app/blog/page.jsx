@@ -6,9 +6,8 @@ import "react-quill/dist/quill.snow.css";
 import parse from "html-react-parser";
 import styles from "../../styles/blog.module.scss";
 import ImageSelector from "./ImageSelector";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useForm } from "react-hook-form";
+import { useCreateBlogMutation, useUploadImagesMutation } from "@/state/api";
+import Spinner from "../(components)/Spinner";
 
 const Blog = () => {
   const [file, setFile] = useState("");
@@ -76,6 +75,10 @@ const Blog = () => {
     },
   ]);
   const [isPublic, setIsPublic] = useState(true);
+  const [errors, setErrors] = useState({});
+
+  const [createBlog, { isLoading, error }] = useCreateBlogMutation();
+  const [uploadImages, { data, upError = error, isLoadingUpload = isLoading }] = useUploadImagesMutation();
 
   function generateSlug(title) {
     const slug = title
@@ -88,40 +91,114 @@ const Blog = () => {
     return slug;
   }
 
-  function handleTitle(e) {
-    const newTitle = e.target.value;
-    setTitle(newTitle);
-    setSlug(generateSlug(newTitle));
+  const validate = () => {
+    const newErrors = {};
+    if (!title.trim()) newErrors.title = "Title is required";
+    if (!slug.trim()) newErrors.slug = "Slug is required";
+    if (!description.trim()) newErrors.description = "Description is required";
+    if (!content.trim()) newErrors.content = "Content is required";
+    if (selectedCategories.length === 0) newErrors.selectedCategories = "At least one category must be selected";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  async function uploadImagesInContent(content) {
+    const base64Images = content.match(/data:image\/[a-zA-Z]+;base64,[^\s"]+/g) || [];
+
+    if (base64Images.length === 0) {
+      return { base64Images, imageUrls: null };
+    }
+
+    try {
+      const imageUrls = await uploadImages(base64Images).unwrap();
+      return { base64Images, imageUrls };
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      return { base64Images, imageUrls: null };
+    }
   }
 
   async function onSubmit(e) {
     e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("slug", slug);
-    formData.append("description", description);
-    formData.append("content", content);
-    formData.append("categories", selectedCategories);
-    formData.append("isVisible", isPublic);
-    formData.append("author", "Nguyen Thanh Sang");
-    if (file) {
-      formData.append("file", file);
+    if (validate()) {
+      // replace content
+      const { base64Images, imageUrls } = await uploadImagesInContent(content);
+      let updatedContent = content;
+      if (base64Images.length > 0) {
+        base64Images.forEach((base64Image, index) => {
+          updatedContent = updatedContent.replace(base64Image, imageUrls[index]);
+        });
+      }
+      const formData = new FormData();
+      formData.append("title", title);
+      formData.append("slug", slug);
+      formData.append("description", description);
+      formData.append("content", updatedContent);
+      formData.append("categories", JSON.stringify(selectedCategories));
+      formData.append("isVisible", isPublic);
+      formData.append("authorObjid", "66c326e038ca0fcd63974456");
+      formData.append("authorModel", "Doctor");
+      if (file) {
+        formData.append("file", file);
+      }
+      try {
+        await createBlog(formData).unwrap();
+        alert("Blog created successfully!");
+      } catch (err) {
+        console.error("Failed to create blog:", err);
+        alert("Failed to create blog");
+      }
     }
-    const newBlog = {
-      title,
-      slug,
-      description,
-      content,
-      selectedCategories,
-      isPublic,
-      author: "Nguyen Thanh Sang",
-    };
-    console.log(newBlog);
   }
 
   const handleCategoryChange = (e) => {
     const value = Array.from(e.target.selectedOptions, (option) => option.value);
     setSelectedCategories(value);
+    if (value.length > 0) {
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        delete newErrors.selectedCategories;
+        return newErrors;
+      });
+    }
+  };
+
+  function handleTitle(e) {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    setSlug(generateSlug(newTitle));
+    if (newTitle.trim()) {
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        delete newErrors.title;
+        delete newErrors.slug;
+        return newErrors;
+      });
+    }
+  }
+
+  const handleChange = (setter) => (e) => {
+    setter(e.target.value);
+
+    if (e.target.value.trim()) {
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        if (e.target.value.trim()) delete newErrors[e.target.name];
+        return newErrors;
+      });
+    }
+  };
+
+  const handleContent = (value) => {
+    setContent(value);
+
+    if (value.trim()) {
+      setErrors((prevErrors) => {
+        const newErrors = { ...prevErrors };
+        delete newErrors.content;
+        return newErrors;
+      });
+    }
   };
 
   //Custom Tool Bar
@@ -138,6 +215,7 @@ const Blog = () => {
   const formats = ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "bullet", "link", "indent", "image", "code-block", "color"];
   return (
     <div>
+      {isLoadingUpload && <Spinner />}
       <h2 className="text-4xl text-center font-semibold py-4">NEW BLOG</h2>
       <div className="grid grid-cols-1 lg:grid-cols-2 p-8 gap-4">
         {/* Blog Editor */}
@@ -161,6 +239,7 @@ const Blog = () => {
                     className="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 sm:text-sm sm:leading-6"
                     placeholder="Type the Course title"
                   />
+                  {errors.title && <p className="text-red-500">{errors.title}</p>}
                 </div>
               </div>
               {/* Slug */}
@@ -170,7 +249,7 @@ const Blog = () => {
                 </label>
                 <div className="mt-2">
                   <input
-                    onChange={(e) => setSlug(e.target.value)}
+                    onChange={handleChange(setSlug)}
                     type="text"
                     value={slug}
                     name="slug"
@@ -179,6 +258,7 @@ const Blog = () => {
                     className="block w-full rounded-md border-0 py-2 px-4 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-purple-600 sm:text-sm sm:leading-6"
                     placeholder="Type the Course title"
                   />
+                  {errors.slug && <p className="text-red-500">{errors.slug}</p>}
                 </div>
               </div>
               {/* ImageSelector */}
@@ -193,11 +273,13 @@ const Blog = () => {
                 <textarea
                   id="description"
                   rows="4"
-                  onChange={(e) => setDescription(e.target.value)}
+                  name="description"
+                  onChange={handleChange(setDescription)}
                   value={description}
                   className="block p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-purple-500 focus:border-purple-500 "
                   placeholder="Write your thoughts here..."
                 ></textarea>
+                {errors.description && <p className="text-red-500">{errors.description}</p>}
               </div>
               {/* Categories */}
               <div className="sm:col-span-2">
@@ -206,18 +288,20 @@ const Blog = () => {
                 </label>
                 <select id="categories" multiple value={selectedCategories} onChange={handleCategoryChange} className="block mt-1 w-full border border-gray-300 rounded-md">
                   {categories.map((category) => (
-                    <option key={category.slug} value={category}>
+                    <option key={category.slug} value={JSON.stringify(category)}>
                       {category.name}
                     </option>
                   ))}
                 </select>
+                {errors.selectedCategories && <p className="text-red-500">{errors.selectedCategories}</p>}
               </div>
               {/* Content */}
               <div className="sm:col-span-2">
                 <label htmlFor="content" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                   Blog Content
                 </label>
-                <ReactQuill theme="snow" value={content} onChange={setContent} modules={modules} formats={formats} />
+                <ReactQuill theme="snow" value={content} onChange={handleContent} modules={modules} formats={formats} />
+                {errors.content && <p className="text-red-500">{errors.content}</p>}
               </div>
             </div>
             {/* visible */}

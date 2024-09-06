@@ -22,4 +22,19 @@ export class UploadService {
     const fileExtension = extname(file.originalname).toLowerCase();
     return validImageExtensions.includes(fileExtension);
   }
+
+  async saveBase64Image(base64Image: string): Promise<string> {
+    const matches = base64Image.match(/^data:image\/(.+);base64,(.*)$/);
+    if (!matches) {
+      throw new Error('Invalid base64 image');
+    }
+
+    const ext = matches[1];
+    const data = matches[2];
+    const filename = `${uuidv4()}.${ext}`;
+    const filePath = join(__dirname, '../../uploads', filename);
+
+    await writeFile(filePath, Buffer.from(data, 'base64'));
+    return filePath;
+  }
 }

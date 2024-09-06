@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -15,8 +16,10 @@ export class PersonDto {
   @IsString()
   @IsNotEmpty()
   address: string;
-  //   @IsBoolean()
-  //   gender: boolean;
+  @Transform(({ value }) => (value === 'true' || value === true ? true : false))
+  @IsBoolean()
+  @IsNotEmpty()
+  gender: boolean;
   @IsString()
   @IsNotEmpty()
   phone: string;
