@@ -75,7 +75,7 @@ function CategorySearch() {
             hover:scale-110 transition-all ease-in-out"
             >
               <Image src={category.icons} alt="icon" width={50} height={50} />
-              <label className="text-blue-600 text-sm">{category.name}</label>
+              <label className="text-sm">{category.name}</label>
             </div>
           </Link>
 

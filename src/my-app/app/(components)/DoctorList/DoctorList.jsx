@@ -5,7 +5,7 @@ function DoctorList({doctorList,heading='Popular Doctors'}) {
   
 
   return (
-    <div className="mb-10 px-8">
+    <div className="mb-10 px-24 ">
       <h2 className="font-bold text-xl">{heading}</h2>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-4">
         {doctorList?.length>0?
@@ -17,9 +17,9 @@ function DoctorList({doctorList,heading='Popular Doctors'}) {
               <Image
                 src={doctor.image}
                 alt="doctor"
-                width={500}
+                width={300}
                 height={200}
-                className="h-[200px] w-full object-cover rounded-lg"
+                className="h-[300px] w-full object-cover rounded-lg"
               />
               <div className="mt-3 items-baseline flex flex-col gap-1">
                 <h2 className="text-[10px] bg-blue-100 p-1 rounded-full px-2 text-primary">

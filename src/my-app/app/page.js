@@ -8,7 +8,7 @@ export default function Home() {
   const doctorList = [
     {
       id: 1,
-      image: "https://cdn-icons-png.flaticon.com/512/2810/2810101.png",
+      image: "/team-1.jpg",
       title: "Cardiologist",
       name: "Dr. John Doe",
       yearOfExp: "15 years of experience",
@@ -16,7 +16,7 @@ export default function Home() {
     },
     {
       id: 2,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095137.png",
+      image: "/team-2.jpg",
       title: "Dentist",
       name: "Dr. Jane Smith",
       yearOfExp: "10 years of experience",
@@ -24,7 +24,7 @@ export default function Home() {
     },
     {
       id: 3,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095128.png",
+      image: "/team-3.jpg",
       title: "Neurologist",
       name: "Dr. Sam Brown",
       yearOfExp: "8 years of experience",
@@ -32,7 +32,7 @@ export default function Home() {
     },
     {
       id: 4,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095135.png",
+      image: "/team-4.jpg",
       title: "Orthopedic",
       name: "Dr. Emily White",
       yearOfExp: "12 years of experience",
@@ -40,7 +40,15 @@ export default function Home() {
     },
     {
       id: 5,
-      image: "https://cdn-icons-png.flaticon.com/512/3095/3095120.png",
+      image: "/team-1.jpg",
+      title: "General Doctor",
+      name: "Dr. Michael Green",
+      yearOfExp: "20 years of experience",
+      address: "654 Health Lane, Miami, FL",
+    },
+    {
+      id: 6,
+      image: "/team-1.jpg",
       title: "General Doctor",
       name: "Dr. Michael Green",
       yearOfExp: "20 years of experience",
