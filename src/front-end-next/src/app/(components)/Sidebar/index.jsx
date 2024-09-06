@@ -9,6 +9,7 @@ import {
   ReceiptCent,
   Settings,
   Users,
+  Newspaper,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -123,14 +124,8 @@ const Sidebar = () => {
         />
         <SidebarLink
           href="/blog"
-          icon={Pill}
-          label="Blog"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
-          href="/help"
-          icon={Pill}
-          label="Help"
+          icon={Newspaper}
+          label="Blob"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
