@@ -122,6 +122,18 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
+          href="/blog"
+          icon={Pill}
+          label="Blog"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/help"
+          icon={Pill}
+          label="Help"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
           href="/settings"
           icon={Settings}
           label="Settings"
