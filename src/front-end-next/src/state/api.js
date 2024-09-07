@@ -39,7 +39,31 @@ export const api = createApi({
     getExpensesByCategory: build.query({
       query: () => "/expenses",
     }),
+    createBlog: build.mutation({
+      query: (newBlog) => ({
+        url: "/blogs/create",
+        method: "POST",
+        body: newBlog,
+      }),
+    }),
+    uploadImages: build.mutation({
+      query: (base64Images) => ({
+        url: "/upload/images",
+        method: "POST",
+        body: base64Images,
+      }),
+    }),
   }),
 });
 
-export const { useGetDashboardMetricsQuery, useGetProductsQuery, useCreateProductMutation, useGetPatientQuery, useGetExpensesByCategoryQuery, useGetPatientsQuery, useGetMedicaRecordsQuery } = api;
+export const {
+  useGetDashboardMetricsQuery,
+  useGetProductsQuery,
+  useCreateProductMutation,
+  useGetPatientQuery,
+  useGetExpensesByCategoryQuery,
+  useGetPatientsQuery,
+  useGetMedicaRecordsQuery,
+  useCreateBlogMutation,
+  useUploadImagesMutation,
+} = api;
