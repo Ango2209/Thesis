@@ -38,7 +38,6 @@ const DoctorTable = () => {
     setSelectedPatient(patient);
   };
 
-  // Hàm tính tuổi từ ngày sinh
   const calculateAge = (dob) => {
     const today = new Date();
     const birthDate = new Date(dob);

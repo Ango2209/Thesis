@@ -5,9 +5,9 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import parse from "html-react-parser";
 import styles from "../../styles/blog.module.scss";
-import ImageSelector from "./ImageSelector";
 import { useCreateBlogMutation, useUploadImagesMutation } from "@/state/api";
 import Spinner from "../(components)/Spinner";
+import ImageUpload from "../(components)/ImageUpload/ImageUpload.";
 
 const Blog = () => {
   const [file, setFile] = useState("");
@@ -263,7 +263,8 @@ const Blog = () => {
               </div>
               {/* ImageSelector */}
               <div className="sm:col-span-2">
-                <ImageSelector setFile={setFile} />
+                <label className="block text-sm font-medium leading-6 text-gray-900 mb-2 ">Image Description</label>
+                <ImageUpload setSelectedFile={setFile} />
               </div>
               {/* Description */}
               <div className="sm:col-span-2">
