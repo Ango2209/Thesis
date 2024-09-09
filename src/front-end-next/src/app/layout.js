@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import DashboardWrapper from "./DashboardWrapper";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -36,6 +38,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <DashboardWrapper>{children}</DashboardWrapper>
+        <ToastContainer />
       </body>
     </html>
   );

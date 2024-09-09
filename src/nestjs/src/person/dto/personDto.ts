@@ -14,7 +14,6 @@ export class PersonDto {
   @IsDateString()
   dob: Date;
   @IsString()
-  @IsNotEmpty()
   address: string;
   @Transform(({ value }) => (value === 'true' || value === true ? true : false))
   @IsBoolean()
@@ -24,6 +23,5 @@ export class PersonDto {
   @IsNotEmpty()
   phone: string;
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 }

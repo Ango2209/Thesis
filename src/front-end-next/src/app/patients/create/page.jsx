@@ -7,8 +7,12 @@ import DatePicker from "react-date-picker";
 import "react-date-picker/dist/DatePicker.css";
 import "react-calendar/dist/Calendar.css";
 import "../../../styles/customDatePicker.scss";
+import { useCreatePatientMutation } from "@/state/api";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const CreatePatientPage = () => {
+  const router = useRouter();
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -18,10 +22,23 @@ const CreatePatientPage = () => {
     dateOfBirth: new Date(),
     address: "",
     gender: true,
+    bloodGroup: "Unknown",
   });
 
   const [errors, setErrors] = useState({});
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownBgOpen, setIsDropdownBgOpen] = useState(false);
+
+  const bloodGroups = ["Unknown", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+  const [createPatient, { isLoading, isSuccess, isError, error }] = useCreatePatientMutation();
+
+  const handleBloodGroupChange = (group) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      bloodGroup: group,
+    }));
+    setIsDropdownBgOpen(false);
+  };
 
   const validateField = (name, value) => {
     const newError = {};
@@ -105,20 +122,46 @@ const CreatePatientPage = () => {
       dateOfBirth: date,
     }));
     setErrors((prevErrors) => {
-      const { [name]: _, ...restErrors } = prevErrors;
+      const { dateOfBirth: _, ...restErrors } = prevErrors;
       return {
         ...restErrors,
-        ...validateField(name, value),
+        ...validateField("dateOfBirth", date),
       };
     });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (validateForm()) {
-      console.log("Form data is valid", formData);
-    } else {
-      console.log("Form data is invalid");
+      try {
+        const patient = new FormData();
+        patient.append("fullname", formData.fullName);
+        patient.append("dob", formData.dateOfBirth.toISOString());
+        patient.append("address", formData.address);
+        patient.append("gender", formData.gender);
+        patient.append("phone", formData.phoneNumber);
+        patient.append("email", formData.email);
+        patient.append("blood_group", formData.bloodGroup);
+        patient.append("anamesis", formData.anamesis);
+        patient.append("file", selectedFile);
+        await createPatient(patient).unwrap();
+        setFormData({
+          fullName: "",
+          phoneNumber: "",
+          email: "",
+          anamesis: "",
+          dateOfBirth: new Date(),
+          address: "",
+          gender: true,
+          bloodGroup: "Unknown",
+        });
+        setSelectedFile(null);
+        toast.success("Patient created successfully!");
+        router.push("/patients");
+      } catch (error) {
+        toast.error("Failed to create patient. Please check your input and try again.");
+        console.error("Failed to create patient", error);
+      }
     }
   };
   return (
@@ -214,6 +257,31 @@ const CreatePatientPage = () => {
               />
             </div>
 
+            <div className="flex w-full flex-col gap-3">
+              <p className="text-black text-sm">Blood Group</p>
+              <div className="relative w-full">
+                <button
+                  type="button"
+                  className="w-full flex items-center justify-between text-textGray text-sm p-4 border border-border font-light rounded-lg focus:border focus:border-subMain"
+                  onClick={() => setIsDropdownBgOpen(!isDropdownBgOpen)}
+                >
+                  {formData.bloodGroup}
+                  <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="text-xl" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16.293 9.293 12 13.586 7.707 9.293l-1.414 1.414L12 16.414l5.707-5.707z"></path>
+                  </svg>
+                </button>
+                {isDropdownBgOpen && (
+                  <ul className="absolute left-0 w-full bg-white rounded-md shadow-lg py-4 px-6 ring-1 ring-border z-50">
+                    {bloodGroups.map((group) => (
+                      <li key={group} className="cursor-pointer text-xs hover:text-subMain" onClick={() => handleBloodGroupChange(group)}>
+                        {group}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
             <div className="text-sm w-full">
               <label className="text-black text-sm">Date of Birth</label>
               <DatePicker
@@ -243,8 +311,8 @@ const CreatePatientPage = () => {
                   <path d="M4 8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8ZM6 10V20H18V10H6ZM9 12H11V18H9V12ZM13 12H15V18H13V12ZM7 5V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V5H22V7H2V5H7ZM9 4V5H15V4H9Z"></path>
                 </svg>
               </button>
-              <button className="w-full flex items-center justify-center gap-4 bg-sub-main text-white text-sm font-medium px-2 py-4 rounded hover:opacity-80 transition">
-                Save Changes
+              <button className="w-full flex items-center justify-center gap-4 bg-sub-main text-white text-sm font-medium px-2 py-4 rounded hover:opacity-80 transition" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Save"}
                 <svg
                   stroke="currentColor"
                   fill="none"

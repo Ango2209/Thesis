@@ -53,6 +53,13 @@ export const api = createApi({
         body: newBlog,
       }),
     }),
+    createPatient: build.mutation({
+      query: (patient) => ({
+        url: "/patients/create",
+        method: "POST",
+        body: patient,
+      }),
+    }),
     uploadImages: build.mutation({
       query: (base64Images) => ({
         url: "/upload/images",
@@ -99,4 +106,5 @@ export const {
   useGetBatchesByMedicineIdQuery,
   useAddBatchsMutation,
   useGetNotificationsByDoctorIdQuery,
+  useCreatePatientMutation,
 } = api;
