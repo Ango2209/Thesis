@@ -1,4 +1,4 @@
-import { Controller, Injectable } from "@nestjs/common";
+import { Controller, Get, Injectable, Param } from "@nestjs/common";
 import { BaseController } from "src/common/base.controller";
 import { AppointmentDocument } from "./schemas/appointment.schemas";
 import { AppointmentService } from "./appointment.services";
@@ -7,5 +7,9 @@ import { AppointmentService } from "./appointment.services";
 export class AppointmentController extends BaseController<AppointmentDocument> {
     constructor(private readonly appointmentService: AppointmentService) {
         super(appointmentService);
+    }
+    @Get('/patient/:id')
+    async getNotificationsByDoctorId(@Param('id') id: string): Promise<any> {
+        return this.appointmentService.getAppointmentsByPatientId(id);
     }
 }

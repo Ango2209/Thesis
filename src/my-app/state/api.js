@@ -37,6 +37,12 @@ export const api = createApi({
         body: notification,
       }),
     }),
+    getAppointmentsPatientId: build.query({
+      query: (id) => `/appointment/patient/${id}`,
+    }),
+    getMedicaRecords: build.query({
+      query: (id) => `patients/${id}/medical-records`,
+    }),
   }),
 });
 
@@ -47,4 +53,6 @@ export const {
   useCancelAppointmentMutation,
   useAddBookingAppointmentMutation,
   useAddNotificationMutation,
+  useGetAppointmentsPatientIdQuery,
+  useGetMedicaRecordsQuery,
 } = api;

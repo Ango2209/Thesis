@@ -9,4 +9,15 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
     constructor(@InjectModel(Appointment.name) private appointmentModel: Model<AppointmentDocument>) {
         super(appointmentModel)
     }
+    async getAppointmentsByPatientId(patient: string): Promise<any> {
+        try {
+          // Find all appointments for the patient and populate the doctor information
+          return await this.appointmentModel
+            .find({ patient: patient })
+            .populate('doctor') // Assuming the 'doctor' field in the appointment model contains the doctor ID
+            .exec();
+        } catch (error) {
+          throw new Error(error.message);
+        }
+      }
 }

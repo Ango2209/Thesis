@@ -4,6 +4,7 @@ import Header from "./(components)/Header/Header";
 import Footer from "./(components)/Footer/Footer";
 import StoreProvider, { useAppSelector } from "./redux";
 import { ToastContainer } from "react-toastify";
+import ChatBot from "./(components)/ChatBot/ChatBot";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
           <div className="md:px-20 ">
             <Header />
             {children}
+            <ChatBot />
             <Footer />
           </div>
         </StoreProvider>
