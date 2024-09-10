@@ -54,6 +54,7 @@ const config = {
       },
       colors: {
         "sub-main": "rgb(102 181 163)",
+        subDeepMain: "rgb(255 108 0)",
       },
       boxShadow: {
         "button-fb": "0 24px 48px 0 rgba(102, 181, 163, 0.65)",
