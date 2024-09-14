@@ -4,10 +4,11 @@ import { Plus } from "lucide-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import parse from "html-react-parser";
-import styles from "../../styles/blog.module.scss";
+import styles from "../../../styles/blog.module.scss";
 import { useCreateBlogMutation, useUploadImagesMutation } from "@/state/api";
-import Spinner from "../(components)/Spinner";
-import ImageUpload from "../(components)/ImageUpload/ImageUpload.";
+import Spinner from "../../(components)/Spinner";
+import ImageUpload from "../../(components)/ImageUpload/ImageUpload.";
+import Link from "next/link";
 
 const Blog = () => {
   const [file, setFile] = useState("");
@@ -215,9 +216,15 @@ const Blog = () => {
   const formats = ["header", "bold", "italic", "underline", "strike", "blockquote", "list", "bullet", "link", "indent", "image", "code-block", "color"];
   return (
     <div>
-      {isLoadingUpload && <Spinner />}
-      <h2 className="text-4xl text-center font-semibold py-4">NEW BLOG</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 p-8 gap-4">
+      <div className="flex items-center gap-4 mb-2">
+        <Link className="bg-white border border-subMain border-dashed rounded-lg py-3 px-4 text-md" href="/blogs">
+          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+            <path fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48" d="M244 400L100 256l144-144M120 256h292"></path>
+          </svg>
+        </Link>
+        <h1 className="text-xl font-semibold">Create Blog</h1>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 p-2 gap-4">
         {/* Blog Editor */}
         <div className="w-full max-w-3xl p-5 my-6 bg-white border border-gray-200 rounded-lg shadow mx-auto">
           <h2 className="text-3xl font-bold border-b border-gray-400 pb-2 mb-5 ">Blog Editor</h2>

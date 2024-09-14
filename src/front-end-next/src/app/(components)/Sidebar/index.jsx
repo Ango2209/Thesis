@@ -50,7 +50,7 @@ const Sidebar = () => {
         <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medicine" icon={Pill} label="Medicine" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/blog" icon={Newspaper} label="Blob" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/blogs" icon={Newspaper} label="Blob" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/settings" icon={Settings} label="Settings" isCollapsed={isSidebarCollapsed} />
       </div>
 
