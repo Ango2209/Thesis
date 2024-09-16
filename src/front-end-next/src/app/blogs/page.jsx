@@ -73,7 +73,7 @@ const BlogList = () => {
           previousLinkClassName={"px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-600 transition"}
           nextLinkClassName={"px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-600 transition"}
           disabledClassName={"opacity-50 cursor-not-allowed"}
-          activeClassName={"bg-blue-500 text-white px-4 py-2 rounded-md"}
+          activeClassName={"bg-blue-500 text-white py-2 rounded-md"}
           pageLinkClassName={"px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"}
         />
       </div>
