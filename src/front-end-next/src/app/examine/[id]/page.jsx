@@ -1,7 +1,7 @@
 // pages/detail.js
 import Link from "next/link";
 
-export default function Detail() {
+const Detail = () => {
   return (
     <main className="bg-gray-100 min-h-screen p-6">
       <div className="container mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -109,4 +109,6 @@ export default function Detail() {
       </div>
     </main>
   );
-}
+};
+
+export default Detail;
