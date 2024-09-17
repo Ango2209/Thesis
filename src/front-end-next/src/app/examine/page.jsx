@@ -1,16 +1,30 @@
 "use client";
+import { useGetAppointmentsByStatusAndDateQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
 import { StepForward, ChartLine } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactPaginate from "react-paginate";
+import { useRouter } from "next/navigation";
 
 const AppointmentList = () => {
+  const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageCount, setPageCount] = useState(10);
+
+  const { data, refetch, isLoading, isError } = useGetAppointmentsByStatusAndDateQuery({
+    statuses: "waiting",
+    date: selectedDate,
+    page: currentPage,
+    limit: 10,
+  });
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
   };
+
+  useEffect(() => {
+    refetch();
+  }, [selectedDate, currentPage, refetch]);
 
   const handleToday = () => {
     const today = new Date().toISOString().split("T")[0];
@@ -28,13 +42,9 @@ const AppointmentList = () => {
     setCurrentPage(event.selected);
   };
 
-  // Ví dụ dữ liệu bệnh nhân
-  const patients = [
-    { id: 1, appointmentDate: "2024-09-16", appointmentTime: "08:00", name: "Nguyễn Văn A", dob: "1980-01-01", phone: "0912345678", status: "Đang chờ" },
-    { id: 2, appointmentDate: "2024-09-16", appointmentTime: "09:00", name: "Trần Thị B", dob: "1990-02-02", phone: "0987654321", status: "Đã khám" },
-    { id: 3, appointmentDate: "2024-09-16", appointmentTime: "10:00", name: "Lê Văn C", dob: "1985-03-03", phone: "0901234567", status: "Đang chờ" },
-    // Thêm dữ liệu bệnh nhân ở đây
-  ];
+  const handleExamine = (id) => {
+    router.push(`examine/${id}`);
+  };
 
   return (
     <div className="container mx-auto p-6 bg-white">
@@ -70,17 +80,35 @@ const AppointmentList = () => {
             </tr>
           </thead>
           <tbody>
-            {patients.map((patient, index) => (
-              <tr key={patient.id} className="hover:bg-gray-100">
+            {isLoading && (
+              <tr>
+                <td colSpan="8" className="text-center py-4">
+                  Loading...
+                </td>
+              </tr>
+            )}
+            {isError && (
+              <tr>
+                <td colSpan="8" className="text-center py-4">
+                  Error loading data
+                </td>
+              </tr>
+            )}
+            {data?.appointments?.map((appointment, index) => (
+              <tr key={appointment._id} className="hover:bg-gray-100">
                 <td className="border-b px-4 py-2">{index + 1}</td>
-                <td className="border-b px-4 py-2">{patient.appointmentDate}</td>
-                <td className="border-b px-4 py-2">{patient.appointmentTime}</td>
-                <td className="border-b px-4 py-2">{patient.name}</td>
-                <td className="border-b px-4 py-2">{patient.dob}</td>
-                <td className="border-b px-4 py-2">{patient.phone}</td>
-                <td className="border-b px-4 py-2">{patient.status}</td>
+                <td className="border-b px-4 py-2">{new Date(appointment.date_of_visit).toLocaleDateString()}</td>
+                <td className="border-b px-4 py-2">{appointment.start_time}</td>
+                <td className="border-b px-4 py-2">{appointment.patient.fullname}</td>
+                <td className="border-b px-4 py-2">{new Date(appointment.patient.dob).toLocaleDateString()}</td>
                 <td className="border-b px-4 py-2">
-                  <button className="text-blue-500 hover:underline">
+                  <a href={`tel:${appointment.patient.phone}`} className="text-blue-500">
+                    {appointment.patient.phone}
+                  </a>
+                </td>
+                <td className="border-b px-4 py-2">{appointment.status}</td>
+                <td className="border-b px-4 py-2">
+                  <button onClick={() => handleExamine(appointment._id)} className="text-blue-500 hover:underline">
                     <StepForward />
                   </button>
                   <button className="text-red-500 hover:underline ml-2">
@@ -96,7 +124,7 @@ const AppointmentList = () => {
         <ReactPaginate
           previousLabel={"← "}
           nextLabel={" →"}
-          pageCount={pageCount}
+          pageCount={data?.totalPages}
           onPageChange={handlePageClick}
           containerClassName={"flex justify-center items-center space-x-2"}
           previousLinkClassName={"px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-600 transition"}

@@ -86,6 +86,22 @@ export const api = createApi({
     getNotificationsByDoctorId: build.query({
       query: (doctorId) => `/notifications/doctor/${doctorId}`,
     }),
+    getAppointmentsByStatusAndDate: build.query({
+      query: ({ statuses, date, page = 1, limit = 10 }) => ({
+        url: "/appointments/filter",
+        params: { statuses, date, page, limit },
+      }),
+    }),
+    getAppointment: build.query({
+      query: (id) => `/appointments/${id}`,
+    }),
+    updateAppointmentStatus: build.mutation({
+      query: ({ id, status }) => ({
+        url: `/appointments/${id}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+    }),
   }),
 });
 
@@ -107,4 +123,7 @@ export const {
   useAddBatchsMutation,
   useGetNotificationsByDoctorIdQuery,
   useCreatePatientMutation,
+  useGetAppointmentsByStatusAndDateQuery,
+  useGetAppointmentQuery,
+  useUpdateAppointmentStatusMutation,
 } = api;

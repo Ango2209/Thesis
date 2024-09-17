@@ -1,12 +1,22 @@
 "use client";
+import { useGetAppointmentsByStatusAndDateQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
 import { StepForward, CircleX } from "lucide-react";
 import React, { useState } from "react";
 import ReactPaginate from "react-paginate";
+import { toast } from "react-toastify";
 
 const AppointmentList = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageCount, setPageCount] = useState(10);
+
+  const { data, refetch, isLoading, isError } = useGetAppointmentsByStatusAndDateQuery({
+    statuses: "booked",
+    date: selectedDate,
+    page: currentPage,
+    limit: 10,
+  });
+  console.log(data);
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
@@ -24,17 +34,19 @@ const AppointmentList = () => {
     setSelectedDate(tomorrowDate);
   };
 
+  const handleCheckIn = async (appointmentId) => {
+    try {
+      await updateAppointmentStatus({ id: appointmentId, status: "waiting" }).unwrap();
+      refetch();
+      toast.success("Patient checkin successfully!");
+    } catch (error) {
+      console.error("Failed to check in:", error);
+    }
+  };
+
   const handlePageClick = (event) => {
     setCurrentPage(event.selected);
   };
-
-  // Ví dụ dữ liệu bệnh nhân
-  const patients = [
-    { id: 1, appointmentDate: "2024-09-16", appointmentTime: "08:00", name: "Nguyễn Văn A", dob: "1980-01-01", phone: "0912345678", status: "Đang chờ" },
-    { id: 2, appointmentDate: "2024-09-16", appointmentTime: "09:00", name: "Trần Thị B", dob: "1990-02-02", phone: "0987654321", status: "Đã khám" },
-    { id: 3, appointmentDate: "2024-09-16", appointmentTime: "10:00", name: "Lê Văn C", dob: "1985-03-03", phone: "0901234567", status: "Đang chờ" },
-    // Thêm dữ liệu bệnh nhân ở đây
-  ];
 
   return (
     <div className="container mx-auto p-6 bg-white">
@@ -70,7 +82,69 @@ const AppointmentList = () => {
             </tr>
           </thead>
           <tbody>
-            <tr class="border-b">
+            {isLoading && (
+              <tr>
+                <td colSpan="8" className="text-center py-4">
+                  Loading...
+                </td>
+              </tr>
+            )}
+            {isError && (
+              <tr>
+                <td colSpan="8" className="text-center py-4">
+                  Error loading data
+                </td>
+              </tr>
+            )}
+            {data?.appointments?.map((appointment, index) => (
+              <tr key={appointment._id} className="border-b">
+                <td className="px-4 py-2 text-center">{(currentPage - 1) * 10 + index + 1}</td>
+                <td className="px-4 py-2">{new Date(appointment.date_of_visit).toLocaleDateString()}</td>
+                <td className="px-4 py-2">{appointment.start_time}</td>
+                <td className="px-4 py-2">{appointment.specialized || "N/A"}</td>
+                <td className="px-4 py-2">
+                  <div className="text-sm">
+                    <p className="font-semibold">{appointment.patient.fullname}</p>
+                    <p className="text-gray-600">{new Date(appointment.patient.dob).toLocaleDateString()}</p>
+                    <a href={`tel:${appointment.patient.phone}`} className="text-blue-500">
+                      {appointment.patient.phone}
+                    </a>
+                  </div>
+                </td>
+                <td className="px-4 py-2">
+                  <div className="text-sm">
+                    <p className="font-semibold">{appointment.doctor.fullname}</p>
+                    <p className="text-gray-600">{new Date(appointment.doctor.dob).toLocaleDateString()}</p>
+                    <a href={`tel:${appointment.doctor.phone}`} className="text-blue-500">
+                      {appointment.doctor.phone}
+                    </a>
+                  </div>
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <span className={`inline-block py-1 px-2 rounded-full text-xs font-semibold ${appointment.status === "booked" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"}`}>
+                    {appointment.status}
+                  </span>
+                </td>
+                <td className="px-4 py-2 text-center">
+                  <div className="flex justify-center space-x-2">
+                    <div className="relative group">
+                      <button onClick={() => handleCheckIn(appointment._id)} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        <StepForward />
+                      </button>
+                      <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-max p-2 bg-gray-700 text-white text-sm rounded hidden group-hover:block">Check in</div>
+                    </div>
+
+                    <div className="relative group">
+                      <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                        <CircleX />
+                      </button>
+                      <div className="absolute left-1/2 transform -translate-x-1/2 bottom-full mb-2 w-max p-2 bg-gray-700 text-white text-sm rounded hidden group-hover:block">Cancel</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {/* <tr class="border-b">
               <td class="px-4 py-2 text-center">1</td>
               <td class="px-4 py-2">16/09/2024</td>
               <td class="px-4 py-2">14:30</td>
@@ -113,7 +187,7 @@ const AppointmentList = () => {
                   </div>
                 </div>
               </td>
-            </tr>
+            </tr> */}
           </tbody>
         </table>
       </div>
@@ -121,7 +195,7 @@ const AppointmentList = () => {
         <ReactPaginate
           previousLabel={"← "}
           nextLabel={" →"}
-          pageCount={pageCount}
+          pageCount={data?.totalPages}
           onPageChange={handlePageClick}
           containerClassName={"flex justify-center items-center space-x-2"}
           previousLinkClassName={"px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-md text-gray-600 transition"}

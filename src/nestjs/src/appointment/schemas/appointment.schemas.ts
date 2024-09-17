@@ -5,26 +5,26 @@ import { Patient } from 'src/person/schemas/patient.schemas';
 
 export type AppointmentDocument = HydratedDocument<Appointment>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Appointment {
-    @Prop()
-    patient_name: string;
-    @Prop()
-    purpose_visit: string;
-    @Prop()
-    date_of_visit: Date;
-    @Prop()
-    start_time: string;
-    @Prop()
-    end_time: string;
-    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' })
-    doctor: Doctor;
-    @Prop()
-    status: string;
-    @Prop()
-    description: string
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' }] })
-    patient: Patient
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' })
+  doctor: Doctor;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' })
+  patient: Patient;
+  @Prop({ type: String })
+  purpose_visit: string;
+  @Prop({ required: true })
+  date_of_visit: Date;
+  @Prop({ required: true })
+  start_time: string;
+  @Prop({ type: Boolean, default: false })
+  isExamined: boolean;
+  @Prop({ default: 'booked' })
+  status: string;
+  @Prop({ type: String })
+  description: string;
+  @Prop({ type: String })
+  specialized: string;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

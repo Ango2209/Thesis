@@ -1,7 +1,12 @@
-// pages/detail.js
+"use client";
+import { useGetAppointmentQuery } from "@/state/api";
 import Link from "next/link";
 
-const Detail = () => {
+const Detail = ({ params }) => {
+  const { id } = params;
+  const { data, error, isLoading } = useGetAppointmentQuery(id);
+
+  console.log(data);
   return (
     <main className="bg-gray-100 min-h-screen p-6">
       <div className="container mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -25,18 +30,18 @@ const Detail = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {/* Field Names */}
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Patient:</div>
-              <div className="bg-white border border-gray-300 p-2 rounded">Nguyen Van A</div>
+              <div className="bg-white border border-gray-300 p-2 rounded">{data?.patient?.fullname}</div>
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Date of Birth:</div>
-              <div className="bg-white border border-gray-300 p-2 rounded">10/09/1992 - 32 years old</div>
+              <div className="bg-white border border-gray-300 p-2 rounded">{new Date(data?.patient?.dob).toLocaleDateString()}</div>
 
               {/* Additional Fields */}
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Phone:</div>
-              <div className="bg-white border border-gray-300 p-2 rounded">0938232456</div>
+              <div className="bg-white border border-gray-300 p-2 rounded">{data?.patient?.phone}</div>
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Appointment Time:</div>
               <div className="bg-white border border-gray-300 p-2 rounded">16/09/2024 | 14:30 ~ 15:00</div>
 
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Specialty:</div>
-              <div className="bg-white border border-gray-300 p-2 rounded">General Medicine</div>
+              <div className="bg-white border border-gray-300 p-2 rounded">{data?.specialized}</div>
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Status:</div>
               <div className="bg-white border border-gray-300 p-2 rounded">
                 <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-sm">In Consultation</span>
