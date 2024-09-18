@@ -125,7 +125,13 @@ export class PatientService extends BaseServices<PatientDocument> {
   }
 
   async getMedicalRecordsByPatientIdObj(id: string) {
-    const patient = await this.patientModel.findById(id).exec();
+    const patient = await this.patientModel
+      .findById(id)
+      .populate({
+        path: 'medical_records.doctor',
+        model: 'Doctor',
+      })
+      .exec();
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }

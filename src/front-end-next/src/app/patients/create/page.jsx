@@ -159,8 +159,7 @@ const CreatePatientPage = () => {
         toast.success("Patient created successfully!");
         router.push("/patients");
       } catch (error) {
-        toast.error("Failed to create patient. Please check your input and try again.");
-        console.error("Failed to create patient", error);
+        c
       }
     }
   };

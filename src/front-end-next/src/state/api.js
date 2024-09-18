@@ -102,6 +102,19 @@ export const api = createApi({
         body: { status },
       }),
     }),
+    searchMedicines: build.query({
+      query: (search) => ({
+        url: "/medicines/search",
+        params: search ? { name: search } : {},
+      }),
+    }),
+    addMedicalRecord: build.mutation({
+      query: ({ patientId, record }) => ({
+        url: `/patients/${patientId}/medical-records`,
+        method: "POST",
+        body: record,
+      }),
+    }),
   }),
 });
 
@@ -126,4 +139,6 @@ export const {
   useGetAppointmentsByStatusAndDateQuery,
   useGetAppointmentQuery,
   useUpdateAppointmentStatusMutation,
+  useSearchMedicinesQuery,
+  useAddMedicalRecordMutation,
 } = api;

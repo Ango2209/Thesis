@@ -11,7 +11,7 @@ const AppointmentList = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, refetch, isLoading, isError } = useGetAppointmentsByStatusAndDateQuery({
-    statuses: "waiting",
+    statuses: "waiting,examining",
     date: selectedDate,
     page: currentPage,
     limit: 10,
@@ -42,7 +42,11 @@ const AppointmentList = () => {
     setCurrentPage(event.selected);
   };
 
-  const handleExamine = (id) => {
+  const handleExamine = async (id) => {
+    await updateAppointmentStatus({ id: id, status: "examining" }).unwrap();
+    router.push(`examine/${id}`);
+  };
+  const handleContinue = async (id) => {
     router.push(`examine/${id}`);
   };
 
@@ -108,12 +112,15 @@ const AppointmentList = () => {
                 </td>
                 <td className="border-b px-4 py-2">{appointment.status}</td>
                 <td className="border-b px-4 py-2">
-                  <button onClick={() => handleExamine(appointment._id)} className="text-blue-500 hover:underline">
-                    <StepForward />
-                  </button>
-                  <button className="text-red-500 hover:underline ml-2">
-                    <ChartLine />
-                  </button>
+                  {appointment.status === "waiting" ? (
+                    <button onClick={() => handleExamine(appointment._id)} className="text-blue-500 hover:underline">
+                      <StepForward />
+                    </button>
+                  ) : (
+                    <button onClick={() => handleContinue(appointment._id)} className="text-red-500 hover:underline ">    
+                      <ChartLine />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

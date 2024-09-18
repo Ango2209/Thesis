@@ -1,15 +1,6 @@
 "use client";
-import { useState } from "react";
 
-const medicines = [
-  { name: "Paracetamol", price: 1000, dosage: "1 - M/A/E", instruction: "After meal", quantity: 1, amount: 1000 },
-  { name: "Amoxicillin", price: 2300, dosage: "2 - M/A/E", instruction: "After meal", quantity: 2, amount: 4600 },
-  { name: "Ibuprofen", price: 5000, dosage: "3 - M/A/E", instruction: "Before meal", quantity: 3, amount: 15000 },
-];
-
-export default function MedicineTable() {
-  const [medicineList, setMedicineList] = useState(medicines);
-
+export default function MedicineTable({ medicineList, setMedicineList }) {
   const handleDelete = (index) => {
     setMedicineList(medicineList.filter((_, i) => i !== index));
   };
@@ -22,27 +13,19 @@ export default function MedicineTable() {
           <thead className="bg-gray-100">
             <tr>
               <th className="text-left text-xs font-medium py-3 px-2">Item</th>
-              <th className="text-left text-xs font-medium py-3 px-2">
-                Item Price<span className="text-xs font-light ml-1">(Tsh)</span>
-              </th>
               <th className="text-left text-xs font-medium py-3 px-2">Dosage</th>
               <th className="text-left text-xs font-medium py-3 px-2">Instruction</th>
               <th className="text-left text-xs font-medium py-3 px-2">Quantity</th>
-              <th className="text-left text-xs font-medium py-3 px-2">
-                Amount<span className="text-xs font-light ml-1">(Tsh)</span>
-              </th>
               <th className="text-left text-xs font-medium py-3 px-2">Actions</th>
             </tr>
           </thead>
           <tbody>
             {medicineList.map((medicine, index) => (
               <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
-                <td className="text-left text-xs py-4 px-2">{medicine.name}</td>
-                <td className="text-left text-xs py-4 px-2">{medicine.price}</td>
+                <td className="text-left text-xs py-4 px-2">{medicine.itemName}</td>
                 <td className="text-left text-xs py-4 px-2">{medicine.dosage}</td>
                 <td className="text-left text-xs py-4 px-2">{medicine.instruction}</td>
                 <td className="text-left text-xs py-4 px-2">{medicine.quantity}</td>
-                <td className="text-left text-xs py-4 px-2">{medicine.amount}</td>
                 <td className="text-left text-xs py-4 px-2">
                   <button
                     onClick={() => handleDelete(index)}

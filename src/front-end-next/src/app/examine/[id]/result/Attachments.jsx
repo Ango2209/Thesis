@@ -58,7 +58,7 @@ const Attachments = ({ setSelectedFiles }) => {
 
   return (
     <div className="relative w-full">
-      {/* Display files above the drag-and-drop area */}
+      <p className="text-black text-sm font-medium">Attachments</p>
       <div className="mb-4">
         <div className="flex flex-wrap gap-4">
           {files.map((file, index) => (

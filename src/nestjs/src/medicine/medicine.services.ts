@@ -295,4 +295,10 @@ export class MedicineService extends BaseServices<MedicineDocument> {
 
     return processedBatches;
   }
+
+  async findMedicinesByName(name: string): Promise<Medicine[]> {
+    return this.medicineModel
+      .find({ name: { $regex: name, $options: 'i' } })
+      .exec();
+  }
 }

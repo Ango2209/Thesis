@@ -97,7 +97,10 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
     const appointment = await this.appointmentModel
       .findById(id)
       .populate('doctor')
-      .populate('patient')
+      .populate({
+        path: 'patient',
+        select: '-medical_records',
+      })
       .exec();
 
     if (!appointment) {
