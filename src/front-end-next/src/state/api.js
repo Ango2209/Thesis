@@ -115,6 +115,36 @@ export const api = createApi({
         body: record,
       }),
     }),
+    createService: build.mutation({
+      query: (createServiceDto) => ({
+        url: "/services",
+        method: "POST",
+        body: createServiceDto,
+      }),
+    }),
+
+    getAllServices: build.query({
+      query: () => "/services",
+    }),
+
+    getServiceById: build.query({
+      query: (id) => `/services/${id}`,
+    }),
+
+    updateService: build.mutation({
+      query: ({ id, updateServiceDto }) => ({
+        url: `/services/${id}`,
+        method: "PUT",
+        body: updateServiceDto,
+      }),
+    }),
+
+    deleteService: build.mutation({
+      query: (id) => ({
+        url: `/services/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -141,4 +171,9 @@ export const {
   useUpdateAppointmentStatusMutation,
   useSearchMedicinesQuery,
   useAddMedicalRecordMutation,
+  useCreateServiceMutation,
+  useGetAllServicesQuery,
+  useGetServiceByIdQuery,
+  useUpdateServiceMutation,
+  useDeleteServiceMutation,
 } = api;

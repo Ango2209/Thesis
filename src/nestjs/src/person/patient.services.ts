@@ -83,7 +83,7 @@ export class PatientService extends BaseServices<PatientDocument> {
     // Handle prescription if provided
     if (record.prescriptions && record.prescriptions.length > 0) {
       try {
-        const processedItems = await this.medicineService.createPrescription(
+        const processedItems = await this.medicineService.prescribeMedicine(
           record.prescriptions,
         );
         record.prescriptions = processedItems; // Update with item name

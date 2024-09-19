@@ -29,7 +29,7 @@ export default function NewMedicalRecord({ params }) {
     medicineId: "",
     name: "",
     daysOfUse: "",
-    instruction: "After Meal",
+    instraction: "After Meal",
     dosageQuantity: "",
     dosage: {
       morning: false,
@@ -78,7 +78,7 @@ export default function NewMedicalRecord({ params }) {
       medicineId: "",
       name: "",
       daysOfUse: "",
-      instruction: "After Meal",
+      instraction: "After Meal",
       dosageQuantity: "",
       dosage: {
         morning: false,
@@ -173,6 +173,8 @@ export default function NewMedicalRecord({ params }) {
 
       await addMedicalRecord({ patientId: data?.patient?._id, record: formData }).unwrap();
       toast.success("Medical record created successfully!");
+      //change status
+
       router.push(`/examine/${id}`);
     } catch (error) {
       toast.error("Failed to create medical record. Please check your input and try again.");
@@ -343,10 +345,10 @@ export default function NewMedicalRecord({ params }) {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="text-gray-700 text-sm font-medium">Instruction</label>
+                    <label className="text-gray-700 text-sm font-medium">Instraction</label>
                     <select
-                      name="instruction"
-                      value={newMedicine.instruction}
+                      name="instraction"
+                      value={newMedicine.instraction}
                       onChange={handleMedicineChange}
                       className="w-full mt-2 p-2 border border-gray-300 rounded-lg text-sm focus:ring-subMain focus:border-subMain"
                     >

@@ -3,14 +3,24 @@ import { useGetAppointmentQuery, useGetMedicaRecordsQuery } from "@/state/api";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import MedicalServiceRequest from "./MedicalServiceRequest";
+
 
 const Detail = ({ params }) => {
   const { id } = params;
-  const router = useRouter();
   const { data, isError, isLoading } = useGetAppointmentQuery(id);
   const { data: mrData, isError: isError2, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
 
   const [expandedRow, setExpandedRow] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   const toggleRow = (index) => {
     setExpandedRow(expandedRow === index ? null : index);
@@ -71,7 +81,9 @@ const Detail = ({ params }) => {
             <h3 className="text-lg font-semibold">Medical Record</h3>
 
             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">Create a medical service request</button>
+              <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
+                Create a medical service request
+              </button>
               <Link className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none" href={`/examine/${id}/result`}>
                 Examination results
               </Link>
@@ -160,7 +172,7 @@ const Detail = ({ params }) => {
                                 <tr>
                                   <th className="py-2 px-4 border-b text-left">Medicine Name</th>
                                   <th className="py-2 px-4 border-b text-center">Dosage</th>
-                                  <th className="py-2 px-4 border-b text-center">Instruction</th>
+                                  <th className="py-2 px-4 border-b text-center">Instraction</th>
                                   <th className="py-2 px-4 border-b text-center">Quantity</th>
                                 </tr>
                               </thead>
@@ -185,6 +197,15 @@ const Detail = ({ params }) => {
             </table>
           </div>
         </div>
+        <MedicalServiceRequest
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          doctorId={data?.doctor?._id}
+          doctorName={data?.doctor?.fullname}
+          patientId={data?.patient?._id}
+          patientName={data?.patient?.fullname}
+          appointmentId={id}
+        />
       </div>
     </main>
   );

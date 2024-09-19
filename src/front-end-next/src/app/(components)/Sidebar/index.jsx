@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import { CalendarDays, CircleDollarSign, GraduationCap, House, Pill, ReceiptCent, Settings, Users, Newspaper, Hospital, ClipboardPlus } from "lucide-react";
+import { CalendarDays, CircleDollarSign, GraduationCap, House, Pill, ReceiptCent, Settings, Users, Newspaper, Hospital, ClipboardPlus, Stethoscope, BriefcaseMedical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -44,11 +44,12 @@ const Sidebar = () => {
       {/* LINKS */}
       <div className="flex-grow mt-8">
         <SidebarLink href="/dashboard" icon={House} label="Dashboard" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/examine" icon={Hospital} label="Examine" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/examine" icon={Stethoscope} label="Examine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments-registration" icon={ClipboardPlus} label="Medical Appointment Registration" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/patients" icon={Users} label="Patient" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/doctors" icon={GraduationCap} label="Doctors" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments" icon={CalendarDays} label="Appointments" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/medical-services" icon={BriefcaseMedical} label="Services" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medicine" icon={Pill} label="Medicine" isCollapsed={isSidebarCollapsed} />
