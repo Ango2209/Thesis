@@ -40,7 +40,7 @@ export const api = createApi({
     getAppointmentsPatientId: build.query({
       query: (id) => `/appointment/patient/${id}`,
     }),
-    getMedicaRecords: build.query({
+    getMedicalRecords: build.query({
       query: (id) => `patients/${id}/medical-records`,
     }),
   }),
@@ -54,5 +54,5 @@ export const {
   useAddBookingAppointmentMutation,
   useAddNotificationMutation,
   useGetAppointmentsPatientIdQuery,
-  useGetMedicaRecordsQuery,
+  useGetMedicalRecordsQuery,
 } = api;

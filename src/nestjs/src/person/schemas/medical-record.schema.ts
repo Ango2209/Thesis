@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, HydratedDocument } from 'mongoose';
 import { Doctor } from './doctor.schema';
-
+import { Appointment } from 'src/appointment/schemas/appointment.schemas';
 @Schema()
 export class MedicalRecord {
   @Prop()
@@ -20,6 +20,8 @@ export class MedicalRecord {
   attachments: string[];
   @Prop({ type: Types.ObjectId, ref: Doctor.name })
   doctor_objid: Types.ObjectId; // Reference to a doctor
+  @Prop({ type: Types.ObjectId, ref: Appointment.name })
+  appointment_id: Types.ObjectId; 
 }
 
 export type PatientDocument = HydratedDocument<MedicalRecord>;

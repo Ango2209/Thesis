@@ -14,6 +14,17 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
           // Find all appointments for the patient and populate the doctor information
           return await this.appointmentModel
             .find({ patient: patient })
+            .populate('patient') // Assuming the 'doctor' field in the appointment model contains the doctor ID
+            .exec();
+        } catch (error) {
+          throw new Error(error.message);
+        }
+      }
+    async getAppointmentsByDoctorId(doctor: string): Promise<any> {
+        try {
+          // Find all appointments for the doctor and populate the doctor information
+          return await this.appointmentModel
+            .find({ doctor: doctor })
             .populate('doctor') // Assuming the 'doctor' field in the appointment model contains the doctor ID
             .exec();
         } catch (error) {

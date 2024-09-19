@@ -9,7 +9,11 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
         super(appointmentService);
     }
     @Get('/patient/:id')
-    async getNotificationsByDoctorId(@Param('id') id: string): Promise<any> {
+    async getNotificationsByPatientId(@Param('id') id: string): Promise<any> {
         return this.appointmentService.getAppointmentsByPatientId(id);
+    }
+    @Get('/doctor/:id')
+    async getNotificationsByDoctorId(@Param('id') id: string): Promise<any> {
+        return this.appointmentService.getAppointmentsByDoctorId(id);
     }
 }

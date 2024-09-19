@@ -76,6 +76,9 @@ export const api = createApi({
     getBatchesByMedicineId: build.query({
       query: (medicineId) => `/medicines/${medicineId}/batches`,
     }),
+    getAppointmentsDoctorId: build.query({
+      query: (doctorId) => `/appointment/doctor/${doctorId}`,
+    }),
     addBatchs: build.mutation({
       query: (batchs) => ({
         url: "/batches",
@@ -107,4 +110,5 @@ export const {
   useAddBatchsMutation,
   useGetNotificationsByDoctorIdQuery,
   useCreatePatientMutation,
+  useGetAppointmentsDoctorIdQuery,
 } = api;
