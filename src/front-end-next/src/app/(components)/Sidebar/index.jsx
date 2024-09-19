@@ -87,12 +87,6 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
-          href="/treatments"
-          icon={House}
-          label="Treatments"
-          isCollapsed={isSidebarCollapsed}
-        />
-        <SidebarLink
           href="/patients"
           icon={Users}
           label="Patient"
