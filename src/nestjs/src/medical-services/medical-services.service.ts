@@ -37,6 +37,10 @@ export class MedicalServiceService {
     }
     return service;
   }
+  // Get service by status
+  async getServicesByStatus(status: string): Promise<Service[]> {
+    return this.serviceModel.find({ status, isDeleted: false }).exec();
+  }
 
   // Update a service
   async updateService(

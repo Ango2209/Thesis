@@ -5,13 +5,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import MedicalServiceRequest from "./MedicalServiceRequest";
 
-
 const Detail = ({ params }) => {
   const { id } = params;
   const { data, isError, isLoading } = useGetAppointmentQuery(id);
   const { data: mrData, isError: isError2, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
 
+  const serviceRqData = [];
+
   const [expandedRow, setExpandedRow] = useState(null);
+  const [expandedRowFile, setExpandedRowFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
@@ -24,6 +26,10 @@ const Detail = ({ params }) => {
 
   const toggleRow = (index) => {
     setExpandedRow(expandedRow === index ? null : index);
+  };
+
+  const toggleRowFile = (index) => {
+    setExpandedRowFile(expandedRowFile === index ? null : index);
   };
 
   console.log(mrData);
@@ -78,8 +84,7 @@ const Detail = ({ params }) => {
 
         <div>
           <div className="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
-            <h3 className="text-lg font-semibold">Medical Record</h3>
-
+            <h3 className="text-lg font-semibold">Medical Service Request</h3>
             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
               <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
                 Create a medical service request
@@ -88,6 +93,113 @@ const Detail = ({ params }) => {
                 Examination results
               </Link>
             </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="py-2 px-4 border-b text-left">#</th>
+                  <th className="py-2 px-4 border-b text-left">Service Name</th>
+                  <th className="py-2 px-4 border-b text-left">Price</th>
+                  <th className="py-2 px-4 border-b text-left">Initial Diagnosis</th>
+                  <th className="py-2 px-4 border-b text-left">Notes</th>
+                  <th className="py-2 px-4 border-b text-left">Status</th>
+                  <th className="py-2 px-4 border-b text-left">Conclude</th>
+                  <th className="py-2 px-4 border-b text-center">Attachments</th>
+                </tr>
+              </thead>
+              <tbody>
+                {serviceRqData.length <= 0 && (
+                  <tr>
+                    <td colSpan="8" className="text-center py-4">
+                      No requests have been created yet
+                    </td>
+                  </tr>
+                )}
+                {serviceRqData?.map((data, index) => (
+                  <>
+                    <tr key={index}>
+                      <td className="py-2 px-4 border-b">{data.record_date}</td>
+                      <td className="py-2 px-4 border-b">
+                        <div className="flex items-center">
+                          <div>
+                            <div className="font-semibold">{data.doctor.fullname}</div>
+                            <a href={`tel:${data.doctor.phone}`} className="text-blue-500">
+                              {data.doctor.phone}
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2 px-4 border-b">{data.diagnosis}</td>
+                      <td className="py-2 px-4 border-b">{data?.notes}</td>
+                      <td className="py-2 px-4 border-b text-center">notes</td>
+                      <td className="py-2 px-4 border-b text-center">bbbbb</td>
+                      <td className="py-2 px-4 border-b">aaaaaa</td>
+                      <td className="py-2 px-4 border-b text-center">
+                        <button type="button" onClick={() => toggleRowFile(index)} className="text-gray-500 hover:text-gray-700">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18m-7 5h7" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                    {expandedRowFile === index && (
+                      <tr>
+                        <td colSpan="8" className="px-4 py-2 border-b">
+                          <div className="p-4 bg-gray-50 rounded-lg">
+                            <h4 className="text-lg font-semibold mb-2">Attachments</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                              {/* Dữ liệu set cứng */}
+                              <div className="bg-white border p-4 rounded-lg shadow-sm">
+                                <div className="flex items-center justify-between">
+                                  {/* Tên file */}
+                                  <p className="text-gray-700 font-medium">X-ray Report.pdf</p>
+
+                                  {/* Định dạng file */}
+                                  <span className="ml-2 text-gray-500 text-sm uppercase">PDF</span>
+                                </div>
+
+                                {/* Nút xem hoặc tải file */}
+                                <a href="/path/to/xray-report.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
+                                  View / Download
+                                </a>
+                              </div>
+
+                              <div className="bg-white border p-4 rounded-lg shadow-sm">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-gray-700 font-medium">Blood Test Results.pdf</p>
+                                  <span className="ml-2 text-gray-500 text-sm uppercase">PDF</span>
+                                </div>
+                                <a href="/path/to/blood-test.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
+                                  View / Download
+                                </a>
+                              </div>
+
+                              <div className="bg-white border p-4 rounded-lg shadow-sm">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-gray-700 font-medium">MRI Scan.jpeg</p>
+                                  <span className="ml-2 text-gray-500 text-sm uppercase">JPEG</span>
+                                </div>
+                                <a href="/path/to/mri-scan.jpeg" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
+                                  View / Download
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
+            <h3 className="text-lg font-semibold">Medical Record</h3>
           </div>
 
           <div className="overflow-x-auto">

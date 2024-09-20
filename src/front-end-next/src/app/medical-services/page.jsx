@@ -3,20 +3,17 @@
 import { useState } from "react";
 import AddServiceModal from "./AddServiceModal";
 import { useGetAllServicesQuery } from "@/state/api";
+import { Edit, Trash } from "lucide-react";
 
 const Services = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
-  const toggleDropdown = (index) => {
-    setOpenDropdown(openDropdown === index ? null : index);
-  };
 
   const { data: services, refetch, isLoading, error } = useGetAllServicesQuery();
 
@@ -119,22 +116,23 @@ const Services = () => {
                   <td className="text-start text-sm py-4 px-2 whitespace-nowrap">
                     <span className={`text-xs font-medium ${service.status === "Enabled" ? "text-green-600" : "text-red-600"}`}>{service.status}</span>
                   </td>
-                  <td className="py-2 relative">
-                    <button type="button" onClick={() => toggleDropdown(index)} className="relative text-gray-600 hover:text-gray-800 focus:outline-none">
-                      <div className="bg-dry border text-main text-xl py-2 px-4 rounded-lg">
-                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M12 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
-                        </svg>
-                      </div>
-
-                      {/* Dropdown Menu */}
-                      <div className={`absolute top-full left-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg ${openDropdown === index ? "block" : "hidden"} z-50`}>
-                        <ul>
-                          <li className="cursor-pointer px-4 py-2 hover:bg-gray-100 text-sm">Edit</li>
-                          <li className="cursor-pointer px-4 py-2 hover:bg-gray-100 text-sm">Delete</li>
-                        </ul>
-                      </div>
-                    </button>
+                  <td className="py-2">
+                    <div className="flex space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => handleEdit(index)}
+                        className="bg-blue-500 text-white text-sm py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none flex items-center space-x-2"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(index)}
+                        className="bg-red-500 text-white text-sm py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none flex items-center space-x-2"
+                      >
+                        <Trash className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

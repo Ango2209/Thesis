@@ -41,6 +41,13 @@ export class ServiceController {
     return service;
   }
 
+  @Get('status/:status')
+  async getServicesByStatus(
+    @Param('status') status: string,
+  ): Promise<Service[]> {
+    return this.serviceService.getServicesByStatus(status);
+  }
+
   @Put(':id')
   async updateService(
     @Param('id') id: string,

@@ -1,4 +1,5 @@
 "use client";
+import { useGetServicesByStatusQuery } from "@/state/api";
 import React, { useState } from "react";
 
 const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointmentId, doctorName, patientName }) => {
@@ -6,16 +7,7 @@ const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointme
   const [serviceNote, setServiceNote] = useState("");
   const [initialDiagnosis, setInitialDiagnosis] = useState("");
 
-  const services = [
-    { id: "ultrasound", name: "Ultrasound" },
-    { id: "xray", name: "X-ray" },
-    { id: "ctScan", name: "CT Scan" },
-    { id: "mri", name: "MRI" },
-    { id: "endoscopy", name: "Endoscopy" },
-    { id: "bloodTest", name: "Blood Test" },
-    { id: "urineTest", name: "Urine Test" },
-    { id: "ecg", name: "ECG (Electrocardiogram)" },
-  ];
+  const { data: services, error, isLoading } = useGetServicesByStatusQuery("Enabled");
 
   const handleServiceChange = (e) => {
     setSelectedService(e.target.value);
@@ -30,14 +22,14 @@ const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointme
         initialDiagnosis,
         note: serviceNote,
         status: "AwaitingPayment",
-        serviceId: services.find((service) => service.name === selectedService)?.id,
+        serviceId: services?.find((service) => service.name === selectedService)?.id,
       };
       console.log("Submitted Data:", requestData);
       // Submit requestData to API
-      setSelectedService("")
-      setServiceNote("")
-      setInitialDiagnosis("")
-      onClose(); 
+      setSelectedService("");
+      setServiceNote("");
+      setInitialDiagnosis("");
+      onClose();
     } else {
       alert("Please fill in all fields.");
     }
@@ -69,7 +61,9 @@ const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointme
 
         {/* Nhập chẩn đoán ban đầu */}
         <div className="mt-4">
-          <label className="block text-gray-700 mb-2">Initial Diagnosis:</label>
+          <label className="block text-gray-700 mb-2">
+            <span className="text-red-500">*</span>Initial Diagnosis:
+          </label>
           <textarea
             value={initialDiagnosis}
             onChange={(e) => setInitialDiagnosis(e.target.value)}
@@ -83,8 +77,8 @@ const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointme
           <label className="block text-gray-700 mb-2">Select Service:</label>
           <select value={selectedService} onChange={handleServiceChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500">
             <option value="">-- Select a service --</option>
-            {services.map((service) => (
-              <option key={service.id} value={service.name}>
+            {services?.map((service) => (
+              <option key={service._id} value={service.name}>
                 {service.name}
               </option>
             ))}

@@ -130,6 +130,9 @@ export const api = createApi({
     getServiceById: build.query({
       query: (id) => `/services/${id}`,
     }),
+    getServicesByStatus: build.query({
+      query: (status) => `/services/status/${status}`,
+    }),
 
     updateService: build.mutation({
       query: ({ id, updateServiceDto }) => ({
@@ -176,4 +179,5 @@ export const {
   useGetServiceByIdQuery,
   useUpdateServiceMutation,
   useDeleteServiceMutation,
+  useGetServicesByStatusQuery,
 } = api;
