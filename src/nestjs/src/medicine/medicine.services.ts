@@ -98,6 +98,39 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     return batchSaved;
   }
 
+  async prescribeMedicine(
+    createPrescriptionsDto: CreatePrescriptionItemDto[],
+  ): Promise<CreatePrescriptionItemDto[]> {
+    const processedItems: CreatePrescriptionItemDto[] = [];
+    try {
+      for (const item of createPrescriptionsDto) {
+        //Check valid medicine
+        const medicine = await this.medicineModel
+          .findById(item.medicineId)
+          .exec();
+        if (!medicine) {
+          throw new NotFoundException(
+            `Medicine with ID ${item.medicineId} not found`,
+          );
+        }
+
+        item.itemName = medicine.name;
+        processedItems.push(item);
+      }
+      return processedItems;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      } else if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      } else {
+        throw new BadRequestException(
+          'An unexpected error occurred while processing prescriptions',
+        );
+      }
+    }
+  }
+
   async createPrescription(
     createPrescriptionsDto: CreatePrescriptionItemDto[],
   ): Promise<CreatePrescriptionItemDto[]> {
@@ -294,5 +327,11 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     });
 
     return processedBatches;
+  }
+
+  async findMedicinesByName(name: string): Promise<Medicine[]> {
+    return this.medicineModel
+      .find({ name: { $regex: name, $options: 'i' } })
+      .exec();
   }
 }

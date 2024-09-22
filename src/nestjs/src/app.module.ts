@@ -11,6 +11,8 @@ import { UploadModule } from './upload/upload.module';
 import { BlogModule } from './blog/blog.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { NotificationModule } from './notifications/notification.module';
+import { MedicalServicesModule } from './medical-services/medical-services.module';
+import { MedicalTestsModule } from './medical-tests/medical-tests.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
@@ -45,7 +47,9 @@ import { NotificationModule } from './notifications/notification.module';
     MedicineModule,
     UploadModule,
     BlogModule,
-    NotificationModule
+    NotificationModule,
+    MedicalServicesModule,
+    MedicalTestsModule
   ],
 })
 export class AppModule {}

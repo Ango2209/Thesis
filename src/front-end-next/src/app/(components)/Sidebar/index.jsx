@@ -10,6 +10,10 @@ import {
   Settings,
   Users,
   Newspaper,
+  Hospital,
+  ClipboardPlus,
+  Stethoscope,
+  BriefcaseMedical,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -87,6 +91,18 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink
+          href="/examine"
+          icon={Stethoscope}
+          label="Examine"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/appointments-registration"
+          icon={ClipboardPlus}
+          label="Medical Appointment Registration"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
           href="/patients"
           icon={Users}
           label="Patient"
@@ -102,6 +118,12 @@ const Sidebar = () => {
           href="/appointments"
           icon={CalendarDays}
           label="Appointments"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/medical-services"
+          icon={BriefcaseMedical}
+          label="Services"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

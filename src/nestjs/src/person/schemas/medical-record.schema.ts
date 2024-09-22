@@ -9,6 +9,8 @@ export class MedicalRecord {
   @Prop()
   diagnosis: string;
   @Prop()
+  notes: string;
+  @Prop()
   complaint: string;
   @Prop()
   treatment: string;
@@ -19,9 +21,7 @@ export class MedicalRecord {
   @Prop({ default: [] })
   attachments: string[];
   @Prop({ type: Types.ObjectId, ref: Doctor.name })
-  doctor_objid: Types.ObjectId; // Reference to a doctor
-  @Prop({ type: Types.ObjectId, ref: Appointment.name })
-  appointment_id: Types.ObjectId; 
+  doctor: Types.ObjectId; // Reference to a doctor
 }
 
 export type PatientDocument = HydratedDocument<MedicalRecord>;

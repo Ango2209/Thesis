@@ -23,12 +23,16 @@ export class MedicalRecordDto {
   complaint: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   treatment: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   vital_signs: string;
+
+  @IsString()
+  @IsOptional()
+  notes: string;
 
   @IsArray()
   @IsOptional()
@@ -40,5 +44,5 @@ export class MedicalRecordDto {
 
   @IsMongoId()
   @IsNotEmpty()
-  doctor_objid: string;
+  doctor: string;
 }

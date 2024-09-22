@@ -89,6 +89,68 @@ export const api = createApi({
     getNotificationsByDoctorId: build.query({
       query: (doctorId) => `/notifications/doctor/${doctorId}`,
     }),
+    getAppointmentsByStatusAndDate: build.query({
+      query: ({ statuses, date, page = 1, limit = 10 }) => ({
+        url: "/appointments/filter",
+        params: { statuses, date, page, limit },
+      }),
+    }),
+    getAppointment: build.query({
+      query: (id) => `/appointments/${id}`,
+    }),
+    updateAppointmentStatus: build.mutation({
+      query: ({ id, status }) => ({
+        url: `/appointments/${id}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+    }),
+    searchMedicines: build.query({
+      query: (search) => ({
+        url: "/medicines/search",
+        params: search ? { name: search } : {},
+      }),
+    }),
+    addMedicalRecord: build.mutation({
+      query: ({ patientId, record }) => ({
+        url: `/patients/${patientId}/medical-records`,
+        method: "POST",
+        body: record,
+      }),
+    }),
+    createService: build.mutation({
+      query: (createServiceDto) => ({
+        url: "/services",
+        method: "POST",
+        body: createServiceDto,
+      }),
+    }),
+
+    getAllServices: build.query({
+      query: () => "/services",
+    }),
+
+    getServiceById: build.query({
+      query: (id) => `/services/${id}`,
+    }),
+    getServicesByStatus: build.query({
+      query: (status) => `/services/status/${status}`,
+    }),
+
+    updateService: build.mutation({
+      query: ({ id, updateServiceDto }) => ({
+        url: `/services/${id}`,
+        method: "PUT",
+        body: updateServiceDto,
+      }),
+    }),
+
+    deleteService: build.mutation({
+      query: (id) => ({
+        url: `/services/${id}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 });
 
@@ -110,5 +172,15 @@ export const {
   useAddBatchsMutation,
   useGetNotificationsByDoctorIdQuery,
   useCreatePatientMutation,
-  useGetAppointmentsDoctorIdQuery,
+  useGetAppointmentsByStatusAndDateQuery,
+  useGetAppointmentQuery,
+  useUpdateAppointmentStatusMutation,
+  useSearchMedicinesQuery,
+  useAddMedicalRecordMutation,
+  useCreateServiceMutation,
+  useGetAllServicesQuery,
+  useGetServiceByIdQuery,
+  useUpdateServiceMutation,
+  useDeleteServiceMutation,
+  useGetServicesByStatusQuery,
 } = api;

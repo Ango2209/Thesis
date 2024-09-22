@@ -83,7 +83,7 @@ export class PatientService extends BaseServices<PatientDocument> {
     // Handle prescription if provided
     if (record.prescriptions && record.prescriptions.length > 0) {
       try {
-        const processedItems = await this.medicineService.createPrescription(
+        const processedItems = await this.medicineService.prescribeMedicine(
           record.prescriptions,
         );
         record.prescriptions = processedItems; // Update with item name
@@ -125,7 +125,13 @@ export class PatientService extends BaseServices<PatientDocument> {
   }
 
   async getMedicalRecordsByPatientIdObj(id: string) {
-    const patient = await this.patientModel.findById(id).exec();
+    const patient = await this.patientModel
+      .findById(id)
+      .populate({
+        path: 'medical_records.doctor',
+        model: 'Doctor',
+      })
+      .exec();
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }

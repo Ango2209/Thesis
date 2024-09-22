@@ -12,7 +12,7 @@ import {
 import { BaseServices } from 'src/common/base.services';
 import { BaseController } from 'src/common/base.controller';
 import { MedicineService } from './medicine.services';
-import { MedicineDocument } from './schemas/medicine.schema';
+import { Medicine, MedicineDocument } from './schemas/medicine.schema';
 import { CreateMedicineDto } from './dto/createMedicineDto';
 import { AddNewBatchDto } from './dto/addNewBatchDto';
 
@@ -53,5 +53,10 @@ export class MedicineController extends BaseController<MedicineDocument> {
   @Get(':id/batches')
   async getBatchesByMedicineId(@Param('id') medicineId: string): Promise<any> {
     return this.medicineService.getBatchesByMedicineId(medicineId);
+  }
+
+  @Get('search')
+  async searchMedicines(@Query('name') name: string): Promise<Medicine[]> {
+    return this.medicineService.findMedicinesByName(name);
   }
 }
