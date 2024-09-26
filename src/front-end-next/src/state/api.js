@@ -148,6 +148,32 @@ export const api = createApi({
         method: "DELETE",
       }),
     }),
+    getMedicalTests: build.query({
+      query: ({ statuses, date, page = 1, limit = 10 }) => ({
+        url: "/medical-tests",
+        params: { statuses, date, page, limit },
+      }),
+    }),
+    getMedicalTestsByAppointmentId: build.query({
+      query: (appointmentId) => `/medical-tests/appointment/${appointmentId}`,
+    }),
+    getMedicalTestById: build.query({
+      query: (id) => `/medical-tests/${id}`,
+    }),
+    createMedicalTest: build.mutation({
+      query: (createMedicalTestDto) => ({
+        url: "/medical-tests",
+        method: "POST",
+        body: createMedicalTestDto,
+      }),
+    }),
+    updateMedicalTest: build.mutation({
+      query: ({ id, updateMedicalTestDto }) => ({
+        url: `/medical-tests/${id}`,
+        method: "PUT",
+        body: updateMedicalTestDto,
+      }),
+    }),
   }),
 });
 
@@ -180,4 +206,9 @@ export const {
   useUpdateServiceMutation,
   useDeleteServiceMutation,
   useGetServicesByStatusQuery,
+  useGetMedicalTestsQuery,
+  useGetMedicalTestByIdQuery,
+  useCreateMedicalTestMutation,
+  useUpdateMedicalTestMutation,
+  useGetMedicalTestsByAppointmentIdQuery,
 } = api;

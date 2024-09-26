@@ -133,7 +133,7 @@ export default function NewMedicalRecord({ params }) {
     return age;
   };
 
-  const [addMedicalRecord, { isLoadingCreate, isSuccess, isErrorCreate, errorCreate }] = useAddMedicalRecordMutation();
+  const [addMedicalRecord, { isLoading: isLoadingCreate, isSuccess, isError: isErrorCreate, error: errorCreate }] = useAddMedicalRecordMutation();
 
   const resetForm = () => {
     setComplaint("");

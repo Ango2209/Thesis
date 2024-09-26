@@ -46,4 +46,14 @@ export class MedicalTestController {
   ): Promise<MedicalTest> {
     return this.medicalTestService.updateMedicalTest(id, updateMedicalTestDto);
   }
+  @Get('appointment/:appointmentId')
+  async getMedicalTestsByAppointmentId(
+    @Param('appointmentId') appointmentId: string,
+  ): Promise<MedicalTest[]> {
+    const medicalTests =
+      await this.medicalTestService.getMedicalTestsByAppointmentId(
+        appointmentId,
+      );
+    return medicalTests;
+  }
 }

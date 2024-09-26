@@ -82,4 +82,15 @@ export class MedicalTestService {
     await medicalTest.save();
     return medicalTest;
   }
+
+  async getMedicalTestsByAppointmentId(
+    appointmentId: string,
+  ): Promise<MedicalTest[]> {
+    const medicalTests = await this.medicalTestModel
+      .find({ appointment: appointmentId })
+      .populate('service')
+      .exec();
+
+    return medicalTests;
+  }
 }

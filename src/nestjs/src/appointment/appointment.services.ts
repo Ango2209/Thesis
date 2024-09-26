@@ -50,6 +50,7 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       'booked',
       'waiting',
       'examining',
+      'awaiting results',
       'finished',
       'medicined',
       'cancelled',

@@ -1,37 +1,44 @@
 "use client";
-import { useGetServicesByStatusQuery } from "@/state/api";
+import { useCreateMedicalTestMutation, useGetServicesByStatusQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
-const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointmentId, doctorName, patientName }) => {
+const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointmentId, doctorName, patientName, refetch }) => {
   const [selectedService, setSelectedService] = useState("");
   const [serviceNote, setServiceNote] = useState("");
   const [initialDiagnosis, setInitialDiagnosis] = useState("");
 
   const { data: services, error, isLoading } = useGetServicesByStatusQuery("Enabled");
+  const [createMedicalTest, { isLoading: isLoadingCreate, isSuccess, isError: isErrorCreate, error: errorCreate }] = useCreateMedicalTestMutation();
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
   const handleServiceChange = (e) => {
     setSelectedService(e.target.value);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (selectedService && initialDiagnosis) {
-      const requestData = {
-        appointmentId,
-        doctorId,
-        patientId,
+      const createMedicalTestDto = {
+        appointment: appointmentId,
+        doctor: doctorId,
+        patient: patientId,
         initialDiagnosis,
-        note: serviceNote,
-        status: "AwaitingPayment",
-        serviceId: services?.find((service) => service.name === selectedService)?.id,
+        notes: serviceNote,
+        status: "awaiting payment",
+        service: services?.find((service) => service.name === selectedService)?._id,
       };
-      console.log("Submitted Data:", requestData);
+
       // Submit requestData to API
+      await createMedicalTest(createMedicalTestDto).unwrap();
+      await updateAppointmentStatus({ id: appointmentId, status: "awaiting results" }).unwrap();
+      refetch();
       setSelectedService("");
       setServiceNote("");
       setInitialDiagnosis("");
+      toast.success("Request meical test success");
       onClose();
     } else {
-      alert("Please fill in all fields.");
+      toast.error("Please fill in all fields.");
     }
   };
 
@@ -103,8 +110,8 @@ const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointme
           <button onClick={onClose} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 mr-2">
             Cancel
           </button>
-          <button onClick={handleSubmit} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-            Submit Request
+          <button onClick={handleSubmit} disabled={isLoadingCreate} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            {isLoadingCreate ? "Creating..." : "Submit Request"}
           </button>
         </div>
       </div>
