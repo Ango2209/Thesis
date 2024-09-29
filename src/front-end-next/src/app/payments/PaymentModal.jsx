@@ -1,32 +1,93 @@
 "use client";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import ReactDOMServer from "react-dom/server"; // Đảm bảo bạn đã cài thư viện này
+import InvoiceContent from "./InvoiceContent";
+import { formatDateToVietnamTime } from "@/lib/dateUtils";
 
-const AddServiceModal = ({ isOpen, onClose, refetch }) => {
-  const [paymentMethod, setPaymentMethod] = useState("cash"); // Default to cash
+const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest }) => {
+  const [paymentMethod, setPaymentMethod] = useState("cash");
 
-  // Dữ liệu cứng tạm thời cho danh sách dịch vụ, bác sĩ, bệnh nhân và lịch hẹn
-  const service = { id: 1, name: "Blood Test", price: "200,000 VND" };
-  const doctor = { id: 1, name: "Dr. John Doe" };
-  const patient = { id: 1, name: "Alice Johnson", code: "PT12345", phone: "0123456789" };
-  const appointmentDate = "2024-09-22";
+  const { service, doctor, patient, createdAt } = medicalTestDetail;
+
+  // Example invoice code
+  const invoiceCode = "INV001";
+
+  const handlePrintInvoice = () => {
+    const width = window.innerWidth * 0.8;
+    const height = window.innerHeight * 0.8;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+
+    const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
+    const invoiceContent = ReactDOMServer.renderToString(<InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} />);
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice</title>
+          <style>
+            body { margin: 0; padding: 0; }
+          </style>
+        </head>
+        <body>${invoiceContent}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+  };
+
+  const handleConfirmPrint = () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <h3 className="text-lg font-semibold">Do you want to print the invoice?</h3>
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              className="bg-gray-300 p-2 rounded"
+              onClick={() => {
+                closeToast();
+                onClose();
+              }}
+            >
+              No, thanks
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded"
+              onClick={() => {
+                closeToast();
+                onClose();
+                handlePrintInvoice();
+              }}
+            >
+              Yes, print it
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+      }
+    );
+  };
 
   const handleSubmit = async () => {
     try {
-      console.log({
-        service,
-        doctor,
-        patient,
-        appointmentDate,
-        paymentMethod,
-      });
-
-      toast.success("Medical Test created successfully!");
+      await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
+      toast.success("Payment success");
       refetch();
-      onClose();
+      //To do: create invoice
+      //....
+      //
+      handleConfirmPrint();
     } catch (err) {
-      toast.error("Failed to create Medical Test. Please try again.");
-      console.error("Error creating Medical Test:", err);
+      toast.error("Failed to payment. Please try again.");
+      console.error("Error payment service test:", err);
     }
   };
 
@@ -36,13 +97,19 @@ const AddServiceModal = ({ isOpen, onClose, refetch }) => {
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-lg p-6 mx-4 md:mx-8 relative">
         {/* Close Button */}
-        <button className="absolute top-4 right-4 text-gray-500 hover:text-gray-700" onClick={onClose}>
+        <button
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+          onClick={() => {
+            toast.dismiss();
+            onClose();
+          }}
+        >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
 
-        <h1 className="text-2xl font-semibold text-center mb-6">Invoice</h1>
+        <h1 className="text-2xl font-semibold text-center mb-6">Request Medical Test Detail</h1>
 
         <div className="flex justify-between mb-4">
           {/* Bên trái: Thông tin bệnh nhân */}
@@ -50,11 +117,11 @@ const AddServiceModal = ({ isOpen, onClose, refetch }) => {
             <h2 className="text-lg font-semibold">Patient Information</h2>
             <div className="flex justify-between py-2">
               <span className="font-medium">Name:</span>
-              <span>{patient.name}</span>
+              <span>{patient.fullname}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="font-medium">Patient Code:</span>
-              <span>{patient.code}</span>
+              <span>{patient.patient_id}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="font-medium">Phone:</span>
@@ -69,21 +136,21 @@ const AddServiceModal = ({ isOpen, onClose, refetch }) => {
             <h2 className="text-lg font-semibold">Doctor Information</h2>
             <div className="flex justify-between py-2">
               <span className="font-medium">Name:</span>
-              <span>{doctor.name}</span>
+              <span>{doctor.fullname}</span>
             </div>
             <div className="flex justify-between py-2">
               <span className="font-medium">Doctor Code:</span>
-              <span>{doctor.id}</span>
+              <span>{doctor.doctor_id}</span>
             </div>
           </div>
         </div>
 
         {/* Ngày hẹn */}
         <div className="py-4">
-          <h2 className="text-lg font-semibold">Appointment Date</h2>
+          <h2 className="text-lg font-semibold">Create At</h2>
           <div className="flex justify-between py-2">
             <span className="font-medium">Date:</span>
-            <span>{appointmentDate}</span>
+            <span>{formatDateToVietnamTime(createdAt)}</span>
           </div>
         </div>
 
@@ -125,7 +192,13 @@ const AddServiceModal = ({ isOpen, onClose, refetch }) => {
 
         {/* Action Buttons */}
         <div className="flex gap-4 mt-6">
-          <button className="w-full md:w-auto bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition" onClick={onClose}>
+          <button
+            className="w-full md:w-auto bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition"
+            onClick={() => {
+              toast.dismiss();
+              onClose();
+            }}
+          >
             Cancel
           </button>
           <button className="w-full md:w-auto bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition" onClick={handleSubmit}>
@@ -140,4 +213,4 @@ const AddServiceModal = ({ isOpen, onClose, refetch }) => {
   );
 };
 
-export default AddServiceModal;
+export default PaymentModal;

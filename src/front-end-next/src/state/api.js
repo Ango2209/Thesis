@@ -174,6 +174,17 @@ export const api = createApi({
         body: updateMedicalTestDto,
       }),
     }),
+    uploadMultipleFiles: build.mutation({
+      query: (files) => ({
+        url: "/upload/multiple",
+        method: "POST",
+        body: files,
+        // Nếu bạn cần gửi file như form-data
+        // headers: {
+        //   'Content-Type': 'multipart/form-data',
+        // },
+      }),
+    }),
   }),
 });
 
@@ -211,4 +222,5 @@ export const {
   useCreateMedicalTestMutation,
   useUpdateMedicalTestMutation,
   useGetMedicalTestsByAppointmentIdQuery,
+  useUploadMultipleFilesMutation,
 } = api;

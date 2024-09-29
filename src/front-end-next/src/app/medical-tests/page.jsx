@@ -1,30 +1,25 @@
 // pages/services.js
 "use client";
 import { useEffect, useState } from "react";
-import PaymentModal from "./PaymentModal";
-import { useGetAllServicesQuery, useGetMedicalTestsQuery, useUpdateMedicalTestMutation } from "@/state/api";
-import { DollarSign } from "lucide-react";
+import { useGetMedicalTestsQuery, useUpdateMedicalTestMutation } from "@/state/api";
+import { StepForward } from "lucide-react";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import ReactPaginate from "react-paginate";
+import { useRouter } from "next/navigation";
 
-const Payments = () => {
+const MedicalTests = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [medicalTestDetail, setMedicalTestDetail] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "awaiting payment", date: selectedDate, page: currentPage, limit: 10 });
-  console.log(medicalTestsData);
-  console.log(error);
+  const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "paid,in progress", date: selectedDate, page: currentPage, limit: 10 });
 
   const [updateMedicalTest] = useUpdateMedicalTestMutation();
 
   useEffect(() => {
     refetch();
   }, [selectedDate, currentPage, refetch]);
-
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
 
   const handleToday = () => {
     const today = new Date().toISOString().split("T")[0];
@@ -46,10 +41,15 @@ const Payments = () => {
     setCurrentPage(event.selected);
   };
 
+  const handleTest = async (id) => {
+    await updateMedicalTest({ id: id, updateMedicalTestDto: { status: "in progress" } }).unwrap();
+    router.push(`medical-tests/${id}`);
+  };
+
   return (
     <div className="px-4 pt-6">
       {/* Page Header */}
-      <h1 className="text-xl font-semibold mb-4">Payment</h1>
+      <h1 className="text-xl font-semibold mb-4">Medical Test</h1>
 
       <div className="bg-white rounded-xl border border-border p-5">
         <div className="flex justify-between items-center flex-wrap gap-4">
@@ -87,7 +87,6 @@ const Payments = () => {
                 <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Patient</th>
                 <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Service Name</th>
                 <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Created At</th>
-                <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Price</th>
                 <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Status</th>
                 <th className="text-start text-sm font-medium py-3 px-2 whitespace-nowrap">Actions</th>
               </tr>
@@ -123,7 +122,6 @@ const Payments = () => {
                     <h4 className="text-sm font-medium">{medicalTest.service.name}</h4>
                   </td>
                   <td className="text-start text-sm py-4 px-2 whitespace-nowrap">{formatDateToVietnamTime(medicalTest.createdAt)}</td>
-                  <td className="text-start text-sm py-4 px-2 whitespace-nowrap font-semibold">{medicalTest.service.price}</td>
                   <td className="text-start text-sm py-4 px-2 whitespace-nowrap">
                     <span className={`text-xs font-medium ${medicalTest.status === "Enabled" ? "text-green-600" : "text-yellow-600"}`}>{medicalTest.status}</span>
                   </td>
@@ -132,12 +130,11 @@ const Payments = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          openModal();
-                          setMedicalTestDetail(medicalTest);
+                          handleTest(medicalTest._id);
                         }}
                         className="bg-blue-500 text-white text-sm py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none flex items-center space-x-2"
                       >
-                        <DollarSign className="h-4 w-4" />
+                        <StepForward className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
@@ -161,9 +158,8 @@ const Payments = () => {
           pageLinkClassName={"px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"}
         />
       </div>
-      <PaymentModal isOpen={isModalOpen} medicalTestDetail={medicalTestDetail} updateMedicalTest={updateMedicalTest} onClose={closeModal} refetch={refetch} />
     </div>
   );
 };
 
-export default Payments;
+export default MedicalTests;

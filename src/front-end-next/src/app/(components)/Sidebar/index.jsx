@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import { CalendarDays, CircleDollarSign, GraduationCap, House, Pill, ReceiptCent, Settings, Users, Newspaper, Hospital, ClipboardPlus, Stethoscope, BriefcaseMedical } from "lucide-react";
+import { CalendarDays, CircleDollarSign, GraduationCap, House, Pill, ReceiptCent, Settings, Users, Newspaper, TestTubeDiagonal, ClipboardPlus, Stethoscope, BriefcaseMedical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -49,8 +49,9 @@ const Sidebar = () => {
         <SidebarLink href="/patients" icon={Users} label="Patient" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/doctors" icon={GraduationCap} label="Doctors" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments" icon={CalendarDays} label="Appointments" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/medical-tests" icon={TestTubeDiagonal} label="Medical Tests" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medical-services" icon={BriefcaseMedical} label="Services" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/payments" icon={CircleDollarSign} label="Invoice & Payment" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medicine" icon={Pill} label="Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/blogs" icon={Newspaper} label="Blob" isCollapsed={isSidebarCollapsed} />

@@ -47,6 +47,20 @@ export class UploadService {
     }
   }
 
+  async saveFiles(files: Express.Multer.File[]): Promise<string[]> {
+    const uploadedFileUrls: string[] = [];
+    if (!files || files.length === 0) {
+      return uploadedFileUrls;
+    }
+
+    for (const file of files) {
+      const fileUrl = await this.saveFile(file);
+      uploadedFileUrls.push(fileUrl);
+    }
+
+    return uploadedFileUrls;
+  }
+
   async saveBase64Image(base64Image: string): Promise<string> {
     const matches = base64Image.match(/^data:image\/(.+);base64,(.*)$/);
     if (!matches) {
