@@ -8,10 +8,10 @@ const ConcludeModal = ({ isOpen, onClose, refetch, setAttachments, attachments, 
   const [updateMedicalTest] = useUpdateMedicalTestMutation();
   const [conclude, setConclude] = useState("");
   const [uploadMultipleFiles, { isLoading: isLoadingUpload, error: isErrorUpload }] = useUploadMultipleFilesMutation();
-  let isLoading = false;
+  const [isLoading, setIsLoading] = useState(false);
   const handleSubmit = async () => {
-    isLoading = true;
     if (conclude && attachments) {
+      setIsLoading(true);
       try {
         const formData = new FormData();
         for (let i = 0; i < attachments.length; i++) {
@@ -21,20 +21,20 @@ const ConcludeModal = ({ isOpen, onClose, refetch, setAttachments, attachments, 
           const url = await uploadMultipleFiles(formData).unwrap();
           console.log("Uploaded URLs:", url);
           await updateMedicalTest({ id: id, updateMedicalTestDto: { attachments: url, conclude: conclude } }).unwrap();
+          setIsLoading(false);
         } catch (err) {
-          isLoading = false;
+          setIsLoading(false);
           console.error("Upload failed:", err);
         }
         onClose();
-        isLoading = false;
-        // refetch();
+
+        refetch();
       } catch (err) {
-        isLoading = false;
+        setIsLoading(false);
         toast.error("Failed to create medical test result. Please check your input and try again.");
         console.error("Failed to create medical test:", err);
       }
     } else {
-      isLoading = false;
       toast.error("Please fill conlude & post attachments!");
     }
   };
@@ -89,9 +89,6 @@ const ConcludeModal = ({ isOpen, onClose, refetch, setAttachments, attachments, 
               disabled={isLoading}
             >
               {isLoading ? "Save..." : "Save"}
-              <svg className="inline-block ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
             </button>
           </div>
         </div>

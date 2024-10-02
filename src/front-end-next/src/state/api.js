@@ -102,6 +102,12 @@ export const api = createApi({
         body: { status },
       }),
     }),
+    updateIsExamined: build.mutation({
+      query: (id) => ({
+        url: `/appointments/${id}/examined`,
+        method: "PATCH",
+      }),
+    }),
     searchMedicines: build.query({
       query: (search) => ({
         url: "/medicines/search",
@@ -223,4 +229,5 @@ export const {
   useUpdateMedicalTestMutation,
   useGetMedicalTestsByAppointmentIdQuery,
   useUploadMultipleFilesMutation,
+  useUpdateIsExaminedMutation
 } = api;

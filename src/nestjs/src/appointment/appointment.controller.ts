@@ -43,4 +43,9 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
   ) {
     return this.appointmentService.changeStatus(id, changeStatusDto);
   }
+
+  @Patch(':id/examined')
+  async markAppointmentAsExamined(@Param('id') id: string) {
+    return this.appointmentService.markAsExamined(id);
+  }
 }

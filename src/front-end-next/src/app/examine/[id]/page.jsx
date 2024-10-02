@@ -1,22 +1,30 @@
 "use client";
-import { useGetAppointmentQuery, useGetMedicalTestsByAppointmentIdQuery, useGetMedicaRecordsQuery } from "@/state/api";
+import { useGetAppointmentQuery, useGetMedicalTestsByAppointmentIdQuery, useGetMedicaRecordsQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MedicalServiceRequest from "./MedicalServiceRequest";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
+import { toast } from "react-toastify";
 
 const Detail = ({ params }) => {
+  const router = useRouter();
   const { id } = params;
-  const { data, isError, isLoading } = useGetAppointmentQuery(id);
-  const { data: mrData, isError: isError2, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
+  const { data, isError, isLoading, refetch: refetchAppointment } = useGetAppointmentQuery(id);
+  const { data: mrData, isError: isError2, refetch: refetchMr, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
   const { data: serviceRqData, error, refetch, isLoadingServiceRq, isError: isErrorServiceRq } = useGetMedicalTestsByAppointmentIdQuery(id);
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
   console.log(serviceRqData);
 
   const [expandedRow, setExpandedRow] = useState(null);
   const [expandedRowFile, setExpandedRowFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    refetchAppointment();
+    refetchMr();
+  }, [router.query?.timestamp]);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -32,6 +40,53 @@ const Detail = ({ params }) => {
 
   const toggleRowFile = (index) => {
     setExpandedRowFile(expandedRowFile === index ? null : index);
+  };
+
+  const checkAllServiceCompleted = () => {
+    if (serviceRqData?.length === 0) return true;
+    return serviceRqData?.every((item) => item.status === "completed");
+  };
+
+  const onComplete = () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <h3 className="text-lg font-semibold">Do you want to complete?</h3>
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              className="bg-gray-300 p-2 rounded"
+              onClick={() => {
+                closeToast();
+              }}
+            >
+              No, thanks
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded"
+              onClick={async () => {
+                try {
+                  closeToast();
+                  await updateAppointmentStatus({ id: id, status: "finished" }).unwrap();
+                  toast.success("Completed examine");
+                  router.push(`/examine`);
+                } catch (error) {
+                  toast.error("Oops, an error occurred. Please try again later");
+                }
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+      }
+    );
   };
 
   const getStatusClass = (status) => {
@@ -63,16 +118,6 @@ const Detail = ({ params }) => {
     }
   };
 
-  const statusMap = {
-    booked: { color: "bg-blue-100", textColor: "text-blue-800" },
-    waiting: { color: "bg-yellow-100", textColor: "text-yellow-800" },
-    examining: { color: "bg-cyan-100", textColor: "text-cyan-800" },
-    finished: { color: "bg-green-100", textColor: "text-green-800" },
-    medicined: { color: "bg-purple-100", textColor: "text-purple-800" },
-    cancelled: { color: "bg-red-100", textColor: "text-red-800" },
-    awaitingResults: { color: "bg-orange-100", textColor: "text-orange-800" },
-  };
-
   return (
     <main className="bg-gray-100 min-h-screen p-6">
       <div className="container mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -85,7 +130,12 @@ const Detail = ({ params }) => {
             </Link>
           </div>
           <h3 className="text-lg font-semibold">Examination details</h3>
-          <button type="button" className="bg-gray-300 text-gray-800 px-4 py-2 rounded disabled:opacity-50" disabled>
+          <button
+            type="button"
+            className={`${!data?.isExamined || data?.status === "finished" ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+            disabled={!data?.isExamined}
+            onClick={onComplete}
+          >
             Complete
           </button>
         </div>
@@ -126,10 +176,20 @@ const Detail = ({ params }) => {
           <div className="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
             <h3 className="text-lg font-semibold">Medical Service Request</h3>
             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-              <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
+              <button
+                onClick={openModal}
+                type="button"
+                className={`${data?.isExamined ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+                disabled={data?.isExamined}
+              >
                 Create a medical service request
               </button>
-              <Link className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none" href={`/examine/${id}/result`}>
+              <Link
+                href={`/examine/${id}/result`}
+                className={`${
+                  checkAllServiceCompleted() && !data?.isExamined ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed pointer-events-none"
+                } text-white px-4 py-2 rounded focus:outline-none`}
+              >
                 Examination results
               </Link>
             </div>
@@ -352,6 +412,7 @@ const Detail = ({ params }) => {
           patientName={data?.patient?.fullname}
           appointmentId={id}
           refetch={refetch}
+          updateAppointmentStatus={updateAppointmentStatus}
         />
       </div>
     </main>

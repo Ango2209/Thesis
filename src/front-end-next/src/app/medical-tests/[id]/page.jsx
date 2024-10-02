@@ -1,21 +1,67 @@
 "use client";
-import { useGetAppointmentQuery, useGetMedicalTestByIdQuery, useGetMedicalTestsByAppointmentIdQuery, useGetMedicaRecordsQuery } from "@/state/api";
+import { useGetMedicalTestByIdQuery, useUpdateMedicalTestMutation } from "@/state/api";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import ConcludeModal from "./ConcludeModal";
+import { Pencil } from "lucide-react";
+import { toast } from "react-toastify";
 
 const Detail = ({ params }) => {
+  const router = useRouter();
   const { id } = params;
-  const { data, isError, isLoading } = useGetMedicalTestByIdQuery(id);
+  const { data, isError, isLoading, refetch } = useGetMedicalTestByIdQuery(id);
   const [attachments, setAttachments] = useState(null);
 
   const [expandedRow, setExpandedRow] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [updateMedicalTest] = useUpdateMedicalTestMutation();
 
   const openModal = () => {
     setIsModalOpen(true);
+  };
+
+  const onComplete = async () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <h3 className="text-lg font-semibold">Do you want to complete?</h3>
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              className="bg-gray-300 p-2 rounded"
+              onClick={() => {
+                closeToast();
+              }}
+            >
+              No, thanks
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded"
+              onClick={async () => {
+                try {
+                  closeToast();
+                  await updateMedicalTest({ id: id, updateMedicalTestDto: { status: "completed" } }).unwrap();
+                  toast.success("Completed medical tests");
+                  router.push(`/medical-tests`);
+                } catch (error) {
+                  toast.error("Oops, an error occurred. Please try again later");
+                }
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+      }
+    );
   };
 
   const closeModal = () => {
@@ -52,16 +98,6 @@ const Detail = ({ params }) => {
     }
   };
 
-  const statusMap = {
-    booked: { color: "bg-blue-100", textColor: "text-blue-800" },
-    waiting: { color: "bg-yellow-100", textColor: "text-yellow-800" },
-    examining: { color: "bg-cyan-100", textColor: "text-cyan-800" },
-    finished: { color: "bg-green-100", textColor: "text-green-800" },
-    medicined: { color: "bg-purple-100", textColor: "text-purple-800" },
-    cancelled: { color: "bg-red-100", textColor: "text-red-800" },
-    awaitingResults: { color: "bg-orange-100", textColor: "text-orange-800" },
-  };
-
   return (
     <main className="bg-gray-100 min-h-screen p-6">
       <div className="container mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -74,7 +110,12 @@ const Detail = ({ params }) => {
             </Link>
           </div>
           <h3 className="text-lg font-semibold">Medical Test</h3>
-          <button type="button" className="bg-gray-300 text-gray-800 px-4 py-2 rounded disabled:opacity-50" disabled>
+          <button
+            type="button"
+            className={`${!data?.conclude ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+            disabled={!data?.conclude}
+            onClick={onComplete}
+          >
             Complete
           </button>
         </div>
@@ -107,7 +148,12 @@ const Detail = ({ params }) => {
           <div className="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
             <h3 className="text-lg font-semibold mb-2">Medical Test Request Information</h3>
 
-            <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
+            <button
+              onClick={openModal}
+              type="button"
+              className={`${data?.conclude ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+              disabled={data?.conclude}
+            >
               Create Result
             </button>
           </div>
@@ -163,6 +209,7 @@ const Detail = ({ params }) => {
                 <tr>
                   <th className="py-2 px-4 border-b text-left">Conclude</th>
                   <th className="py-2 px-4 border-b text-center">Attachments</th>
+                  <th className="py-2 px-4 border-b text-center w-20">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -174,6 +221,11 @@ const Detail = ({ params }) => {
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18m-7 5h7" />
                         </svg>
+                      </button>
+                    </td>
+                    <td className="py-2 px-4 border-b text-center w-20">
+                      <button type="button" onClick={() => setExpandedRow(!expandedRow)} className="text-gray-500 hover:text-gray-700">
+                        <Pencil />
                       </button>
                     </td>
                   </tr>
@@ -215,7 +267,7 @@ const Detail = ({ params }) => {
             </table>
           </div>
         </div>
-        <ConcludeModal id={id} isOpen={isModalOpen} onClose={closeModal} setAttachments={setAttachments} attachments={attachments} />
+        <ConcludeModal id={id} isOpen={isModalOpen} onClose={closeModal} setAttachments={setAttachments} attachments={attachments} refetch={refetch} />
       </div>
     </main>
   );

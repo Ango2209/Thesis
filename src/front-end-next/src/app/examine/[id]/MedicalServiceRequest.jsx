@@ -1,16 +1,15 @@
 "use client";
-import { useCreateMedicalTestMutation, useGetServicesByStatusQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
+import { useCreateMedicalTestMutation, useGetServicesByStatusQuery } from "@/state/api";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
-const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointmentId, doctorName, patientName, refetch }) => {
+const MedicalServiceRequest = ({ isOpen, onClose, doctorId, patientId, appointmentId, doctorName, patientName, refetch, updateAppointmentStatus }) => {
   const [selectedService, setSelectedService] = useState("");
   const [serviceNote, setServiceNote] = useState("");
   const [initialDiagnosis, setInitialDiagnosis] = useState("");
 
   const { data: services, error, isLoading } = useGetServicesByStatusQuery("Enabled");
   const [createMedicalTest, { isLoading: isLoadingCreate, isSuccess, isError: isErrorCreate, error: errorCreate }] = useCreateMedicalTestMutation();
-  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
   const handleServiceChange = (e) => {
     setSelectedService(e.target.value);
