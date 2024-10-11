@@ -11,7 +11,7 @@ const AppointmentList = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, refetch, isLoading, isError } = useGetAppointmentsByStatusAndDateQuery({
-    statuses: "waiting,examining",
+    statuses: "waiting,examining,awaiting results",
     date: selectedDate,
     page: currentPage,
     limit: 10,
@@ -117,7 +117,7 @@ const AppointmentList = () => {
                       <StepForward />
                     </button>
                   ) : (
-                    <button onClick={() => handleContinue(appointment._id)} className="text-red-500 hover:underline ">    
+                    <button onClick={() => handleContinue(appointment._id)} className="text-red-500 hover:underline ">
                       <ChartLine />
                     </button>
                   )}

@@ -105,6 +105,12 @@ export const api = createApi({
         body: { status },
       }),
     }),
+    updateIsExamined: build.mutation({
+      query: (id) => ({
+        url: `/appointments/${id}/examined`,
+        method: "PATCH",
+      }),
+    }),
     searchMedicines: build.query({
       query: (search) => ({
         url: "/medicines/search",
@@ -151,6 +157,43 @@ export const api = createApi({
         method: "DELETE",
       }),
     }),
+    getMedicalTests: build.query({
+      query: ({ statuses, date, page = 1, limit = 10 }) => ({
+        url: "/medical-tests",
+        params: { statuses, date, page, limit },
+      }),
+    }),
+    getMedicalTestsByAppointmentId: build.query({
+      query: (appointmentId) => `/medical-tests/appointment/${appointmentId}`,
+    }),
+    getMedicalTestById: build.query({
+      query: (id) => `/medical-tests/${id}`,
+    }),
+    createMedicalTest: build.mutation({
+      query: (createMedicalTestDto) => ({
+        url: "/medical-tests",
+        method: "POST",
+        body: createMedicalTestDto,
+      }),
+    }),
+    updateMedicalTest: build.mutation({
+      query: ({ id, updateMedicalTestDto }) => ({
+        url: `/medical-tests/${id}`,
+        method: "PUT",
+        body: updateMedicalTestDto,
+      }),
+    }),
+    uploadMultipleFiles: build.mutation({
+      query: (files) => ({
+        url: "/upload/multiple",
+        method: "POST",
+        body: files,
+        // Nếu bạn cần gửi file như form-data
+        // headers: {
+        //   'Content-Type': 'multipart/form-data',
+        // },
+      }),
+    }),
   }),
 });
 
@@ -183,4 +226,11 @@ export const {
   useUpdateServiceMutation,
   useDeleteServiceMutation,
   useGetServicesByStatusQuery,
+  useGetMedicalTestsQuery,
+  useGetMedicalTestByIdQuery,
+  useCreateMedicalTestMutation,
+  useUpdateMedicalTestMutation,
+  useGetMedicalTestsByAppointmentIdQuery,
+  useUploadMultipleFilesMutation,
+  useUpdateIsExaminedMutation
 } = api;

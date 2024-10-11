@@ -1,5 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UploadService } from './upload.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @Controller('upload')
 export class UploadController {
@@ -11,5 +18,13 @@ export class UploadController {
       this.uploadService.saveBase64Image(image),
     );
     return Promise.all(uploadPromises);
+  }
+
+  @Post('multiple')
+  @UseInterceptors(FilesInterceptor('files'))
+  async uploadMultipleFiles(
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<string[]> {
+    return await this.uploadService.saveFiles(files);
   }
 }

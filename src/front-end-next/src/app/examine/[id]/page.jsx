@@ -1,20 +1,30 @@
 "use client";
-import { useGetAppointmentQuery, useGetMedicaRecordsQuery } from "@/state/api";
+import { useGetAppointmentQuery, useGetMedicalTestsByAppointmentIdQuery, useGetMedicaRecordsQuery, useUpdateAppointmentStatusMutation } from "@/state/api";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import MedicalServiceRequest from "./MedicalServiceRequest";
+import { formatDateToVietnamTime } from "@/lib/dateUtils";
+import { toast } from "react-toastify";
 
 const Detail = ({ params }) => {
+  const router = useRouter();
   const { id } = params;
-  const { data, isError, isLoading } = useGetAppointmentQuery(id);
-  const { data: mrData, isError: isError2, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
+  const { data, isError, isLoading, refetch: refetchAppointment } = useGetAppointmentQuery(id);
+  const { data: mrData, isError: isError2, refetch: refetchMr, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
+  const { data: serviceRqData, error, refetch, isLoadingServiceRq, isError: isErrorServiceRq } = useGetMedicalTestsByAppointmentIdQuery(id);
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
-  const serviceRqData = [];
+  console.log(serviceRqData);
 
   const [expandedRow, setExpandedRow] = useState(null);
   const [expandedRowFile, setExpandedRowFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    refetchAppointment();
+    refetchMr();
+  }, [router.query?.timestamp]);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -32,7 +42,82 @@ const Detail = ({ params }) => {
     setExpandedRowFile(expandedRowFile === index ? null : index);
   };
 
-  console.log(mrData);
+  const checkAllServiceCompleted = () => {
+    if (serviceRqData?.length === 0) return true;
+    return serviceRqData?.every((item) => item.status === "completed");
+  };
+
+  const onComplete = () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <h3 className="text-lg font-semibold">Do you want to complete?</h3>
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              className="bg-gray-300 p-2 rounded"
+              onClick={() => {
+                closeToast();
+              }}
+            >
+              No, thanks
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded"
+              onClick={async () => {
+                try {
+                  closeToast();
+                  await updateAppointmentStatus({ id: id, status: "finished" }).unwrap();
+                  toast.success("Completed examine");
+                  router.push(`/examine`);
+                } catch (error) {
+                  toast.error("Oops, an error occurred. Please try again later");
+                }
+              }}
+            >
+              Yes
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+      }
+    );
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "awaiting payment":
+        return "bg-orange-100 text-orange-800";
+      case "paid":
+        return "bg-green-100 text-green-800";
+      case "in progress":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-200 text-green-800";
+      case "booked":
+        return "bg-blue-100 text-blue-800";
+      case "waiting":
+        return "bg-yellow-100 text-yellow-800";
+      case "examining":
+        return "bg-cyan-100 text-cyan-800";
+      case "awaiting results":
+        return "bg-orange-100 text-orange-800";
+      case "finished":
+        return "bg-green-100 text-green-800";
+      case "medicined":
+        return "bg-purple-100 text-purple-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "";
+    }
+  };
+
   return (
     <main className="bg-gray-100 min-h-screen p-6">
       <div className="container mx-auto bg-white p-6 rounded-lg shadow-lg mt-6">
@@ -45,7 +130,12 @@ const Detail = ({ params }) => {
             </Link>
           </div>
           <h3 className="text-lg font-semibold">Examination details</h3>
-          <button type="button" className="bg-gray-300 text-gray-800 px-4 py-2 rounded disabled:opacity-50" disabled>
+          <button
+            type="button"
+            className={`${!data?.isExamined || data?.status === "finished" ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+            disabled={!data?.isExamined}
+            onClick={onComplete}
+          >
             Complete
           </button>
         </div>
@@ -76,7 +166,7 @@ const Detail = ({ params }) => {
               <div className="bg-white border border-gray-300 p-2 rounded">{data?.specialized}</div>
               <div className="font-semibold bg-gray-100 border border-gray-300 p-2 rounded">Status:</div>
               <div className="bg-white border border-gray-300 p-2 rounded">
-                <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-sm">In Consultation</span>
+                <span className={`${getStatusClass(data?.status)} px-2 py-1 rounded-full text-sm`}>{data?.status.charAt(0).toUpperCase() + data?.status.slice(1)}</span>
               </div>
             </div>
           </div>
@@ -86,10 +176,20 @@ const Detail = ({ params }) => {
           <div className="flex flex-col md:flex-row items-center justify-between mb-4 space-y-4 md:space-y-0 md:space-x-4">
             <h3 className="text-lg font-semibold">Medical Service Request</h3>
             <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-              <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none">
+              <button
+                onClick={openModal}
+                type="button"
+                className={`${data?.isExamined ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} text-white px-4 py-2 rounded focus:outline-none`}
+                disabled={data?.isExamined}
+              >
                 Create a medical service request
               </button>
-              <Link className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 focus:outline-none" href={`/examine/${id}/result`}>
+              <Link
+                href={`/examine/${id}/result`}
+                className={`${
+                  checkAllServiceCompleted() && !data?.isExamined ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed pointer-events-none"
+                } text-white px-4 py-2 rounded focus:outline-none`}
+              >
                 Examination results
               </Link>
             </div>
@@ -99,7 +199,7 @@ const Detail = ({ params }) => {
             <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="py-2 px-4 border-b text-left">#</th>
+                  <th className="py-2 px-4 border-b text-left">Create at</th>
                   <th className="py-2 px-4 border-b text-left">Service Name</th>
                   <th className="py-2 px-4 border-b text-left">Price</th>
                   <th className="py-2 px-4 border-b text-left">Initial Diagnosis</th>
@@ -110,32 +210,39 @@ const Detail = ({ params }) => {
                 </tr>
               </thead>
               <tbody>
-                {serviceRqData.length <= 0 && (
+                {serviceRqData?.length <= 0 && (
                   <tr>
                     <td colSpan="8" className="text-center py-4">
                       No requests have been created yet
                     </td>
                   </tr>
                 )}
+                {isLoadingServiceRq && (
+                  <tr>
+                    <td colSpan="8" className="text-center py-4">
+                      Loading...
+                    </td>
+                  </tr>
+                )}
+                {isErrorServiceRq && (
+                  <tr>
+                    <td colSpan="8" className="text-center py-4">
+                      Error loading data
+                    </td>
+                  </tr>
+                )}
                 {serviceRqData?.map((data, index) => (
                   <>
                     <tr key={index}>
-                      <td className="py-2 px-4 border-b">{data.record_date}</td>
+                      <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data.createdAt)}</td>
+                      <td className="py-2 px-4 border-b">{data.service?.name}</td>
+                      <td className="py-2 px-4 border-b">{data.service?.price}</td>
+                      <td className="py-2 px-4 border-b">{data.initialDiagnosis}</td>
+                      <td className="py-2 px-4 border-b ">{data.notes}</td>
                       <td className="py-2 px-4 border-b">
-                        <div className="flex items-center">
-                          <div>
-                            <div className="font-semibold">{data.doctor.fullname}</div>
-                            <a href={`tel:${data.doctor.phone}`} className="text-blue-500">
-                              {data.doctor.phone}
-                            </a>
-                          </div>
-                        </div>
+                        <span className={`inline-block px-2 py-1 rounded-full text-sm ${getStatusClass(data.status)}`}>{data?.status.charAt(0).toUpperCase() + data?.status.slice(1)}</span>
                       </td>
-                      <td className="py-2 px-4 border-b">{data.diagnosis}</td>
-                      <td className="py-2 px-4 border-b">{data?.notes}</td>
-                      <td className="py-2 px-4 border-b text-center">notes</td>
-                      <td className="py-2 px-4 border-b text-center">bbbbb</td>
-                      <td className="py-2 px-4 border-b">aaaaaa</td>
+                      <td className="py-2 px-4 border-b">{data.conclude ? data.conclude : <span className="text-gray-500">No conclusion yet</span>}</td>
                       <td className="py-2 px-4 border-b text-center">
                         <button type="button" onClick={() => toggleRowFile(index)} className="text-gray-500 hover:text-gray-700">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,41 +257,28 @@ const Detail = ({ params }) => {
                           <div className="p-4 bg-gray-50 rounded-lg">
                             <h4 className="text-lg font-semibold mb-2">Attachments</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                              {/* Dữ liệu set cứng */}
-                              <div className="bg-white border p-4 rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between">
-                                  {/* Tên file */}
-                                  <p className="text-gray-700 font-medium">X-ray Report.pdf</p>
+                              {data.attachments?.length > 0 ? (
+                                data.attachments.map((attachment, attachmentIndex) => {
+                                  const fileName = attachment.split("/").pop();
+                                  const fileFormat = fileName.split(".").pop().toUpperCase();
 
-                                  {/* Định dạng file */}
-                                  <span className="ml-2 text-gray-500 text-sm uppercase">PDF</span>
-                                </div>
+                                  return (
+                                    <div key={attachmentIndex} className="bg-white border p-4 rounded-lg shadow-sm">
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-gray-700 font-medium">{fileName}</p>
 
-                                {/* Nút xem hoặc tải file */}
-                                <a href="/path/to/xray-report.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
-                                  View / Download
-                                </a>
-                              </div>
+                                        <span className="ml-2 text-gray-500 text-sm uppercase">{fileFormat}</span>
+                                      </div>
 
-                              <div className="bg-white border p-4 rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between">
-                                  <p className="text-gray-700 font-medium">Blood Test Results.pdf</p>
-                                  <span className="ml-2 text-gray-500 text-sm uppercase">PDF</span>
-                                </div>
-                                <a href="/path/to/blood-test.pdf" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
-                                  View / Download
-                                </a>
-                              </div>
-
-                              <div className="bg-white border p-4 rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between">
-                                  <p className="text-gray-700 font-medium">MRI Scan.jpeg</p>
-                                  <span className="ml-2 text-gray-500 text-sm uppercase">JPEG</span>
-                                </div>
-                                <a href="/path/to/mri-scan.jpeg" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
-                                  View / Download
-                                </a>
-                              </div>
+                                      <a href={attachment} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline mt-2 block">
+                                        View / Download
+                                      </a>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <p className="text-gray-500">No attachments available.</p>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -233,7 +327,7 @@ const Detail = ({ params }) => {
                 {mrData?.map((data, index) => (
                   <>
                     <tr key={index}>
-                      <td className="py-2 px-4 border-b">{data.record_date}</td>
+                      <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data.record_date)}</td>
                       <td className="py-2 px-4 border-b">
                         <div className="flex items-center">
                           <div>
@@ -317,6 +411,8 @@ const Detail = ({ params }) => {
           patientId={data?.patient?._id}
           patientName={data?.patient?.fullname}
           appointmentId={id}
+          refetch={refetch}
+          updateAppointmentStatus={updateAppointmentStatus}
         />
       </div>
     </main>

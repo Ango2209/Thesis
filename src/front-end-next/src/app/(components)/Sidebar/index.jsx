@@ -10,7 +10,7 @@ import {
   Settings,
   Users,
   Newspaper,
-  Hospital,
+  TestTubeDiagonal,
   ClipboardPlus,
   Stethoscope,
   BriefcaseMedical,
@@ -118,6 +118,12 @@ const Sidebar = () => {
           href="/appointments"
           icon={CalendarDays}
           label="Appointments"
+          isCollapsed={isSidebarCollapsed}
+        />
+        <SidebarLink
+          href="/medical-tests"
+          icon={TestTubeDiagonal}
+          label="Medical Tests"
           isCollapsed={isSidebarCollapsed}
         />
         <SidebarLink

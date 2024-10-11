@@ -3,7 +3,7 @@ import { useState } from "react";
 import MedicineTable from "./MedicineTable";
 import Attachments from "./Attachments";
 import Link from "next/link";
-import { useAddMedicalRecordMutation, useGetAppointmentQuery, useSearchMedicinesQuery } from "@/state/api";
+import { useAddMedicalRecordMutation, useGetAllServicesQuery, useGetAppointmentQuery, useGetMedicalTestsByAppointmentIdQuery, useSearchMedicinesQuery, useUpdateIsExaminedMutation } from "@/state/api";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
@@ -16,14 +16,9 @@ export default function NewMedicalRecord({ params }) {
   const [notes, setNotes] = useState("");
   const [diagnosis, setDiagnosis] = useState("");
   const [vitalSigns, setVitalSigns] = useState("");
-  const [treatments, setTreatments] = useState({
-    rootCanal: false,
-    teethWhitening: false,
-    dentalImplants: false,
-    dentalCrowns: false,
-    dentalBridges: false,
-    dentalVeneers: false,
-  });
+  const { data: servicesData } = useGetAllServicesQuery();
+  const { data: servicesRqData, refetch, isLoadingServiceRq, isError: isErrorServiceRq } = useGetMedicalTestsByAppointmentIdQuery(id);
+
   const [medicines, setMedicines] = useState([]);
   const [newMedicine, setNewMedicine] = useState({
     medicineId: "",
@@ -133,7 +128,8 @@ export default function NewMedicalRecord({ params }) {
     return age;
   };
 
-  const [addMedicalRecord, { isLoadingCreate, isSuccess, isErrorCreate, errorCreate }] = useAddMedicalRecordMutation();
+  const [addMedicalRecord, { isLoading: isLoadingCreate, isSuccess, isError: isErrorCreate, error: errorCreate }] = useAddMedicalRecordMutation();
+  const [updateIsExamined] = useUpdateIsExaminedMutation();
 
   const resetForm = () => {
     setComplaint("");
@@ -166,16 +162,18 @@ export default function NewMedicalRecord({ params }) {
         notes,
         diagnosis,
         vital_signs: vitalSigns,
-        treatments: "",
+        treatment: Array.from(new Set(servicesRqData.map((medicalTest) => medicalTest.service.name))).join(", "),
         prescriptions: medicines,
-        attachments: [],
+        attachments: servicesRqData.flatMap((medicalTest) => medicalTest.attachments),
       };
 
       await addMedicalRecord({ patientId: data?.patient?._id, record: formData }).unwrap();
+      await updateIsExamined(id).unwrap();
       toast.success("Medical record created successfully!");
       //change status
 
-      router.push(`/examine/${id}`);
+      // router.push(`/examine/${id}`);
+      router.push(`/examine/${id}?timestamp=${Date.now()}`);
     } catch (error) {
       toast.error("Failed to create medical record. Please check your input and try again.");
       console.error("Failed to medical record", error);
@@ -272,18 +270,17 @@ export default function NewMedicalRecord({ params }) {
             <div>
               <label className="text-gray-700 text-sm font-medium">Treatment</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-2">
-                {Object.keys(treatments).map((treatment) => (
-                  <div key={treatment} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      name={treatment}
-                      checked={treatments[treatment]}
-                      onChange={handleCheckboxChange}
-                      className="h-4 w-4 text-subMain border-gray-300 rounded focus:ring-subMain"
-                    />
-                    <label className="text-gray-700 text-sm">{treatment.replace(/([A-Z])/g, " $1").trim()}</label>
-                  </div>
-                ))}
+                {servicesData?.map((service) => {
+                  // Check service test
+                  const isChecked = servicesRqData?.some((req) => req.service._id === service._id);
+
+                  return (
+                    <div key={service._id} className="flex items-center space-x-2 opacity-50">
+                      <input type="checkbox" name={service.name} checked={isChecked} disabled className="h-4 w-4 text-subMain border-gray-300 rounded focus:ring-subMain cursor-not-allowed" />
+                      <label className="text-gray-800 text-sm font-bold">{service.name}</label>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -422,7 +419,7 @@ export default function NewMedicalRecord({ params }) {
             {/* Medicine */}
             <MedicineTable medicineList={medicines} setMedicineList={setMedicines} />
 
-            <Attachments setSelectedFiles={setAttachment} />
+            {/* <Attachments setSelectedFiles={setAttachment} /> */}
           </div>
           <button
             onClick={handleSubmit}

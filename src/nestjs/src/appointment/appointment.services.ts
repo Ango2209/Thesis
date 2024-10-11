@@ -50,6 +50,7 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       'booked',
       'waiting',
       'examining',
+      'awaiting results',
       'finished',
       'medicined',
       'cancelled',
@@ -91,6 +92,20 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       .exec();
 
     return { appointments, total, totalPages };
+  }
+
+  async markAsExamined(id: string): Promise<Appointment> {
+    const updatedAppointment = await this.appointmentModel.findByIdAndUpdate(
+      id,
+      { isExamined: true },
+      { new: true },
+    );
+
+    if (!updatedAppointment) {
+      throw new NotFoundException(`Appointment with ID ${id} not found`);
+    }
+
+    return updatedAppointment;
   }
 
   async findOne(id: string): Promise<AppointmentDocument> {

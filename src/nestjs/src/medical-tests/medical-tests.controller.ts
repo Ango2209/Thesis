@@ -26,12 +26,17 @@ export class MedicalTestController {
 
   @Get()
   async getMedicalTests(
-    @Query('statuses') statuses: string[],
+    @Query('statuses') statuses: string,
     @Query('date') date: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
-  ): Promise<MedicalTest[]> {
-    return this.medicalTestService.getMedicalTests(statuses, date, page, limit);
+  ): Promise<{
+    medicalTests: MedicalTest[];
+    total: number;
+    totalPages: number;
+  }> {
+    const statusArray = statuses ? statuses.split(',') : [];
+    return this.medicalTestService.getMedicalTests(statusArray, date, page, limit);
   }
 
   @Get(':id')
@@ -45,5 +50,15 @@ export class MedicalTestController {
     @Body() updateMedicalTestDto: UpdateMedicalTestDto,
   ): Promise<MedicalTest> {
     return this.medicalTestService.updateMedicalTest(id, updateMedicalTestDto);
+  }
+  @Get('appointment/:appointmentId')
+  async getMedicalTestsByAppointmentId(
+    @Param('appointmentId') appointmentId: string,
+  ): Promise<MedicalTest[]> {
+    const medicalTests =
+      await this.medicalTestService.getMedicalTestsByAppointmentId(
+        appointmentId,
+      );
+    return medicalTests;
   }
 }

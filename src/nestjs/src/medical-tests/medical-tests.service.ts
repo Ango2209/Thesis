@@ -31,7 +31,11 @@ export class MedicalTestService {
     date: string,
     page: number,
     limit: number,
-  ): Promise<MedicalTest[]> {
+  ): Promise<{
+    medicalTests: MedicalTest[];
+    total: number;
+    totalPages: number;
+  }> {
     const query: any = {};
 
     if (statuses && statuses.length > 0) {
@@ -47,23 +51,35 @@ export class MedicalTestService {
 
     const skip = (page - 1) * limit;
 
+    // total medicalTests
+    const total = await this.medicalTestModel.countDocuments(query).exec();
+    const totalPages = Math.ceil(total / 10);
+
     const medicalTests = await this.medicalTestModel
       .find(query)
+      .populate('service')
+      .populate('doctor')
+      .populate({
+        path: 'patient',
+        select: '-medical_records',
+      })
       .skip(skip)
       .limit(limit)
       .exec();
 
-    if (!medicalTests.length) {
-      throw new NotFoundException(
-        'No medical tests found for the given criteria.',
-      );
-    }
-
-    return medicalTests;
+    return { medicalTests, total, totalPages };
   }
 
   async getMedicalTestById(id: string): Promise<MedicalTest> {
-    const medicalTest = await this.medicalTestModel.findById(id).exec();
+    const medicalTest = await this.medicalTestModel
+      .findById(id)
+      .populate('service')
+      .populate('doctor')
+      .populate({
+        path: 'patient',
+        select: '-medical_records',
+      })
+      .exec();
     if (!medicalTest) {
       throw new NotFoundException(`MedicalTest with ID ${id} not found`);
     }
@@ -81,5 +97,16 @@ export class MedicalTestService {
     Object.assign(medicalTest, updateMedicalTestDto);
     await medicalTest.save();
     return medicalTest;
+  }
+
+  async getMedicalTestsByAppointmentId(
+    appointmentId: string,
+  ): Promise<MedicalTest[]> {
+    const medicalTests = await this.medicalTestModel
+      .find({ appointment: appointmentId })
+      .populate('service')
+      .exec();
+
+    return medicalTests;
   }
 }
