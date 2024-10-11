@@ -3,11 +3,18 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://localhost:4000",
-    baseUrl: "http://35.225.140.192:3002",
+    baseUrl: "http://localhost:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
   endpoints: (build) => ({
+    createUser: build.mutation({
+      query: (patient) => ({
+        url: "/patients",
+        method: "POST",
+        body: patient,
+      }),
+    }),
     getDoctors: build.query({
       query: () => "/doctors",
     }),
@@ -55,4 +62,5 @@ export const {
   useAddNotificationMutation,
   useGetAppointmentsPatientIdQuery,
   useGetMedicalRecordsQuery,
+  useCreateUserMutation,
 } = api;

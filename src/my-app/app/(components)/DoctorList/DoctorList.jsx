@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 function DoctorList({ doctorList, heading = "Popular Doctors" }) {
   const router = useRouter();
-
+  console.log("Doctor list", doctorList);
   return (
     <div className="mb-10 px-24 ">
       <h2 className="font-bold text-xl">{heading}</h2>
