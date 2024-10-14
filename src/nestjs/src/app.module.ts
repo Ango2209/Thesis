@@ -13,6 +13,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { NotificationModule } from './notifications/notification.module';
 import { MedicalServicesModule } from './medical-services/medical-services.module';
 import { MedicalTestsModule } from './medical-tests/medical-tests.module';
+import { BlockchainModule } from './blockchain/blockchain.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
@@ -49,7 +50,8 @@ import { MedicalTestsModule } from './medical-tests/medical-tests.module';
     BlogModule,
     NotificationModule,
     MedicalServicesModule,
-    MedicalTestsModule
+    MedicalTestsModule,
+    BlockchainModule
   ],
 })
 export class AppModule {}
