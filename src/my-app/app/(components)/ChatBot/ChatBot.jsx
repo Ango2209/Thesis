@@ -29,8 +29,7 @@ const ChatBot = () => {
           question: input,
         }
       );
-
-      setMessages((prev) => [...prev, { sender: "bot", text: response.text }]);
+      setMessages((prev) => [...prev, { sender: "bot", text: response.data.text }]);
     } catch (error) {
       console.error("Error fetching response:", error);
       setMessages((prev) => [
