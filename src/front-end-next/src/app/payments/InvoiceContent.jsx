@@ -1,7 +1,7 @@
 // InvoiceContent.jsx
 import React from "react";
 
-const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service }) => {
+const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service, appointmentDate }) => {
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Medical Invoice</h2>

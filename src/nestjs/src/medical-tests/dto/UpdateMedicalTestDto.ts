@@ -16,7 +16,14 @@ export class UpdateMedicalTestDto extends PartialType(MedicalTest) {
   conclude?: string;
 
   @IsOptional()
-  @IsEnum(['awaiting payment', 'paid', 'in progress', 'completed', 'cancelled'])
+  @IsEnum([
+    'awaiting payment',
+    'awaiting transfer',
+    'paid',
+    'in progress',
+    'completed',
+    'cancelled',
+  ])
   status?: string;
 
   @IsOptional()

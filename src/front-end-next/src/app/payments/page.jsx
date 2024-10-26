@@ -6,6 +6,7 @@ import { useGetAllServicesQuery, useGetMedicalTestsQuery, useUpdateMedicalTestMu
 import { DollarSign } from "lucide-react";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import ReactPaginate from "react-paginate";
+import QrCodeModal from "./QrCodeModal";
 
 const Payments = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -13,9 +14,8 @@ const Payments = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "awaiting payment", date: selectedDate, page: currentPage, limit: 10 });
-  console.log(medicalTestsData);
-  console.log(error);
+  const [isOpenQrCodeModal, setIsOpenQrCodeModal] = useState(false);
+  const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "awaiting payment,awaiting transfer", date: selectedDate, page: currentPage, limit: 10 });
 
   const [updateMedicalTest] = useUpdateMedicalTestMutation();
 
@@ -25,6 +25,8 @@ const Payments = () => {
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  const openQrCodeModal = () => setIsOpenQrCodeModal(true);
+  const closeQrCodeModal = () => setIsOpenQrCodeModal(false);
 
   const handleToday = () => {
     const today = new Date().toISOString().split("T")[0];
@@ -161,7 +163,11 @@ const Payments = () => {
           pageLinkClassName={"px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"}
         />
       </div>
-      <PaymentModal isOpen={isModalOpen} medicalTestDetail={medicalTestDetail} updateMedicalTest={updateMedicalTest} onClose={closeModal} refetch={refetch} />
+      <PaymentModal isOpen={isModalOpen} openQrCodeModal={openQrCodeModal} medicalTestDetail={medicalTestDetail} updateMedicalTest={updateMedicalTest} onClose={closeModal} refetch={refetch} />
+      {
+        isOpenQrCodeModal ? <QrCodeModal isOpen={isOpenQrCodeModal} medicalTestDetail={medicalTestDetail} updateMedicalTest={updateMedicalTest} onClose={closeQrCodeModal} refetch={refetch} /> : ""
+      }
+      
     </div>
   );
 };

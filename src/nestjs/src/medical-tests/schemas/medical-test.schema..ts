@@ -22,7 +22,7 @@ export class MedicalTest {
   patient: Patient;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' })
   appointment: Appointment;
-  @Prop({ type: String, default: 'Awaiting Payment' })
+  @Prop({ type: String, default: 'awaiting payment' })
   status: string;
   @Prop({ type: String })
   initialDiagnosis: string;
