@@ -4,14 +4,66 @@ import { CalendarIcon, ClockIcon } from "lucide-react";
 import React from "react";
 
 export default function MyBookings() {
-  const {
-    data: bookings,
-    error,
-    isLoading,
-  } = useGetAppointmentsPatientIdQuery("66df122021a2f7d8546a3c5f");
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error loading bookings</p>;
+  // const {
+  //   data: bookings,
+  //   error,
+  //   isLoading,
+  // } = useGetAppointmentsPatientIdQuery("66c5c8903a0cf18108580ac2");
+  const bookings = [
+    {
+      _id: "1",
+      doctor: {
+        avatar: "doctor1.jpg",
+        fullname: "John Doe",
+        dob: "1975-03-21",
+        address: "123 Main St, Springfield",
+        phone: "(555) 123-4567",
+        email: "johndoe@example.com",
+      },
+      date_of_visit: "2024-10-25",
+      start_time: "10:00 AM",
+      end_time: "11:00 AM",
+      purpose_visit: "General Checkup",
+      status: "Pending",
+      description: "Patient experiencing mild symptoms of cold and fatigue.",
+    },
+    {
+      _id: "2",
+      doctor: {
+        avatar: "doctor2.jpg",
+        fullname: "Jane Smith",
+        dob: "1980-07-10",
+        address: "456 Elm St, Metropolis",
+        phone: "(555) 987-6543",
+        email: "janesmith@example.com",
+      },
+      date_of_visit: "2024-10-26",
+      start_time: "02:00 PM",
+      end_time: "03:00 PM",
+      purpose_visit: "Dermatology Consultation",
+      status: "Completed",
+      description: "Patient treated for a mild skin rash.",
+    },
+    {
+      _id: "3",
+      doctor: {
+        avatar: "doctor3.jpg",
+        fullname: "Emily Johnson",
+        dob: "1985-12-15",
+        address: "789 Oak St, Gotham",
+        phone: "(555) 654-3210",
+        email: "emilyjohnson@example.com",
+      },
+      date_of_visit: "2024-10-28",
+      start_time: "09:00 AM",
+      end_time: "10:00 AM",
+      purpose_visit: "Eye Examination",
+      status: "Pending",
+      description: "Routine eye examination for vision checkup.",
+    },
+  ];
+  // if (isLoading) return <p>Loading...</p>;
+  // if (error) return <p>Error loading bookings</p>;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -28,7 +80,7 @@ export default function MyBookings() {
                 {/* Doctor Info */}
                 <div className="flex items-start space-x-6 mt-4 ml-16">
                   <img
-                    src={`/${booking.doctor.avatar}`}
+                    src={`https://i.pravatar.cc/150?img=${booking._id}`}
                     alt={booking.doctor.fullname}
                     className="w-20 h-20 rounded-full border"
                   />
