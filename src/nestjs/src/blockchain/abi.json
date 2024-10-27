@@ -1,0 +1,100 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_patientId",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_recordDate",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_recordHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_doctorId",
+        "type": "string"
+      }
+    ],
+    "name": "addMedicalRecord",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_patientId",
+        "type": "string"
+      }
+    ],
+    "name": "getMedicalRecords",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "recordDate",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "recordHash",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "doctorId",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct MedicalRecordsStorage.MedicalRecord[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "patientRecords",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "recordDate",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "recordHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "doctorId",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

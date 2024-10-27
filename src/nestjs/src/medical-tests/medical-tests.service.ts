@@ -15,10 +15,41 @@ export class MedicalTestService {
     private medicalTestModel: Model<MedicalTestDocument>,
   ) {}
 
+  async generateMedicalTestId(): Promise<string> {
+    const now = new Date();
+
+    // Tạo thời gian Việt Nam từ UTC
+    const vnTimezoneOffset = 7 * 60 * 60 * 1000;
+    const vnDate = new Date(now.getTime() + vnTimezoneOffset);
+
+    const year = vnDate.getFullYear().toString().slice(-2);
+    const month = String(vnDate.getMonth() + 1).padStart(2, '0');
+    const day = String(vnDate.getDate()).padStart(2, '0');
+    const prefix = `MDT${year}${month}${day}`;
+
+    // Tính khoảng thời gian từ đầu đến cuối ngày hiện tại (giờ VN)
+    const startOfDay = new Date(vnDate.setHours(0, 0, 0, 0) - vnTimezoneOffset);
+    const endOfDay = new Date(
+      vnDate.setHours(23, 59, 59, 999) - vnTimezoneOffset,
+    );
+
+    // Đếm số bản ghi trong ngày (giờ VN)
+    const countTodayRecords = await this.medicalTestModel.countDocuments({
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
+    });
+
+    const orderNumber = String(countTodayRecords + 1).padStart(4, '0');
+    return `${prefix}${orderNumber}`;
+  }
+
   async createMedicalTest(
     createMedicalTestDto: CreateMedicalTestDto,
   ): Promise<MedicalTest> {
-    const medicalTest = new this.medicalTestModel(createMedicalTestDto);
+    const medicalTestId = await this.generateMedicalTestId();
+    const medicalTest = new this.medicalTestModel({
+      ...createMedicalTestDto,
+      medicalTestId,
+    });
     return medicalTest.save();
   }
 

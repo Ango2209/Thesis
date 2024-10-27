@@ -36,7 +36,12 @@ export class MedicalTestController {
     totalPages: number;
   }> {
     const statusArray = statuses ? statuses.split(',') : [];
-    return this.medicalTestService.getMedicalTests(statusArray, date, page, limit);
+    return this.medicalTestService.getMedicalTests(
+      statusArray,
+      date,
+      page,
+      limit,
+    );
   }
 
   @Get(':id')

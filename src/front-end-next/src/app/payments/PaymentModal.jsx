@@ -5,7 +5,7 @@ import ReactDOMServer from "react-dom/server"; // Đảm bảo bạn đã cài t
 import InvoiceContent from "./InvoiceContent";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 
-const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest }) => {
+const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, refetch, updateMedicalTest }) => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const { service, doctor, patient, createdAt } = medicalTestDetail;
@@ -13,16 +13,23 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedic
   // Example invoice code
   const invoiceCode = "INV001";
 
-  const handlePrintInvoice = () => {
+  const handlePrintInvoice = async () => {
     const width = window.innerWidth * 0.8;
     const height = window.innerHeight * 0.8;
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
 
     const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
-    const invoiceContent = ReactDOMServer.renderToString(<InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} />);
+    if (!printWindow) {
+      console.error("Failed to open print window");
+      return;
+    }
+    printWindow.addEventListener("load", () => {
+      const invoiceContent = ReactDOMServer.renderToString(
+        <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} appointmentDate={"test"} />
+      );
 
-    printWindow.document.write(`
+      printWindow?.document.write(`
       <html>
         <head>
           <title>Invoice</title>
@@ -33,9 +40,10 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedic
         <body>${invoiceContent}</body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    });
   };
 
   const handleConfirmPrint = () => {
@@ -78,13 +86,20 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedic
 
   const handleSubmit = async () => {
     try {
-      await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
-      toast.success("Payment success");
-      refetch();
-      //To do: create invoice
-      //....
-      //
-      handleConfirmPrint();
+      if (paymentMethod === "transfer") {
+        openQrCodeModal();
+        await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "awaiting transfer" } }).unwrap();
+        onClose();
+        refetch();
+      } else {
+        await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
+        toast.success("Payment success");
+        refetch();
+        //To do: create invoice
+        //....
+        //
+        handleConfirmPrint();
+      }
     } catch (err) {
       toast.error("Failed to payment. Please try again.");
       console.error("Error payment service test:", err);
@@ -202,7 +217,7 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedic
             Cancel
           </button>
           <button className="w-full md:w-auto bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition" onClick={handleSubmit}>
-            Confirm Payment
+            Payment
             <svg className="inline-block ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
