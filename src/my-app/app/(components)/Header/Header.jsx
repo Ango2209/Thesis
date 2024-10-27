@@ -14,8 +14,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useRouter } from "next/navigation";
 
 function Header() {
+  const router = useRouter();
+
   const Menu = [
     {
       id: 1,
@@ -73,7 +76,10 @@ function Header() {
               <li className="cursor-pointer hover:bg-slate-100 p-2 rounded-md">
                 Profile
               </li>
-              <li className="cursor-pointer hover:bg-slate-100 p-2 rounded-md">
+              <li
+                onClick={() => router.push("/mybookings")}
+                className="cursor-pointer hover:bg-slate-100 p-2 rounded-md"
+              >
                 My Booking
               </li>
               <li className="cursor-pointer hover:bg-slate-100 p-2 rounded-md">

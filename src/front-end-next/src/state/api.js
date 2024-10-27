@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://localhost:4000",
-    baseUrl: "http://35.225.140.192:3002",
+    baseUrl: "http://localhost:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
@@ -75,6 +75,9 @@ export const api = createApi({
     }),
     getBatchesByMedicineId: build.query({
       query: (medicineId) => `/medicines/${medicineId}/batches`,
+    }),
+    getAppointmentsDoctorId: build.query({
+      query: (doctorId) => `/appointment/doctor/${doctorId}`,
     }),
     addBatchs: build.mutation({
       query: (batchs) => ({

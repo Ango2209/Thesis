@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, HydratedDocument } from 'mongoose';
 import { Doctor } from './doctor.schema';
-
+import { Appointment } from 'src/appointment/schemas/appointment.schemas';
 @Schema()
 export class MedicalRecord {
   @Prop()
