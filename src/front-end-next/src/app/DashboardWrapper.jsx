@@ -4,6 +4,9 @@ import React, { useEffect } from "react";
 import Navbar from "@/app/(components)/Navbar";
 import Sidebar from "@/app/(components)/Sidebar";
 import StoreProvider, { useAppSelector } from "./redux";
+import { usePathname } from "next/navigation";
+import { AuthProvider } from "./authContext";
+import { ProtectedRoute } from "./protectedRoute";
 
 const DashboardLayout = ({ children }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -39,11 +42,26 @@ const DashboardLayout = ({ children }) => {
 };
 
 const DashboardWrapper = ({ children }) => {
+  const pathname = usePathname();
+  const standaloneRoutes = ["/login", "/register"];
+
+  // Check if current path matches standalone route
+
+  const isStandalonePage = standaloneRoutes.includes(pathname);
+  console.log("Is stand alone", isStandalonePage);
+  // console.log("ProtectedRoute:", ProtectedRoute);
   return (
-    <StoreProvider>
-      <DashboardLayout>{children}</DashboardLayout>
-    </StoreProvider>
+    <AuthProvider>
+      <StoreProvider>
+        {isStandalonePage ? (
+          children
+        ) : (
+          <DashboardLayout>
+            <ProtectedRoute>{children} </ProtectedRoute>
+          </DashboardLayout>
+        )}
+      </StoreProvider>
+    </AuthProvider>
   );
 };
-
 export default DashboardWrapper;
