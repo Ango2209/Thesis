@@ -1,7 +1,7 @@
 // InvoiceContent.jsx
 import React from "react";
 
-const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service, appointmentDate }) => {
+const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service }) => {
   return (
     <div style={containerStyle}>
       <h2 style={headerStyle}>Medical Invoice</h2>
@@ -11,10 +11,10 @@ const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service, 
         <div style={infoSectionStyle}>
           <h4>Patient Information</h4>
           <p>
-            <strong>Name:</strong> {patient.name}
+            <strong>Name:</strong> {patient.fullname}
           </p>
           <p>
-            <strong>Patient Code:</strong> {patient.code}
+            <strong>Patient Code:</strong> {patient.patient_id}
           </p>
           <p>
             <strong>Phone:</strong> {patient.phone}
@@ -24,10 +24,10 @@ const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service, 
         <div style={infoSectionStyle}>
           <h4>Doctor Information</h4>
           <p>
-            <strong>Name:</strong> {doctor.name}
+            <strong>Name:</strong> {doctor.fullname}
           </p>
           <p>
-            <strong>Doctor Code:</strong> {doctor.id}
+            <strong>Doctor Code:</strong> {doctor.doctor_id}
           </p>
         </div>
       </div>
@@ -52,11 +52,6 @@ const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service, 
       </div>
 
       <div style={infoContainerStyle}>
-        <div style={infoSectionStyle}>
-          <h4>Appointment Date</h4>
-          <p>{appointmentDate}</p>
-        </div>
-
         <div style={totalSectionStyle}>
           <h4>Total Amount:</h4>
           <p style={totalAmountStyle}>{service.price}</p>

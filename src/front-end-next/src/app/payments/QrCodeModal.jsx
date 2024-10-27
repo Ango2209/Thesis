@@ -6,7 +6,7 @@ import InvoiceContent from "./InvoiceContent";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import useSWR from "swr";
 
-const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest }) => {
+const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest, confirmButton }) => {
   const { service, doctor, patient, createdAt } = medicalTestDetail;
   const [pollingActive, setPollingActice] = useState(true);
   // Example invoice code
@@ -14,7 +14,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
 
   const fetcher = (url) => fetch(url).then((res) => res.json());
 
-  const handlePrintInvoice = () => {
+  const handlePrintInvoice = async () => {
     const width = window.innerWidth * 0.8;
     const height = window.innerHeight * 0.8;
     const left = (window.innerWidth - width) / 2;
@@ -25,7 +25,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
       <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={"Bank Tranfer"} appointmentDate={"test"} />
     );
 
-    printWindow.document.write(`
+    printWindow?.document.write(`
       <html>
         <head>
           <title>Invoice</title>
@@ -36,9 +36,9 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
         <body>${invoiceContent}</body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+    printWindow?.document.close();
+    printWindow?.focus();
+    printWindow?.print();
   };
 
   // Sử dụng SWR với polling mỗi 5 giây (5000ms)
@@ -61,7 +61,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
     const lastPaid = data.data[data.data.length - 1];
     const lastPrice = lastPaid["Giá trị"];
     const lastContent = lastPaid["Mô tả"];
-    if (service?.price >= lastPrice && lastContent.includes("test6")) {
+    if (service?.price >= lastPrice && lastContent.includes(medicalTestDetail.medicalTestId)) {
       setPollingActice(false);
       completeTransfer();
     }
@@ -69,15 +69,10 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
 
   const handleSubmit = async () => {
     try {
-      if (paymentMethod === "transfer") {
-      }
-      // await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
-      // toast.success("Payment success");
-      // refetch();
       //To do: create invoice
       //....
       //
-      // handleConfirmPrint();
+      completeTransfer();
     } catch (err) {
       toast.error("Failed to payment. Please try again.");
       console.error("Error payment service test:", err);
@@ -90,7 +85,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-70">
       <div className="w-full max-w-lg bg-white rounded-lg shadow-lg p-6 mx-4 md:mx-8 relative">
         <img
-          src={`https://img.vietqr.io/image/${process.env.NEXT_PUBLIC_BANK_ID}-${process.env.NEXT_PUBLIC_ACCOUNT_NO}-print.png?amount=${service.price}&addInfo=test6&accountName=${process.env.NEXT_PUBLIC_ACCOUNT_NAME}`}
+          src={`https://img.vietqr.io/image/${process.env.NEXT_PUBLIC_BANK_ID}-${process.env.NEXT_PUBLIC_ACCOUNT_NO}-print.png?amount=${service.price}&addInfo=${medicalTestDetail.medicalTestId}&accountName=${process.env.NEXT_PUBLIC_ACCOUNT_NAME}`}
           alt="Qr code"
         />
         {/* Action Buttons */}
@@ -104,12 +99,14 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
           >
             Close
           </button>
-          <button className="w-full md:w-auto bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition" onClick={handleSubmit}>
-            Confirm Payment
-            <svg className="inline-block ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-          </button>
+          {confirmButton && (
+            <button className="w-full md:w-auto bg-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-600 transition" onClick={handleSubmit}>
+              Confirm Payment
+              <svg className="inline-block ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>

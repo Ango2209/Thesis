@@ -135,6 +135,12 @@ export class PatientService extends BaseServices<PatientDocument> {
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
-    return patient.medical_records;
+
+    const sortedRecords = patient.medical_records.sort(
+      (a, b) =>
+        new Date(b.record_date).getTime() - new Date(a.record_date).getTime(),
+    );
+
+    return sortedRecords;
   }
 }

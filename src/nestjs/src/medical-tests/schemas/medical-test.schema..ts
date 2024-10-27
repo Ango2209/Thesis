@@ -14,6 +14,8 @@ export type MedicalTestDocument = HydratedDocument<MedicalTest>;
 // Nếu cần, có thể chuyển sang trạng thái "Cancelled" khi yêu cầu bị hủy.
 @Schema({ timestamps: true })
 export class MedicalTest {
+  @Prop({ type: String, unique: true })
+  medicalTestId: string;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Service' })
   service: Service;
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Doctor' })

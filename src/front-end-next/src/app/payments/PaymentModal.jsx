@@ -13,18 +13,23 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
   // Example invoice code
   const invoiceCode = "INV001";
 
-  const handlePrintInvoice = () => {
+  const handlePrintInvoice = async () => {
     const width = window.innerWidth * 0.8;
     const height = window.innerHeight * 0.8;
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
 
     const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
-    const invoiceContent = ReactDOMServer.renderToString(
-      <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} appointmentDate={"test"} />
-    );
+    if (!printWindow) {
+      console.error("Failed to open print window");
+      return;
+    }
+    printWindow.addEventListener("load", () => {
+      const invoiceContent = ReactDOMServer.renderToString(
+        <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} appointmentDate={"test"} />
+      );
 
-    printWindow.document.write(`
+      printWindow?.document.write(`
       <html>
         <head>
           <title>Invoice</title>
@@ -35,9 +40,10 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
         <body>${invoiceContent}</body>
       </html>
     `);
-    printWindow.document.close();
-    printWindow.focus();
-    printWindow.print();
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    });
   };
 
   const handleConfirmPrint = () => {
