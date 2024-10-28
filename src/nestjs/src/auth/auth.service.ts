@@ -7,58 +7,50 @@ import {
   
   import * as bcrypt from 'bcryptjs';
   
-  import { UserService } from 'src/user/user.service';
-  
-  import { User } from 'src/user/entities/user.entity';
-  import { CreateUserDto } from 'src/user/dto/create-user.dto';
-  import { LoginUserDto } from 'src/user/dto/login-user.dto';
-//   import { MailService } from 'src/mail/mail.service';
-  import { InjectRepository } from '@nestjs/typeorm';
-  import { Repository } from 'typeorm';
-  
+  import { PersonService } from 'src/person/person.services';
+  import { PersonDto } from 'src/person/dto/personDto';
+  import { LoginUserDto } from 'src/person/schemas/login-user.dto';
+
   @Injectable()
   export class AuthService {
     constructor(
-      private readonly userService: UserService,
+      private readonly personService: PersonService,
       private readonly jwtService: JwtService,
-    //   private mailService: MailService,
     ) {}
   
-    async singUp(userDto: CreateUserDto) {
-      const candidate = await this.userService.findOneByUsername(
+    async singUp(userDto: PersonDto) {
+      const candidate = await this.personService.findOneByUsername(
         userDto.username,
       );
   
       if (candidate) return null;
   
       const hashedPassword = await bcrypt.hash(userDto.password, 7);
-      const user = await this.userService.create({
+      const user = await this.personService.create({
         ...userDto,
         password: hashedPassword,
         is_verify: false,
       });
   
       const tokens = await this.generateTokens(user.id);
-    //   await this.mailService.sendUserConfirmation(user, tokens.accessToken);
   
       return tokens;
     }
   
     async verifyEmail(accessToken: string) {
       const user = this.verifyAccessToken(accessToken);
-      return await this.userService.update(user.id, { ...user, is_verify: true });
+      return await this.personService.update(user.id, { ...user, is_verify: true });
     }
   
     async signIn(userDto: LoginUserDto) {
-      const user = await this.userService.findOneByUsername(userDto.username);
-      if (!user.is_verify) return 'Please verify your email first';
+      const user = await this.personService.findOneByUsername(userDto.username);
   
       const tokens = await this.generateTokens(user.id);
       return { user, tokens };
     }
   
-    async validateUser(userDto: LoginUserDto): Promise<User> {
-      const user = await this.userService.findOneByUsername(userDto.username);
+    async validateUser(userDto: LoginUserDto) {
+      const user = await this.personService.findOneByUsername(userDto.username);
       if (!user) {
         throw new NotFoundException(`There is no user under this username`);
       }

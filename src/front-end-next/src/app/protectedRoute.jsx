@@ -1,18 +1,22 @@
-import { useAuth } from "./authContext"; // Adjust the import path as necessary
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+// protectedRoute.jsx
 
-export const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated } = useAuth();
+import { useAuth } from "./authContext"; // Assuming useAuth provides user role and other details
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+export const ProtectedRoute = ({ children, requiredRole }) => {
+  const { user, loading } = useAuth(); // user contains role details
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login"); // Redirect to login if not authenticated
+    if (!loading && (!user || (requiredRole && user.role !== requiredRole))) {
+      router.push("/login"); // redirect if not logged in or not authorized
     }
-  }, [isAuthenticated, router]);
+  }, [user, loading, requiredRole, router]);
 
-  return <>{isAuthenticated ? children : null}</>; // Render children only if authenticated
+  if (loading || !user || (requiredRole && user.role !== requiredRole)) {
+    return null; // Show a loader or fallback component while loading
+  }
+
+  return children;
 };
-
-// Make sure you have this export statement

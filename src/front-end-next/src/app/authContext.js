@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Change to fetch your auth state
   const router = useRouter();
 
-  // Example of how you might check authentication state (e.g., from local storage)
   useEffect(() => {
     const token = localStorage.getItem("token"); // Example token check
     if (token) {
