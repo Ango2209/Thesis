@@ -4,10 +4,12 @@ import {
     NotFoundException,
   } from '@nestjs/common';
   import { JwtService } from '@nestjs/jwt';
-  
+  import { HttpException, HttpStatus } from '@nestjs/common';
   import * as bcrypt from 'bcryptjs';
   
   import { PersonService } from 'src/person/person.services';
+  import { PatientService } from 'src/person/patient.services';
+  import { DoctorService } from 'src/person/doctor.services';
   import { PersonDto } from 'src/person/dto/personDto';
   import { LoginUserDto } from 'src/person/schemas/login-user.dto';
 
@@ -16,24 +18,47 @@ import {
     constructor(
       private readonly personService: PersonService,
       private readonly jwtService: JwtService,
+      private readonly patientService: PatientService,
+      private readonly doctorService: DoctorService,
     ) {}
   
     async singUp(userDto: PersonDto) {
       const candidate = await this.personService.findOneByUsername(
         userDto.username,
       );
-  
-      if (candidate) return null;
-  
+    
+      if (candidate) {
+        throw new HttpException('Username already exists', HttpStatus.CONFLICT);
+      }
+    
       const hashedPassword = await bcrypt.hash(userDto.password, 7);
-      const user = await this.personService.create({
-        ...userDto,
-        password: hashedPassword,
-        is_verify: false,
-      });
-  
+    
+      // Determine the role and create the appropriate record
+      let user;
+      if (userDto.role === 'patient') {
+        user = await this.patientService.create({
+          ...userDto,
+          password: hashedPassword,
+       
+        });
+      } else if (userDto.role === 'doctor') {
+        user = await this.doctorService.create({
+          ...userDto,
+          password: hashedPassword,
+        });
+      } 
+      else if (userDto.role === 'admin') {
+        user = await this.personService.create({
+          ...userDto,
+          password: hashedPassword,
+
+        });
+      }
+      else {
+        return "Invalid role specified";
+      }
+    
       const tokens = await this.generateTokens(user.id);
-  
       return tokens;
     }
   
@@ -43,8 +68,24 @@ import {
     }
   
     async signIn(userDto: LoginUserDto) {
-      const user = await this.personService.findOneByUsername(userDto.username);
-  
+      let user;
+
+      // Determine the role and find the appropriate user
+      if (userDto.role === 'patient') {
+        user = await this.patientService.findOneByUsername(userDto.username);
+      } else if (userDto.role === 'doctor') {
+        user = await this.doctorService.findOneByUsername(userDto.username);
+      } 
+      else if (userDto.role === 'admin') {
+        user = await this.personService.findOneByUsername(userDto.username);
+      }
+      else {
+        throw new HttpException('Invalid role specified', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!user) {
+        throw new NotFoundException(`There is no user under this username`);
+      }
       const tokens = await this.generateTokens(user.id);
       return { user, tokens };
     }

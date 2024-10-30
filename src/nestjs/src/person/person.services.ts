@@ -15,11 +15,6 @@ export class PersonService extends BaseServices<PersonDocument> {
     }
     async findOneByUsername(username: string) {
         const user = await this.personModel.findOne({ username });
-        if (!user) {
-            throw new NotFoundException(
-              `Patient with ${username} not found`,
-            );
-          }
         return user;
       }
 }

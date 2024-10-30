@@ -6,4 +6,8 @@ export class LoginUserDto {
 
   @IsString()
   password: string;
+
+  @IsString()
+  role: string;
+  
 }

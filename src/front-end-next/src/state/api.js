@@ -194,6 +194,20 @@ export const api = createApi({
         // },
       }),
     }),
+    login: build.mutation({
+      query: (loginDto) => ({
+        url: "/auth/signIn",
+        method: "POST",
+        body: loginDto,
+      }),
+    }),
+    signUp: build.mutation({
+      query: (signUpDto) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: signUpDto,
+      }),
+    }),
   }),
 });
 
@@ -232,5 +246,7 @@ export const {
   useUpdateMedicalTestMutation,
   useGetMedicalTestsByAppointmentIdQuery,
   useUploadMultipleFilesMutation,
-  useUpdateIsExaminedMutation
+  useUpdateIsExaminedMutation,
+  useLoginMutation,
+  useSignUpMutation,
 } = api;

@@ -2,14 +2,28 @@
 import { useState } from "react";
 import RoleSelector from "../(components)/RoleSelector/RoleSelector";
 
+import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useAuth } from "../authContext"; 
 const Login = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("doctor");
+  const { login } = useAuth(); 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    alert(`Logged in as ${role}`);
+    try {
+    console.log(email, password, role);
+     await login(email, password, role);
+    router.push('/dashboard');
+
+    } catch (error) {
+      console.error('Error during login:', error);
+      toast.error('Login failed. Please check your credentials.');
+    }
   };
 
   return (
@@ -30,12 +44,12 @@ const Login = () => {
               Email Address
             </label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="name@example.com"
+              placeholder="nguyenngo2208"
             />
           </div>
           <div>

@@ -53,4 +53,8 @@ export class DoctorService extends BaseServices<DoctorDocument> {
     // }
     return doctors;
   }
+  async findOneByUsername(username: string) {
+    const user = await this.doctorModel.findOne({ username });
+    return user;
+  }
 }

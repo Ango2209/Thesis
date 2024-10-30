@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
+import axios from 'axios';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -8,20 +8,30 @@ export const AuthProvider = ({ children }) => {
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Example token check
+    const token = localStorage.getItem("accessToken"); // Example token check
     if (token) {
       setIsAuthenticated(true);
     }
   }, []);
 
-  const login = () => {
-    setIsAuthenticated(true);
-    localStorage.setItem("token", "example-token"); // Set a token when logging in
+  const login = async (username, password, role) => {
+    console.log("Login Fuc",username, password, role);
+    const response = await axios.post('http://localhost:3002/auth/signIn', {
+      username,
+      password,
+      role,
+    });
+
+    const { user, tokens } = response.data;
+
+    localStorage.setItem('accessToken', tokens.accessToken);
+
+    localStorage.setItem('refreshToken', tokens.refreshToken);
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem("token"); // Clear token when logging out
+    localStorage.removeItem("accessToken"); // Clear token when logging out
   };
 
   return (
