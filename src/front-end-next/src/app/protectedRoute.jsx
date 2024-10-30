@@ -5,16 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user, loading } = useAuth(); // user contains role details
+  const user= localStorage.getItem('user')
+  console.log("Userr login",user) // user contains role details
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && (!user || (requiredRole && user.role !== requiredRole))) {
+    if (!user || (requiredRole && user.role !== requiredRole)) {
       router.push("/login"); // redirect if not logged in or not authorized
     }
-  }, [user, loading, requiredRole, router]);
+  }, [user, requiredRole, router]);
 
-  if (loading || !user || (requiredRole && user.role !== requiredRole)) {
+  if (!user || (requiredRole && user.role !== requiredRole)) {
     return null; // Show a loader or fallback component while loading
   }
 

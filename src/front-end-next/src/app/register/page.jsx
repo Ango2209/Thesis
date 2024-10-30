@@ -12,7 +12,6 @@ const Register = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Here you would typically send a request to your backend
-    console.log({ email, password, role });
     alert(`Registered as ${role}`);
   };
 

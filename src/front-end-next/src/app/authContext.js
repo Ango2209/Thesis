@@ -11,11 +11,11 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("accessToken"); // Example token check
     if (token) {
       setIsAuthenticated(true);
+      router.push('/dashboard');
     }
   }, []);
 
   const login = async (username, password, role) => {
-    console.log("Login Fuc",username, password, role);
     const response = await axios.post('http://localhost:3002/auth/signIn', {
       username,
       password,
@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     const { user, tokens } = response.data;
-
+    localStorage.setItem("user",user.role)
     localStorage.setItem('accessToken', tokens.accessToken);
 
     localStorage.setItem('refreshToken', tokens.refreshToken);

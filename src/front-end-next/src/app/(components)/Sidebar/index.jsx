@@ -48,6 +48,8 @@ const SidebarLink = ({ href, icon: Icon, label, isCollapsed }) => {
 };
 
 const Sidebar = () => {
+  const user =  localStorage.getItem("user");
+  
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed

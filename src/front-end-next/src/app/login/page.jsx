@@ -49,7 +49,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="nguyenngo2208"
+              placeholder="johndoecvcvcv"
             />
           </div>
           <div>
@@ -62,7 +62,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="••••••••"
+              placeholder="securePassword123"
             />
           </div>
           <RoleSelector role={role} setRole={setRole} />
