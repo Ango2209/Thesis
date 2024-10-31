@@ -157,7 +157,7 @@ const SellMedicine = () => {
                 </tr>
               )}
               {data?.data?.map((prescription, index) => (
-                <tr className={`border-b ${selectedRowId === prescription.record_id ? "bg-blue-100" : ""} hover:bg-gray-50 transition-colors`}>
+                <tr key={index} className={`border-b ${selectedRowId === prescription.record_id ? "bg-blue-100" : ""} hover:bg-gray-50 transition-colors`}>
                   <td className="px-2 py-2 text-center">{(currentPage - 1) * 10 + index + 1}</td>
                   <td className="px-2 py-2">
                     <div className="text-sm">
