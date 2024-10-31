@@ -143,4 +143,8 @@ export class PatientService extends BaseServices<PatientDocument> {
 
     return sortedRecords;
   }
+  async findOneByUsername(username: string) {
+    const user = await this.patientModel.findOne({ username });
+    return user;
+  }
 }

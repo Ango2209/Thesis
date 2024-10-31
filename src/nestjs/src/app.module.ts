@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from './schedules/schedule.module';
 import { PersonModule } from './person/person.module';
 import { ContractModule } from './contract/contract.module';
+import { AuthModule } from './auth/auth.module';
 import { RatingModule } from './ratings/rating.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { MedicineModule } from './medicine/medicine.module';
@@ -39,6 +40,7 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
     ContractModule,
     RatingModule,
     ScheduleModule,

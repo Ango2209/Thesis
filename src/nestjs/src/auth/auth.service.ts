@@ -1,140 +1,173 @@
-// import {
-//     Injectable,
-//     UnauthorizedException,
-//     NotFoundException,
-//   } from '@nestjs/common';
-//   import { JwtService } from '@nestjs/jwt';
+import {
+    Injectable,
+    UnauthorizedException,
+    NotFoundException,
+  } from '@nestjs/common';
+  import { JwtService } from '@nestjs/jwt';
+  import { HttpException, HttpStatus } from '@nestjs/common';
+  import * as bcrypt from 'bcryptjs';
   
-//   import * as bcrypt from 'bcryptjs';
+  import { PersonService } from 'src/person/person.services';
+  import { PatientService } from 'src/person/patient.services';
+  import { DoctorService } from 'src/person/doctor.services';
+  import { PersonDto } from 'src/person/dto/personDto';
+  import { LoginUserDto } from 'src/person/schemas/login-user.dto';
+
+  @Injectable()
+  export class AuthService {
+    constructor(
+      private readonly personService: PersonService,
+      private readonly jwtService: JwtService,
+      private readonly patientService: PatientService,
+      private readonly doctorService: DoctorService,
+    ) {}
   
-//   import { UserService } from 'src/user/user.service';
+    async singUp(userDto: PersonDto) {
+      const candidate = await this.personService.findOneByUsername(
+        userDto.username,
+      );
+    
+      if (candidate) {
+        throw new HttpException('Username already exists', HttpStatus.CONFLICT);
+      }
+    
+      const hashedPassword = await bcrypt.hash(userDto.password, 7);
+    
+      // Determine the role and create the appropriate record
+      let user;
+      if (userDto.role === 'patient') {
+        user = await this.patientService.create({
+          ...userDto,
+          password: hashedPassword,
+       
+        });
+      } else if (userDto.role === 'doctor') {
+        user = await this.doctorService.create({
+          ...userDto,
+          password: hashedPassword,
+        });
+      } 
+      else if (userDto.role === 'admin') {
+        user = await this.personService.create({
+          ...userDto,
+          password: hashedPassword,
+
+        });
+      }
+      else {
+        return "Invalid role specified";
+      }
+    
+      const tokens = await this.generateTokens(user.id);
+      return tokens;
+    }
   
-//   import { User } from 'src/user/entities/user.entity';
-//   import { CreateUserDto } from 'src/user/dto/create-user.dto';
-//   import { LoginUserDto } from 'src/user/dto/login-user.dto';
-//   import { MailService } from 'src/mail/mail.service';
-//   import { InjectRepository } from '@nestjs/typeorm';
-//   import { Repository } from 'typeorm';
+    async verifyEmail(accessToken: string) {
+      const user = this.verifyAccessToken(accessToken);
+      return await this.personService.update(user.id, { ...user, is_verify: true });
+    }
   
-//   @Injectable()
-//   export class AuthService {
-//     constructor(
-//       private readonly userService: UserService,
-//       private readonly jwtService: JwtService,
-//       private mailService: MailService,
-//     ) {}
+    async signIn(userDto: LoginUserDto) {
+      let user;
+
+      // Determine the role and find the appropriate user
+      if (userDto.role === 'patient') {
+        user = await this.patientService.findOneByUsername(userDto.username);
+      } else if (userDto.role === 'doctor') {
+        user = await this.doctorService.findOneByUsername(userDto.username);
+      } 
+      else if (userDto.role === 'admin') {
+        user = await this.personService.findOneByUsername(userDto.username);
+      }
+      else {
+        throw new HttpException('Invalid role specified', HttpStatus.BAD_REQUEST);
+      }
+
+      if (!user) {
+        throw new NotFoundException(`There is no user under this username`);
+      }
+      const tokens = await this.generateTokens(user.id);
+      return { user, tokens };
+    }
   
-//     async singUp(userDto: CreateUserDto) {
-//       const candidate = await this.userService.findOneByUsername(
-//         userDto.username,
-//       );
+    async validateUser(userDto: LoginUserDto) {
+      const user = await this.personService.findOneByUsername(userDto.username);
+      if (!user) {
+        throw new NotFoundException(`There is no user under this username`);
+      }
   
-//       if (candidate) return null;
+      const passwordEquals = await bcrypt.compare(
+        userDto.password,
+        user.password,
+      );
+      if (passwordEquals) return user;
   
-//       const hashedPassword = await bcrypt.hash(userDto.password, 7);
-//       const user = await this.userService.create({
-//         ...userDto,
-//         password: hashedPassword,
-//         is_verify: false,
-//       });
+      throw new UnauthorizedException({ message: 'Incorrect password' });
+    }
   
-//       const tokens = await this.generateTokens(user.id);
-//       await this.mailService.sendUserConfirmation(user, tokens.accessToken);
+    verifyAccessToken(accessToken: string) {
+      try {
+        const payload = this.jwtService.verify(accessToken, {
+          secret: process.env.JWT_ACCESS_SECRET,
+        });
   
-//       return tokens;
-//     }
+        return payload;
+      } catch (err) {
+        return null;
+      }
+    }
   
-//     async verifyEmail(accessToken: string) {
-//       const user = this.verifyAccessToken(accessToken);
-//       return await this.userService.update(user.id, { ...user, is_verify: true });
-//     }
+    verifyRefreshToken(refreshToken: string) {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
   
-//     async signIn(userDto: LoginUserDto) {
-//       const user = await this.userService.findOneByUsername(userDto.username);
-//       if (!user.is_verify) return 'Please verify your email first';
+      return payload;
+    }
   
-//       const tokens = await this.generateTokens(user.id);
-//       return { user, tokens };
-//     }
+    async updateAccessToken(refreshToken: string) {
+      try {
+        const userId = this.verifyRefreshToken(refreshToken);
   
-//     async validateUser(userDto: LoginUserDto): Promise<User> {
-//       const user = await this.userService.findOneByUsername(userDto.username);
-//       if (!user) {
-//         throw new NotFoundException(`There is no user under this username`);
-//       }
+        const tokens = await this.generateTokens(userId);
   
-//       const passwordEquals = await bcrypt.compare(
-//         userDto.password,
-//         user.password,
-//       );
-//       if (passwordEquals) return user;
+        return tokens.accessToken;
+      } catch (e) {
+        return null;
+      }
+    }
   
-//       throw new UnauthorizedException({ message: 'Incorrect password' });
-//     }
+    private async generateTokens(id: string) {
+      const payload = { id };
   
-//     verifyAccessToken(accessToken: string) {
-//       try {
-//         const payload = this.jwtService.verify(accessToken, {
-//           secret: process.env.JWT_ACCESS_SECRET,
-//         });
+      const accessToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_ACCESS_SECRET,
+        expiresIn: process.env.JWT_ACCESS_EXPIRE,
+      });
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: process.env.JWT_REFRESH_EXPIRE,
+      });
+      const tokens = { accessToken, refreshToken };
   
-//         return payload;
-//       } catch (err) {
-//         return null;
-//       }
-//     }
-  
-//     verifyRefreshToken(refreshToken: string) {
-//       const payload = this.jwtService.verify(refreshToken, {
-//         secret: process.env.JWT_REFRESH_SECRET,
-//       });
-  
-//       return payload;
-//     }
-  
-//     async updateAccessToken(refreshToken: string) {
-//       try {
-//         const userId = this.verifyRefreshToken(refreshToken);
-  
-//         const tokens = await this.generateTokens(userId);
-  
-//         return tokens.accessToken;
-//       } catch (e) {
-//         return null;
-//       }
-//     }
-  
-//     private async generateTokens(id: string) {
-//       const payload = { id };
-  
-//       const accessToken = this.jwtService.sign(payload, {
-//         secret: process.env.JWT_ACCESS_SECRET,
-//         expiresIn: process.env.JWT_ACCESS_EXPIRE,
-//       });
-//       const refreshToken = this.jwtService.sign(payload, {
-//         secret: process.env.JWT_REFRESH_SECRET,
-//         expiresIn: process.env.JWT_REFRESH_EXPIRE,
-//       });
-//       const tokens = { accessToken, refreshToken };
-  
-//       return tokens;
-//     }
-//     async refreshToken(refreshToken: string) {
-//       try {
-//         const payload = this.jwtService.verify(refreshToken, {
-//           secret: process.env.JWT_REFRESH_SECRET,
-//         }); // Cung cấp secret key
-//         const newAccessToken = this.jwtService.sign(
-//           { id: payload.id },
-//           {
-//             secret: process.env.JWT_ACCESS_SECRET,
-//             expiresIn: process.env.JWT_ACCESS_EXPIRE,
-//           },
-//         ); // Cung cấp secret key và thời gian hết hạn
-//         return newAccessToken;
-//       } catch (error) {
-//         throw new UnauthorizedException('Invalid refresh token');
-//       }
-//     }
-//   }
+      return tokens;
+    }
+    async refreshToken(refreshToken: string) {
+      try {
+        const payload = this.jwtService.verify(refreshToken, {
+          secret: process.env.JWT_REFRESH_SECRET,
+        }); // Cung cấp secret key
+        const newAccessToken = this.jwtService.sign(
+          { id: payload.id },
+          {
+            secret: process.env.JWT_ACCESS_SECRET,
+            expiresIn: process.env.JWT_ACCESS_EXPIRE,
+          },
+        ); // Cung cấp secret key và thời gian hết hạn
+        return newAccessToken;
+      } catch (error) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+    }
+  }
   

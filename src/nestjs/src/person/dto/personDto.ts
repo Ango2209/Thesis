@@ -24,4 +24,11 @@ export class PersonDto {
   phone: string;
   @IsEmail()
   email: string;
+  @IsString()
+  username: string;
+  @IsString()
+  password: string;
+  @IsString()
+  role: string
+
 }

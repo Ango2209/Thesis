@@ -48,6 +48,9 @@ const SidebarLink = ({ href, icon: Icon, label, isCollapsed }) => {
 };
 
 const Sidebar = () => {
+  const userRole =  localStorage.getItem("userRole");
+
+  
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
@@ -132,12 +135,14 @@ const Sidebar = () => {
           label="Services"
           isCollapsed={isSidebarCollapsed}
         />
+        {userRole=='admin'&&
         <SidebarLink
           href="/payments"
           icon={CircleDollarSign}
           label="Payments"
           isCollapsed={isSidebarCollapsed}
-        />
+          />
+        }
         <SidebarLink
           href="/invoices"
           icon={ReceiptCent}

@@ -22,17 +22,17 @@ export const api = createApi({
       query: (id) => `/doctors/${id}`,
     }),
     getAppointmentsById: build.query({
-      query: (id) => `/appointment/${id}`,
+      query: (id) => `/appointments/${id}`,
     }),
     cancelAppointment: build.mutation({
       query: (id) => ({
-        url: `/appointment/${id}`,
+        url: `/appointments/${id}`,
         method: "DELETE",
       }),
     }),
     addBookingAppointment: build.mutation({
       query: (appointment) => ({
-        url: "/appointment",
+        url: "/appointments",
         method: "POST",
         body: appointment,
       }),
@@ -45,7 +45,19 @@ export const api = createApi({
       }),
     }),
     getAppointmentsPatientId: build.query({
-      query: (id) => `/appointment/patient/${id}`,
+      query: (id) => `/appointments/patient/${id}`,
+    }),
+    
+    updateAppointmentDate : build.mutation({
+      query: ({ id, data }) => ({
+        url: `/appointments/${id}`,
+        method: "PATCH",
+        body: { 
+          date_of_visit:data.date_of_visit,
+          start_time:data.start_time
+
+         },
+      }),
     }),
     getMedicalRecords: build.query({
       query: (id) => `patients/${id}/medical-records`,
@@ -63,4 +75,5 @@ export const {
   useGetAppointmentsPatientIdQuery,
   useGetMedicalRecordsQuery,
   useCreateUserMutation,
+  useUpdateAppointmentDateMutation
 } = api;
