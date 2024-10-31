@@ -213,4 +213,8 @@ export class PatientService extends BaseServices<PatientDocument> {
       throw new Error('Không thể lấy medical records.');
     }
   }
+  async findOneByUsername(username: string) {
+    const user = await this.patientModel.findOne({ username });
+    return user;
+  }
 }

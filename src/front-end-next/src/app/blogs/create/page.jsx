@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Plus } from "lucide-react";
-import ReactQuill from "react-quill";
+// import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import parse from "html-react-parser";
 import styles from "../../../styles/blog.module.scss";
@@ -9,7 +9,9 @@ import { useCreateBlogMutation, useUploadImagesMutation } from "@/state/api";
 import Spinner from "../../(components)/Spinner";
 import ImageUpload from "../../(components)/ImageUpload/ImageUpload.";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const Blog = () => {
   const [file, setFile] = useState("");
   const [title, setTitle] = useState("");

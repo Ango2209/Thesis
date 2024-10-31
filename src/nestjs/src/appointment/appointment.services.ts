@@ -124,4 +124,29 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
 
     return appointment;
   }
+  async getAppointmentsByPatientId(patientId: string): Promise<Appointment[]> {
+    const appointments = await this.appointmentModel
+      .find({ patient: patientId })
+      .populate('doctor')
+      .exec();
+
+    if (!appointments.length) {
+      throw new NotFoundException(`No appointments found for patient ID ${patientId}`);
+    }
+
+    return appointments;
+  }
+  
+  async getAppointmentsByDoctorId(patientId: string): Promise<Appointment[]> {
+    const appointments = await this.appointmentModel
+      .find({ doctor: patientId })
+      .populate('patient')
+      .exec();
+
+    if (!appointments.length) {
+      throw new NotFoundException(`No appointments found for patient ID ${patientId}`);
+    }
+
+    return appointments;
+  }
 }

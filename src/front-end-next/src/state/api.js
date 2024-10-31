@@ -241,6 +241,20 @@ export const api = createApi({
         method: "PATCH",
       }),
     }),
+    login: build.mutation({
+      query: (loginDto) => ({
+        url: "/auth/signIn",
+        method: "POST",
+        body: loginDto,
+      }),
+    }),
+    signUp: build.mutation({
+      query: (signUpDto) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: signUpDto,
+      }),
+    }),
   }),
 });
 
@@ -287,4 +301,6 @@ export const {
   useCreateInvoiceMutation,
   useReduceMedicinesMutation,
   useChangeToPaidMutation,
+  useLoginMutation,
+  useSignUpMutation,
 } = api;

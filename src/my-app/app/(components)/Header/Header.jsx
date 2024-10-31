@@ -4,12 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect } from "react";
 import {
-  RegisterLink,
-  LoginLink,
-  LogoutLink,
-} from "@kinde-oss/kinde-auth-nextjs/components";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -18,6 +12,13 @@ import { useRouter } from "next/navigation";
 
 function Header() {
   const router = useRouter();
+  const handleLogout = () => {
+    // Remove user and patientAccessToken from local storage
+    localStorage.removeItem('PatientRole');
+    localStorage.removeItem('Patient');
+  
+    window.location.reload();
+  };
 
   const Menu = [
     {
@@ -37,7 +38,7 @@ function Header() {
     },
   ];
 
-  const { user } = useKindeBrowserClient();
+  const user = localStorage.getItem("Patient")
 
   return (
     <div className="flex items-center justify-between p-4 shadow-sm">
@@ -64,7 +65,7 @@ function Header() {
           <PopoverTrigger>
             {" "}
             <Image
-              src={user?.picture}
+              src={"/user_icon.jpg"}
               alt="user-avatar"
               width={40}
               height={40}
@@ -83,13 +84,13 @@ function Header() {
                 My Booking
               </li>
               <li className="cursor-pointer hover:bg-slate-100 p-2 rounded-md">
-                <LogoutLink>Logout</LogoutLink>
+                <li onClick={handleLogout}>Logout</li>
               </li>
             </ul>
           </PopoverContent>
         </Popover>
       ) : (
-        <LoginLink>Get Started</LoginLink>
+        <Button onClick={() => router.push('/login')}>Get Started</Button>
       )}
     </div>
   );

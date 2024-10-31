@@ -42,6 +42,8 @@ const SidebarLink = ({ href, icon: Icon, label, isCollapsed }) => {
 };
 
 const Sidebar = () => {
+  const userRole = localStorage.getItem("userRole");
+
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
 
@@ -61,13 +63,13 @@ const Sidebar = () => {
         <SidebarLink href="/dashboard" icon={House} label="Dashboard" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/examine" icon={Stethoscope} label="Examine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments-registration" icon={ClipboardPlus} label="Medical Appointment Registration" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/sell-medicine" icon={Tablets} label="Selling Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/patients" icon={Users} label="Patient" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/doctors" icon={GraduationCap} label="Doctors" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/sell-medicine" icon={Tablets} label="Selling Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments" icon={CalendarDays} label="Appointments" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medical-tests" icon={TestTubeDiagonal} label="Medical Tests" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medical-services" icon={BriefcaseMedical} label="Services" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />
+        {userRole == "admin" && <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />}
         <SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medicine" icon={Pill} label="Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/blogs" icon={Newspaper} label="Blob" isCollapsed={isSidebarCollapsed} />
