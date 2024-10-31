@@ -17,6 +17,15 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
   constructor(private readonly appointmentService: AppointmentService) {
     super(appointmentService);
   }
+  @Get('patient/:patientId')
+  async getAppointmentsByPatientId(@Param('patientId') patientId: string) {
+    return this.appointmentService.getAppointmentsByPatientId(patientId);
+  }
+  @Get('doctor/:doctorId')
+  async getAppointmentsByDoctorId(@Param('doctorId') doctorId: string) {
+    return this.appointmentService.getAppointmentsByDoctorId(doctorId);
+  }
+  
 
   @Get('filter')
   async getAppointments(

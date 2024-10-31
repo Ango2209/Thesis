@@ -1,36 +1,32 @@
 "use client";
 import { useState } from "react";
-import RoleSelector from "../(components)/RoleSelector/RoleSelector";
-import axios from 'axios';
-import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from "axios";
 const Login = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("doctor");
-  const router = useRouter()
+  const [role, setRole] = useState("patient");
+
   const handleSubmit = async(e) => {
     e.preventDefault();
     try {
-      // Replace with your authentication logic
-      const response = await axios.post('http://localhost:3002/auth/signIn', {
-        "username":email,
+    const response = await axios.post('http://localhost:3002/auth/signIn', {
+        "username": email,
         password,
         role,
-      });
-      // Extract user and tokens from the response
-      const { user, tokens } = response.data;
-      // Store the access token in local storage
-      localStorage.setItem('accessToken', tokens.accessToken);
+    });
+    console.log("Patient data",response.data)
+    
+    const { user, tokens } = response.data;
+    localStorage.setItem("PatientRole",user.role)
+    localStorage.setItem('patientAccessToken', tokens.accessToken);
+    localStorage.setItem('patientRefreshToken', tokens.refreshToken);
+    localStorage.setItem("Patient",JSON.stringify(user))
+    router.push('/');
 
-      // Optionally store the refresh token if needed
-      localStorage.setItem('refreshToken', tokens.refreshToken);
-      localStorage.setItem('userRole',user.role)
-
-      // Redirect to a dashboard or home page
-      router.push('/dashboard');
-      // Handle successful login, e.g., redirect or store token
     } catch (error) {
       console.error('Error during login:', error);
       toast.error('Login failed. Please check your credentials.');
@@ -41,7 +37,7 @@ const Login = () => {
     <div
       className="flex items-center justify-center min-h-screen bg-cover bg-center"
       style={{
-        backgroundImage: `url('/annual-checkup.jpg')`, // Update with your image path
+        backgroundImage: `url('/image.jpg')`, // Update with your image path
       }}
     >
       <div className="w-full max-w-md p-8 space-y-6 bg-white/90 rounded-lg shadow-lg backdrop-blur-md">
@@ -52,7 +48,7 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Email Address
+              User Name
             </label>
             <input
               type="text"
@@ -60,7 +56,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="nguyenngo2208"
+              placeholder="johndoecvcvcv"
             />
           </div>
           <div>
@@ -73,10 +69,9 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="••••••••"
+              placeholder="securePassword123"
             />
           </div>
-          <RoleSelector role={role} setRole={setRole} />
           <button
             type="submit"
             className="w-full py-3 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:scale-105"

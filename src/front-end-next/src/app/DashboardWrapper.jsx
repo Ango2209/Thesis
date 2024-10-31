@@ -46,8 +46,7 @@ const DashboardWrapper = ({ children }) => {
   const standaloneRoutes = ["/login", "/register"];
 
   const isStandalonePage = standaloneRoutes.includes(pathname);
-  console.log("Is stand alone", isStandalonePage);
-  // console.log("ProtectedRoute:", ProtectedRoute);
+
   return (
     <AuthProvider>
       <StoreProvider>
@@ -55,7 +54,7 @@ const DashboardWrapper = ({ children }) => {
           children
         ) : (
           <DashboardLayout>
-            <ProtectedRoute requiredRole='admin'>{children} </ProtectedRoute>
+            <ProtectedRoute requiredRole={['admin', 'doctor']}>{children} </ProtectedRoute>
           </DashboardLayout>
         )}
       </StoreProvider>

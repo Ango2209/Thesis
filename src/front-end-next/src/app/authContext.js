@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     const { user, tokens } = response.data;
-    localStorage.setItem("user",user.role)
+    localStorage.setItem("userRole",user.role)
     localStorage.setItem('accessToken', tokens.accessToken);
 
     localStorage.setItem('refreshToken', tokens.refreshToken);
