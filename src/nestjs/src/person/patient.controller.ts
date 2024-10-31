@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
   UsePipes,
@@ -75,6 +76,15 @@ export class PatientController extends BaseController<PatientDocument> {
     @Param('id') id: string,
   ): Promise<MedicalRecord[]> {
     return this.patientService.getMedicalRecordsByPatientIdObj(id);
+  }
+
+  @Get('prescriptions')
+  async getRecordsByDate(
+    @Query('date') date: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<any> {
+    return await this.patientService.getMedicalRecordsByDate(date);
   }
 
   @Get()

@@ -11,6 +11,8 @@ export class Batch {
   batchNumber: string;
   @Prop({ required: true })
   quantity: number;
+  @Prop({ default: 0 })
+  reservedQuantity: number;
   @Prop({ required: true })
   quantityEntered: number;
   @Prop({ required: true })

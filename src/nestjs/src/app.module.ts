@@ -14,6 +14,7 @@ import { NotificationModule } from './notifications/notification.module';
 import { MedicalServicesModule } from './medical-services/medical-services.module';
 import { MedicalTestsModule } from './medical-tests/medical-tests.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
+import { InvoicesModule } from './invoices/invoices.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
@@ -51,7 +52,8 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     NotificationModule,
     MedicalServicesModule,
     MedicalTestsModule,
-    BlockchainModule
+    BlockchainModule,
+    InvoicesModule,
   ],
 })
 export class AppModule {}
