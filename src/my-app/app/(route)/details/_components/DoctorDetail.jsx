@@ -9,6 +9,17 @@ import { useGetDoctorByIdQuery } from "@/state/api";
 
 function DoctorDetail({ recordId }) {
   const { data: doctor, error, isLoading } = useGetDoctorByIdQuery(recordId);
+  const router = useRouter();
+  if (typeof window !== "undefined") {
+    const patient = localStorage.getItem("Patient");
+
+    if (!patient) {
+      router.push('/login');
+      return null; 
+    }
+  }
+  
+  
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 border-[1px] p-5 mt-5 rounded-lg">
@@ -16,11 +27,11 @@ function DoctorDetail({ recordId }) {
         <div>
           {doctor && (
             <Image
-              src={`/${doctor?.avatar}`}
+              src={`${doctor?.avatar}`}
               width={200}
               height={200}
               alt="doctor-image"
-              className="rounded-lg h-[270px] object-cover"
+              className="rounded-lg h-[300px] object-cover"
             />
           )}
         </div>
@@ -45,21 +56,17 @@ function DoctorDetail({ recordId }) {
       <div className="p-3 border-[1px] rounded-lg mt-5">
         <h2 className="font-bold text-[20px]">About me</h2>
         <p className="text-gray-500 tracking-wide mt-2">
-          I am Dr. [Your Name], a dedicated and compassionate healthcare
-          professional with over [X] years of experience in [Your
-          Specialization]. My approach to medicine combines cutting-edge medical
+         { `I am Dr. ${doctor?.fullname}, a dedicated and compassionate healthcare
+          professional with over ${doctor?.year_of_experience} years of experience in ${doctor?.specialized}.
+          My approach to medicine combines cutting-edge medical
           treatments with a holistic view of patient care, ensuring that each
           individual receives personalized attention. I specialize in [mention
           key areas of expertise or focus, such as cardiology, pediatrics,
           etc.], and I am passionate about helping my patients achieve optimal
           health and well-being. My philosophy centers around understanding my
-          patients' unique needs, fostering open communication, and empowering
+          patients&apos; unique needs, fostering open communication, and empowering
           them with the knowledge they need to make informed decisions about
-          their health. I earned my medical degree from [Your University] and
-          completed my residency at [Your Residency Hospital]. I continually
-          stay updated on the latest advancements in medical science to provide
-          the highest standard of care. When I'm not working, I enjoy [mention
-          hobbies or interests].
+          their health.`}
         </p>
       </div>
     </>

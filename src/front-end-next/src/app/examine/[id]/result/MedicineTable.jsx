@@ -14,7 +14,7 @@ export default function MedicineTable({ medicineList, setMedicineList }) {
             <tr>
               <th className="text-left text-xs font-medium py-3 px-2">Item</th>
               <th className="text-left text-xs font-medium py-3 px-2">Dosage</th>
-              <th className="text-left text-xs font-medium py-3 px-2">Instruction</th>
+              <th className="text-left text-xs font-medium py-3 px-2">Instraction</th>
               <th className="text-left text-xs font-medium py-3 px-2">Quantity</th>
               <th className="text-left text-xs font-medium py-3 px-2">Actions</th>
             </tr>
@@ -24,7 +24,7 @@ export default function MedicineTable({ medicineList, setMedicineList }) {
               <tr key={index} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                 <td className="text-left text-xs py-4 px-2">{medicine.itemName}</td>
                 <td className="text-left text-xs py-4 px-2">{medicine.dosage}</td>
-                <td className="text-left text-xs py-4 px-2">{medicine.instruction}</td>
+                <td className="text-left text-xs py-4 px-2">{medicine.instraction}</td>
                 <td className="text-left text-xs py-4 px-2">{medicine.quantity}</td>
                 <td className="text-left text-xs py-4 px-2">
                   <button

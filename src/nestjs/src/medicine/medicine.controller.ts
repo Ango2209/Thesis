@@ -49,6 +49,60 @@ export class MedicineController extends BaseController<MedicineDocument> {
     );
   }
 
+  @Post('lock-medicines')
+  async lockMedicinces(
+    @Body()
+    medicinesToCheck: {
+      medicineId: string;
+      quantityToUse: number;
+      dosage: string;
+      instraction: string;
+    }[],
+  ): Promise<{
+    available: any[];
+    unavailable: any[];
+  }> {
+    return this.medicineService.lockMedicinces(medicinesToCheck);
+  }
+
+  @Post('reduce-medicines')
+  async reduceMedicinces(
+    @Body()
+    medicinesToCheck: {
+      medicineId: string;
+      quantityToUse: number;
+    }[],
+  ): Promise<void> {
+    this.medicineService.reduceMedicinces(medicinesToCheck);
+  }
+
+  @Post('check-medicines-availability')
+  async checkMedicinesAvailability(
+    @Body()
+    medicinesToCheck: {
+      medicineId: string;
+      quantityToUse: number;
+      dosage: string;
+      instraction: string;
+    }[],
+  ): Promise<{
+    available: any[];
+    unavailable: any[];
+  }> {
+    return this.medicineService.checkMedicinesAvailability(medicinesToCheck);
+  }
+
+  @Post('unlock-medicines')
+  async unlockMedicines(
+    @Body()
+    medicinesToUnlock: {
+      medicineId: string;
+      quantityToUnlock: number;
+    }[],
+  ): Promise<void> {
+    return this.medicineService.unlockMedicines(medicinesToUnlock);
+  }
+
   // get batches by medicine id
   @Get(':id/batches')
   async getBatchesByMedicineId(@Param('id') medicineId: string): Promise<any> {
@@ -56,7 +110,7 @@ export class MedicineController extends BaseController<MedicineDocument> {
   }
 
   @Get('search')
-  async searchMedicines(@Query('name') name: string): Promise<Medicine[]> {
+  async searchMedicines(@Query('name') name: string): Promise<any[]> {
     return this.medicineService.findMedicinesByName(name);
   }
 }

@@ -63,29 +63,35 @@ function CategorySearch() {
       </h2>
       <div className="flex w-full max-w-sm items-center space-x-2">
         <Input type="email" placeholder="Email" />
-        <Button type="submit">Search</Button>
+        {/* <Button type="submit">Search</Button> */}
       </div>
       <div className="grid grid-cols-3 md:grid-cols-4 mt-5 lg:grid-cols-6">
-        {categoryList.length > 0 ? categoryList.map((category, index) => (
-          <Link key={index} href={`/search/${category.name}`}>
-            <div
-
-              className="flex flex-col text-center cursor-pointer
+        {categoryList.length > 0
+          ? categoryList.map((category, index) => (
+              <Link key={index} href={`/search/${category.name}`}>
+                <div
+                  className="flex flex-col text-center cursor-pointer
             items-center p-5 bg-blue-50 m-2 rounded-lg gap-2 
             hover:scale-110 transition-all ease-in-out"
-            >
-              <Image src={category.icons} alt="icon" width={50} height={50} />
-              <label className="text-sm">{category.name}</label>
-            </div>
-          </Link>
-
-        )) : [1, 2, 3, 4, 5, 6].map((item, index) => {
-          return <div key={index} className="h-[120px] w-[130px] m-2 bg-slate-200 animate-pulse rounded-lg">
-
-          </div>
-        })
-
-        }
+                >
+                  <Image
+                    src={category.icons}
+                    alt="icon"
+                    width={50}
+                    height={50}
+                  />
+                  <label className="text-sm">{category.name}</label>
+                </div>
+              </Link>
+            ))
+          : [1, 2, 3, 4, 5, 6].map((item, index) => {
+              return (
+                <div
+                  key={index}
+                  className="h-[120px] w-[130px] m-2 bg-slate-200 animate-pulse rounded-lg"
+                ></div>
+              );
+            })}
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://localhost:4000",
-    baseUrl: "http://35.225.140.192:3002",
+    baseUrl: "http://localhost:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
@@ -75,6 +75,9 @@ export const api = createApi({
     }),
     getBatchesByMedicineId: build.query({
       query: (medicineId) => `/medicines/${medicineId}/batches`,
+    }),
+    getAppointmentsDoctorId: build.query({
+      query: (doctorId) => `/appointment/doctor/${doctorId}`,
     }),
     addBatchs: build.mutation({
       query: (batchs) => ({
@@ -180,15 +183,76 @@ export const api = createApi({
         body: updateMedicalTestDto,
       }),
     }),
+
+    getPrescriptionsByDate: build.query({
+      query: ({ date, page = 1, limit = 10 }) => ({
+        url: "/patients/prescriptions",
+        params: { date, page, limit },
+      }),
+    }),
     uploadMultipleFiles: build.mutation({
       query: (files) => ({
         url: "/upload/multiple",
         method: "POST",
         body: files,
-        // Nếu bạn cần gửi file như form-data
-        // headers: {
-        //   'Content-Type': 'multipart/form-data',
-        // },
+      }),
+    }),
+
+    checkMedicinesAvailability: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "/medicines/check-medicines-availability",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+
+    lockMedicines: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "/medicines/lock-medicines",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+
+    unlockMedicines: build.mutation({
+      query: (medicinesToUnlock) => ({
+        url: "/medicines/unlock-medicines",
+        method: "POST",
+        body: medicinesToUnlock,
+      }),
+    }),
+    createInvoice: build.mutation({
+      query: (createInvoiceDto) => ({
+        url: "/invoices",
+        method: "POST",
+        body: createInvoiceDto,
+      }),
+    }),
+    reduceMedicines: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "medicines/reduce-medicines",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+    changeToPaid: build.mutation({
+      query: (id) => ({
+        url: `/invoices/${id}/change-to-paid`,
+        method: "PATCH",
+      }),
+    }),
+    login: build.mutation({
+      query: (loginDto) => ({
+        url: "/auth/signIn",
+        method: "POST",
+        body: loginDto,
+      }),
+    }),
+    signUp: build.mutation({
+      query: (signUpDto) => ({
+        url: "/auth/register",
+        method: "POST",
+        body: signUpDto,
       }),
     }),
   }),
@@ -229,5 +293,14 @@ export const {
   useUpdateMedicalTestMutation,
   useGetMedicalTestsByAppointmentIdQuery,
   useUploadMultipleFilesMutation,
-  useUpdateIsExaminedMutation
+  useUpdateIsExaminedMutation,
+  useGetPrescriptionsByDateQuery,
+  useCheckMedicinesAvailabilityMutation,
+  useUnlockMedicinesMutation,
+  useLockMedicinesMutation,
+  useCreateInvoiceMutation,
+  useReduceMedicinesMutation,
+  useChangeToPaidMutation,
+  useLoginMutation,
+  useSignUpMutation,
 } = api;

@@ -1,6 +1,21 @@
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import { CalendarDays, CircleDollarSign, GraduationCap, House, Pill, ReceiptCent, Settings, Users, Newspaper, TestTubeDiagonal, ClipboardPlus, Stethoscope, BriefcaseMedical } from "lucide-react";
+import {
+  CalendarDays,
+  CircleDollarSign,
+  GraduationCap,
+  House,
+  Pill,
+  ReceiptCent,
+  Settings,
+  Users,
+  Newspaper,
+  TestTubeDiagonal,
+  ClipboardPlus,
+  Stethoscope,
+  BriefcaseMedical,
+  Tablets,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,6 +42,8 @@ const SidebarLink = ({ href, icon: Icon, label, isCollapsed }) => {
 };
 
 const Sidebar = () => {
+  const userRole = localStorage.getItem("userRole");
+
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
 
@@ -37,22 +54,23 @@ const Sidebar = () => {
     <div className={sidebarClassNames}>
       {/* TOP LOGO */}
       <div className={`flex gap-3 justify-between md:justify-normal items-center pt-8 ${isSidebarCollapsed ? "px-5" : "px-8"}`}>
-        <Image src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/logo.png" alt="edstock-logo" width={27} height={27} className="rounded w-8" />
+        <Image src='/logo.jpg' alt="edstock-logo" width={27} height={27} className="rounded w-8" />
         <h1 className={`${isSidebarCollapsed ? "hidden" : "block"} font-extrabold text-2xl`}>NSHEATH</h1>
       </div>
 
       {/* LINKS */}
       <div className="flex-grow mt-8">
         <SidebarLink href="/dashboard" icon={House} label="Dashboard" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/examine" icon={Stethoscope} label="Examine" isCollapsed={isSidebarCollapsed} />
+        {userRole == 'doctor' &&  <SidebarLink href="/examine" icon={Stethoscope} label="Examine" isCollapsed={isSidebarCollapsed} />}
         <SidebarLink href="/appointments-registration" icon={ClipboardPlus} label="Medical Appointment Registration" isCollapsed={isSidebarCollapsed} />
+        <SidebarLink href="/sell-medicine" icon={Tablets} label="Selling Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/patients" icon={Users} label="Patient" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/doctors" icon={GraduationCap} label="Doctors" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/appointments" icon={CalendarDays} label="Appointments" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/medical-tests" icon={TestTubeDiagonal} label="Medical Tests" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/medical-services" icon={BriefcaseMedical} label="Services" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />
-        <SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />
+        {userRole == 'doctor' && <SidebarLink href="/medical-services" icon={BriefcaseMedical} label="Services" isCollapsed={isSidebarCollapsed} />}
+        {userRole == "admin" && <SidebarLink href="/payments" icon={CircleDollarSign} label="Payments" isCollapsed={isSidebarCollapsed} />}
+        {userRole == "admin" &&<SidebarLink href="/invoices" icon={ReceiptCent} label="Invoices" isCollapsed={isSidebarCollapsed} />}
         <SidebarLink href="/medicine" icon={Pill} label="Medicine" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/blogs" icon={Newspaper} label="Blob" isCollapsed={isSidebarCollapsed} />
         <SidebarLink href="/settings" icon={Settings} label="Settings" isCollapsed={isSidebarCollapsed} />

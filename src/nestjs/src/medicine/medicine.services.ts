@@ -46,8 +46,8 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     let totalCost = 0;
 
     for (const batch of batches) {
-      totalQuantity += batch.quantity;
-      totalCost += batch.quantity * batch.purchasePrice;
+      totalQuantity += batch.quantityEntered;
+      totalCost += batch.quantityEntered * batch.purchasePrice;
     }
 
     const averagePrice = totalCost / totalQuantity;
@@ -74,28 +74,37 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     const profitMargin = 1.5;
     this.validateExpiryDate(addNewBatchDto.expiryDate);
 
-    const newBatch = new this.batchModel({
-      medicineId: new Types.ObjectId(medicineId),
-      ...addNewBatchDto,
-      quantity: addNewBatchDto.quantityEntered,
-    });
-    const batchSaved = await newBatch.save();
+    const result = await this.batchModel.updateMany(
+      {
+        batchNumber: addNewBatchDto.batchNumber,
+        medicineId: new Types.ObjectId(medicineId),
+      },
+      { $inc: { quantity: addNewBatchDto.quantityEntered } },
+    );
+
+    if (result.modifiedCount === 0) {
+      const newBatch = new this.batchModel({
+        medicineId: new Types.ObjectId(medicineId),
+        ...addNewBatchDto,
+        quantity: addNewBatchDto.quantityEntered,
+      });
+      await newBatch.save();
+    }
 
     //calculate base price
-    const newAveragePrice = await this.calculateAveragePriceForMedicine(
-      newBatch.medicineId.toString(),
-    );
+    const newAveragePrice =
+      await this.calculateAveragePriceForMedicine(medicineId);
 
     const basePrice = newAveragePrice * profitMargin;
     const newBasePrice = parseFloat(basePrice.toFixed(2));
 
     // update base price
-    await this.medicineModel.findByIdAndUpdate(newBatch.medicineId, {
+    await this.medicineModel.findByIdAndUpdate(new Types.ObjectId(medicineId), {
       basePrice: newBasePrice,
       avgPurchasePrice: newAveragePrice,
     });
 
-    return batchSaved;
+    return true;
   }
 
   async prescribeMedicine(
@@ -128,96 +137,6 @@ export class MedicineService extends BaseServices<MedicineDocument> {
           'An unexpected error occurred while processing prescriptions',
         );
       }
-    }
-  }
-
-  async createPrescription(
-    createPrescriptionsDto: CreatePrescriptionItemDto[],
-  ): Promise<CreatePrescriptionItemDto[]> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
-
-    const processedItems: CreatePrescriptionItemDto[] = [];
-
-    try {
-      for (const item of createPrescriptionsDto) {
-        //Check valid medicine
-        const medicine = await this.medicineModel
-          .findById(item.medicineId)
-          .session(session)
-          .exec();
-        if (!medicine) {
-          throw new NotFoundException(
-            `Medicine with ID ${item.medicineId} not found`,
-          );
-        }
-
-        item.itemName = medicine.name;
-        item.itemPrice = medicine.basePrice;
-        item.amount = item.quantity * item.itemPrice;
-        try {
-          await this.dispenseMedicine(item.medicineId, item.quantity, session);
-          processedItems.push(item);
-        } catch (error) {
-          // Handle case when not enough stock is available
-          if (error.message.includes('Not enough drugs to prescribe')) {
-            throw new BadRequestException(
-              `Not enough stock for medicine ID ${item.medicineId}`,
-            );
-          } else {
-            throw error; // Re-throw if it's not a known error
-          }
-        }
-      }
-      await session.commitTransaction();
-      return processedItems;
-    } catch (error) {
-      //roll back
-      await session.abortTransaction();
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message);
-      } else if (error instanceof BadRequestException) {
-        throw new BadRequestException(error.message);
-      } else {
-        throw new BadRequestException(
-          'An unexpected error occurred while processing prescriptions',
-        );
-      }
-    } finally {
-      session.endSession();
-    }
-  }
-
-  private async dispenseMedicine(
-    medicineId: string,
-    prescribedQuantity: number,
-    session: any,
-  ): Promise<void> {
-    const now = new Date();
-    const limitDate = new Date();
-    limitDate.setMonth(now.getMonth() + 6);
-    let remainingQuantity = prescribedQuantity;
-
-    const batches = await this.batchModel
-      .find({
-        medicineId: new Types.ObjectId(medicineId),
-        expiryDate: { $gt: limitDate },
-      })
-      .sort({ expiryDate: 1 })
-      .session(session);
-
-    for (const batch of batches) {
-      if (remainingQuantity <= 0) break;
-
-      const quantityToUse = Math.min(batch.quantity, remainingQuantity);
-      batch.quantity -= quantityToUse;
-      await batch.save({ session });
-
-      remainingQuantity -= quantityToUse;
-    }
-
-    if (remainingQuantity > 0) {
-      throw new Error('Not enough drugs to prescribe');
     }
   }
 
@@ -329,9 +248,204 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     return processedBatches;
   }
 
-  async findMedicinesByName(name: string): Promise<Medicine[]> {
-    return this.medicineModel
+  async findMedicinesByName(name: string): Promise<any[]> {
+    const medicines = await this.medicineModel
       .find({ name: { $regex: name, $options: 'i' } })
       .exec();
+    const medicinesWithQuantities = await Promise.all(
+      medicines.map(async (medicine) => {
+        const availableQuantity = await this.getAvailableQuantity(medicine._id);
+        return {
+          ...medicine.toObject(),
+          availableQuantity,
+        };
+      }),
+    );
+    return medicinesWithQuantities;
+  }
+
+  // Hàm tính thời điểm 6 tháng sau từ hiện tại
+  private sixMonthsFromNow(): Date {
+    const now = new Date();
+    now.setMonth(now.getMonth() + 6);
+    return now;
+  }
+
+  private async getAvailableQuantity(medicineId): Promise<number> {
+    const aggregationResult = await this.batchModel.aggregate([
+      {
+        $match: {
+          medicineId: new Types.ObjectId(medicineId),
+          expiryDate: { $gte: this.sixMonthsFromNow() }, // Lọc theo hạn dùng
+          quantity: { $gt: 0 }, // Chỉ lấy lô còn hàng
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          totalAvailable: { $sum: '$quantity' }, // Tổng số lượng từ các lô
+        },
+      },
+    ]);
+    const totalAvailable =
+      aggregationResult.length > 0 ? aggregationResult[0].totalAvailable : 0;
+    return totalAvailable;
+  }
+
+  // Hàm kiểm tra số lượng thuốc khả dụng
+  async lockMedicinces(
+    medicinesToCheck: { medicineId: string; quantityToUse: number }[],
+  ): Promise<{
+    available: any[];
+    unavailable: any[];
+  }> {
+    const result = {
+      available: [],
+      unavailable: [],
+    };
+
+    for (const { medicineId, quantityToUse } of medicinesToCheck) {
+      const medicine = await this.medicineModel.findById(medicineId);
+
+      const totalAvailable = await this.getAvailableQuantity(medicineId);
+
+      if (totalAvailable >= quantityToUse) {
+        // Lấy danh sách lô thuốc theo thứ tự hạn gần nhất trước
+        const batches = await this.batchModel
+          .find({
+            medicineId: new Types.ObjectId(medicineId),
+            expiryDate: { $gte: this.sixMonthsFromNow() },
+            quantity: { $gt: 0 },
+          })
+          .sort({ expiryDate: 1 });
+
+        let remainingQuantity = quantityToUse;
+
+        for (const batch of batches) {
+          const availableQuantity = batch.quantity;
+
+          const quantityToReserve = Math.min(
+            availableQuantity,
+            remainingQuantity,
+          );
+          batch.reservedQuantity += quantityToReserve; // Lock số lượng
+          batch.quantity -= quantityToReserve; // Giảm số lượng khả dụng
+          remainingQuantity -= quantityToReserve;
+
+          // Cập nhật lô thuốc trong cơ sở dữ liệu
+          await batch.save();
+          if (remainingQuantity === 0) break; // Đủ số lượng, thoát vòng lặp
+        }
+        result.available.push({ ...medicine.toObject(), quantityToUse });
+      } else {
+        result.unavailable.push(medicine.toObject());
+      }
+      return result;
+    }
+  }
+
+  async reduceMedicinces(
+    medicinesToCheck: { medicineId: string; quantityToUse: number }[],
+  ): Promise<void> {
+    for (const { medicineId, quantityToUse } of medicinesToCheck) {
+      // Lấy danh sách lô thuốc theo thứ tự hạn gần nhất trước
+      const batches = await this.batchModel
+        .find({
+          medicineId: new Types.ObjectId(medicineId),
+          expiryDate: { $gte: this.sixMonthsFromNow() },
+          quantity: { $gt: 0 },
+        })
+        .sort({ expiryDate: 1 });
+
+      let remainingQuantity = quantityToUse;
+
+      for (const batch of batches) {
+        const availableQuantity = batch.quantity;
+
+        const quantityToReserve = Math.min(
+          availableQuantity,
+          remainingQuantity,
+        );
+        batch.quantity -= quantityToReserve; // Giảm số lượng khả dụng
+        remainingQuantity -= quantityToReserve;
+
+        // Cập nhật lô thuốc trong cơ sở dữ liệu
+        await batch.save();
+        if (remainingQuantity === 0) break; // Đủ số lượng, thoát vòng lặp
+      }
+    }
+  }
+
+  // Hàm unlock số lượng khi hủy đơn hàng
+  async unlockMedicines(
+    medicinesToUnlock: { medicineId: string; quantityToUnlock: number }[],
+  ): Promise<void> {
+    for (const { medicineId, quantityToUnlock } of medicinesToUnlock) {
+      let remainingQuantity = quantityToUnlock;
+
+      // Lấy danh sách các lô theo thứ tự hạn gần nhất trước
+      const batches = await this.batchModel
+        .find({
+          medicineId: new Types.ObjectId(medicineId),
+          reservedQuantity: { $gt: 0 }, // Chỉ lấy lô đã có reserved
+        })
+        .sort({ expiryDate: 1 }); // Ưu tiên lô có hạn gần nhất
+
+      for (const batch of batches) {
+        const quantityToUnlock = Math.min(
+          batch.reservedQuantity,
+          remainingQuantity,
+        );
+
+        batch.reservedQuantity -= quantityToUnlock;
+        remainingQuantity -= quantityToUnlock;
+
+        // Cập nhật lô thuốc trong cơ sở dữ liệu
+        await batch.save();
+
+        if (remainingQuantity === 0) break; // Đủ số lượng cần unlock, thoát vòng lặp
+      }
+    }
+  }
+
+  async checkMedicinesAvailability(
+    medicinesToCheck: {
+      medicineId: string;
+      quantityToUse: number;
+      dosage: string;
+      instraction: string;
+    }[],
+  ): Promise<{
+    available: any[];
+    unavailable: any[];
+  }> {
+    const result = {
+      available: [],
+      unavailable: [],
+    };
+    for (const {
+      medicineId,
+      quantityToUse,
+      dosage,
+      instraction,
+    } of medicinesToCheck) {
+      const totalAvailable = await this.getAvailableQuantity(medicineId);
+      const medicine = await this.medicineModel.findById(medicineId);
+      if (totalAvailable >= quantityToUse) {
+        result.available.push({
+          ...medicine.toObject(),
+          quantityToUse,
+          dosage,
+          instraction,
+        });
+      } else {
+        result.unavailable.push({
+          ...medicine.toObject(),
+          quantityToUse,
+          availableQuantity: totalAvailable,
+        });
+      }
+    }
+    return result;
   }
 }

@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from './schedules/schedule.module';
 import { PersonModule } from './person/person.module';
 import { ContractModule } from './contract/contract.module';
+import { AuthModule } from './auth/auth.module';
 import { RatingModule } from './ratings/rating.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { MedicineModule } from './medicine/medicine.module';
@@ -14,6 +15,7 @@ import { NotificationModule } from './notifications/notification.module';
 import { MedicalServicesModule } from './medical-services/medical-services.module';
 import { MedicalTestsModule } from './medical-tests/medical-tests.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
+import { InvoicesModule } from './invoices/invoices.module';
 @Module({
   imports: [
     MongooseModule.forRoot(
@@ -39,6 +41,7 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
     ContractModule,
     RatingModule,
     ScheduleModule,
@@ -51,7 +54,8 @@ import { BlockchainModule } from './blockchain/blockchain.module';
     NotificationModule,
     MedicalServicesModule,
     MedicalTestsModule,
-    BlockchainModule
+    BlockchainModule,
+    InvoicesModule,
   ],
 })
 export class AppModule {}

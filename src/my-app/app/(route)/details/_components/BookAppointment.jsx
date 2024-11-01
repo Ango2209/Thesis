@@ -12,16 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays, Clock } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
 import { toast } from "react-toastify"; // Assuming you are using react-toastify for notifications
 import "react-toastify/dist/ReactToastify.css"; // Import styles for notifications
 import {
   useAddBookingAppointmentMutation,
   useAddNotificationMutation,
 } from "@/state/api";
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+
 
 function BookAppointment({ doctor }) {
   const [date, setDate] = useState(new Date());
@@ -34,7 +31,7 @@ function BookAppointment({ doctor }) {
     useAddBookingAppointmentMutation(); // Initialize mutation
 
   const [addNotification] = useAddNotificationMutation(); // Initialize mutation
-  const { user } = useKindeBrowserClient();
+  const  user  = JSON.parse(localStorage.getItem("Patient"))
 
   const getTime = () => {
     const timeList = [];
@@ -73,28 +70,28 @@ function BookAppointment({ doctor }) {
     }
 
     const appointment = {
-      patient_name: user.given_name + " " + user.family_name,
+      patient_name: user.fullname,
       purpose_visit: purposeVisit,
       date_of_visit: date,
       start_time: selectedTime,
-      end_time: "End Time",
       doctor: doctor._id,
-      patient: null,
-      status: "Pending",
-      description: "Description",
+      patient: user._id,
+      status: 'booked',
+      description: "General Medicine'",
     };
     const notification = {
       patientId: null,
       doctorId: doctor._id,
       title: "New Appointment",
       content: `You have a new appointment with Patient ${
-        user.given_name + " " + user.family_name
+        user.fullname
       } on ${date} at ${selectedTime}`,
       isRead: false,
       date,
     };
     try {
       await addBookingAppointment(appointment).unwrap(); // Execute the mutation
+      console.log("Apoint ",appointment)
       await addNotification(notification).unwrap(); // Execute the mutation
       toast.success("Appointment booked successfully!");
       setDialogOpen(false); // Close the modal on success
