@@ -14,11 +14,11 @@ function DoctorSuggestionList() {
           className="mb-4 p-3 shadow-sm w-full cursor-pointer hover:bg-slate-100 rounded-lg flex items-center gap-3"
         >
           <Image
-            src={`/${doctor.avatar}`}
+            src={`${doctor.avatar}`}
             width={64}
             height={64}
             alt="doctor"
-            className="w-[70px] h-[70px] object-cover rounded-full"
+            className="w-[70px] h-[90px] object-cover rounded-full"
           />
           <div>
             <h2 className="font-bold">{doctor.name}</h2>

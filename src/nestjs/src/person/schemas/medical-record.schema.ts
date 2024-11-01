@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types, HydratedDocument } from 'mongoose';
+import mongoose, { Types, HydratedDocument } from 'mongoose';
 import { Doctor } from './doctor.schema';
 import { Appointment } from 'src/appointment/schemas/appointment.schemas';
 @Schema()
@@ -22,6 +22,8 @@ export class MedicalRecord {
   prescriptions: [];
   @Prop({ default: [] })
   attachments: string[];
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' })
+  appointment : Appointment
   @Prop({ type: Types.ObjectId, ref: Doctor.name })
   doctor: Types.ObjectId; // Reference to a doctor
 }

@@ -32,7 +32,7 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Email Address
+              User Name
             </label>
             <input
               type="email"

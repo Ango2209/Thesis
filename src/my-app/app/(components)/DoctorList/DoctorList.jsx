@@ -9,7 +9,7 @@ function DoctorList({ doctorList, heading = "Popular Doctors" }) {
   return (
     <div className="mb-10 px-24 ">
       <h2 className="font-bold text-xl">{heading}</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-4">
+      <div className="grid grid-cols-5 gap-7 mt-4"> {/* Changed to 5 columns */}
         {doctorList?.length > 0
           ? doctorList.map((doctor, index) => (
               <div
@@ -17,19 +17,19 @@ function DoctorList({ doctorList, heading = "Popular Doctors" }) {
                 key={index}
               >
                 <Image
-                  src={`/${doctor.avatar}`}
+                  src={doctor?.avatar}
                   alt="doctor"
-                  width={300}
-                  height={200}
-                  className="h-[300px] w-full object-cover rounded-lg"
+                  width={150} // Adjusted width
+                  height={200} // Adjusted height
+                  className="h-[400px] w-full object-cover rounded-lg" // Adjusted height
                 />
                 <div className="mt-3 items-baseline flex flex-col gap-1">
                   <h2 className="text-[10px] bg-blue-100 p-1 rounded-full px-2 text-primary">
-                    {doctor.title}
+                    {doctor.specialized}
                   </h2>
                   <h2 className="font-bold">{doctor.fullname}</h2>
                   <h2 className="text-primary text-sm">{doctor.yearOfExp}</h2>
-                  <h2 className="text-gray-500 text-sm">{doctor.address}</h2>
+                  <h2 className="text-gray-500 text-sm">{doctor.phone}</h2>
                   {/* add on click event to navigate to doctor details page */}
                   <Button
                     onClick={() => router.push(`/details/${doctor._id}`)}
