@@ -7,9 +7,11 @@ import {
   useSearchMedicinesQuery,
   useUnlockMedicinesMutation,
 } from "@/state/api";
+import ReactDOMServer from "react-dom/server"; // Đả
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-
+import InvoiceContent from "./MedicineInvoice"
+const invoiceCode = "INV001";
 const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, openQrCodeModal, setInvoice }) => {
   const { patient } = record;
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -18,6 +20,86 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
   const [reduceMedicines, { isLoading: isLoadingReduce }] = useReduceMedicinesMutation();
   const [lockMedicines, { isLoading: isLoadingLock }] = useLockMedicinesMutation();
 
+  const handlePrintInvoice = async () => {
+    const width = window.innerWidth * 0.8;
+    const height = window.innerHeight * 0.8;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    const medicines = [
+      { name: "Aspirin", price: 100, quantity: 20 },
+      { name: "Ibuprofen", price: 150, quantity: 10 },
+
+    ];
+
+    const totalAmount = medicines.reduce((acc, medicine) => acc + (medicine.price * medicine.quantity), 0); // Calculate total based on medicines
+    const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
+    
+    const invoiceContent = ReactDOMServer.renderToString(
+      <InvoiceContent 
+      invoiceCode="INV001" 
+      patient={{ fullname: "Jane Doe", phone: "987-654-3210", patient_id: "PAT123" }} 
+      doctor={{ fullname: "Dr. John Smith", doctor_id: "DOC456" }} 
+      service={{ medicines: medicines, price: totalAmount }} // Pass medicines and total amount
+      paymentMethod="Bank Transfer" 
+    />
+    );
+
+    printWindow?.document.write(`
+      <html>
+        <head>
+          <title>Invoice</title>
+          <style>
+            body { margin: 0; padding: 0; }
+          </style>
+        </head>
+        <body>${invoiceContent}</body>
+      </html>
+    `);
+    printWindow?.document.close();
+    printWindow?.focus();
+    printWindow?.print();
+  };
+
+
+
+
+  const handleConfirmPrint = () => {
+    toast(
+      ({ closeToast }) => (
+        <div>
+          <h3 className="text-lg font-semibold">Do you want to print the invoice?</h3>
+          <div className="flex justify-end gap-4 mt-4">
+            <button
+              className="bg-gray-300 p-2 rounded"
+              onClick={() => {
+                closeToast();
+                onClose();
+              }}
+            >
+              No, thanks
+            </button>
+            <button
+              className="bg-blue-500 text-white p-2 rounded"
+              onClick={() => {
+                closeToast();
+                onClose();
+                handlePrintInvoice();
+              }}
+            >
+              Yes, print it
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        position: "top-center",
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        closeButton: false,
+      }
+    );
+  };
 
   const handleDelete = (index) => {
     setMedicines(medicines.filter((_, i) => i !== index));
@@ -177,6 +259,7 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
       await createInvoice(createInvoiceDto).unwrap();
       await reduceMedicines(medicinesToCheck).unwrap();
       toast.success("Payment success");
+      handleConfirmPrint();
       onClose();
     } else {
       createInvoiceDto = { ...params, paymentMethod: "transfer", status: "awaiting transfer" };
@@ -185,6 +268,7 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
       setInvoice(invoice);
       onClose();
       openQrCodeModal();
+      handleConfirmPrint();
     }
   };
 

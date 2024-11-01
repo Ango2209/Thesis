@@ -27,11 +27,11 @@ function DoctorDetail({ recordId }) {
         <div>
           {doctor && (
             <Image
-              src={`/${doctor?.avatar}`}
+              src={`${doctor?.avatar}`}
               width={200}
               height={200}
               alt="doctor-image"
-              className="rounded-lg h-[270px] object-cover"
+              className="rounded-lg h-[300px] object-cover"
             />
           )}
         </div>

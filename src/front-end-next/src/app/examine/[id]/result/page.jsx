@@ -156,6 +156,7 @@ export default function NewMedicalRecord({ params }) {
 
     try {
       const formData = {
+        appointment:data._id,
         doctor: data?.doctor?._id,
         record_date: new Date().toISOString(),
         complaint,
@@ -167,7 +168,7 @@ export default function NewMedicalRecord({ params }) {
         attachments: servicesRqData.flatMap((medicalTest) => medicalTest.attachments),
       };
 
-      await addMedicalRecord({ patientId: data?.patient?._id, record: formData }).unwrap();
+      await addMedicalRecord({patientId: data?.patient?._id, record: formData }).unwrap();
       await updateIsExamined(id).unwrap();
       toast.success("Medical record created successfully!");
       //change status

@@ -21,23 +21,20 @@ import { useRouter } from "next/navigation";
 
 
 
-export default function MyBookings() {
-
-  
+export default function MyBookings() {  
   const user = JSON.parse(localStorage.getItem("Patient"))
   const [activeDialog, setActiveDialog] = useState(null);
   const [date, setDate] = useState(new Date());
   const [timeSlot, setTimeSlot] = useState([]);
-
+  const [updateAppointmentDate] = useUpdateAppointmentDateMutation(); 
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
-  const [updateAppointmentDate] = useUpdateAppointmentDateMutation();
   const {
     data: bookings,
     refetch,
     error,
     isLoading,
-  } = useGetAppointmentsPatientIdQuery(user._id); 
+  } = useGetAppointmentsPatientIdQuery(user._id);
   const getTime = () => {
     const timeList = [];
 
@@ -63,16 +60,6 @@ export default function MyBookings() {
   useEffect(() => {
     getTime();
   }, []);
-
-  const router = useRouter();
-  if (typeof window !== "undefined") {
-    const patient = localStorage.getItem("Patient");
-
-    if (!patient) {
-      router.push('/login');
-      return null; 
-    }
-  }
 
   const isPastDay = (day) => {
     return day < new Date();
@@ -103,34 +90,34 @@ export default function MyBookings() {
   };
 
 
-  // const {
-  //   data: medical_records,
-  // }= useGetMedicalRecordsQuery(user._id)
+  const {
+    data: medical_records,
+  }= useGetMedicalRecordsQuery(user._id)
 
-  const medical_records = [
-    {
-      record_date: new Date('2023-01-01'),
-      diagnosis: "Flu",
-      notes: "Patient showed symptoms of flu.",
-      complaint: "Fever and cough",
-      treatment: "Rest and hydration",
-      vital_signs: "BP: 120/80, Temp: 101°F",
-      prescriptions: ["Paracetamol", "Cough Syrup"],
-      attachments: [],
-      doctor: "60d5ec49f1b2c8b1f8c8e4b1" // Example ObjectId
-    },
-    {
-      record_date: new Date('2023-02-15'),
-      diagnosis: "Allergy",
-      notes: "Patient has seasonal allergies.",
-      complaint: "Sneezing and itchy eyes",
-      treatment: "Antihistamines",
-      vital_signs: "BP: 118/76, Temp: 98.6°F",
-      prescriptions: ["Antihistamine"],
-      attachments: [],
-      doctor: "60d5ec49f1b2c8b1f8c8e4b2" // Example ObjectId
-    }
-  ];
+  // const medical_records = [
+  //   {
+  //     record_date: new Date('2023-01-01'),
+  //     diagnosis: "Flu",
+  //     notes: "Patient showed symptoms of flu.",
+  //     complaint: "Fever and cough",
+  //     treatment: "Rest and hydration",
+  //     vital_signs: "BP: 120/80, Temp: 101°F",
+  //     prescriptions: ["Paracetamol", "Cough Syrup"],
+  //     attachments: [],
+  //     doctor: "60d5ec49f1b2c8b1f8c8e4b1" // Example ObjectId
+  //   },
+  //   {
+  //     record_date: new Date('2023-02-15'),
+  //     diagnosis: "Allergy",
+  //     notes: "Patient has seasonal allergies.",
+  //     complaint: "Sneezing and itchy eyes",
+  //     treatment: "Antihistamines",
+  //     vital_signs: "BP: 118/76, Temp: 98.6°F",
+  //     prescriptions: ["Antihistamine"],
+  //     attachments: [],
+  //     doctor: "60d5ec49f1b2c8b1f8c8e4b2" // Example ObjectId
+  //   }
+  // ];
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading bookings</p>;
@@ -150,7 +137,7 @@ export default function MyBookings() {
                 {/* Doctor Info */}
                 <div className="flex items-start space-x-6 mt-4 ml-16">
                   <img
-                    src={`https://i.pravatar.cc/150?img=${booking._id}`}
+                    src={booking.doctor.avatar}
                     alt={booking.doctor.fullname}
                     className="w-20 h-20 rounded-full border"
                   />
@@ -159,16 +146,16 @@ export default function MyBookings() {
                       Dr. {booking.doctor.fullname}
                     </h3>
                     <p className="text-gray-600">
-                      DOB: {new Date(booking.doctor.dob).toLocaleDateString()}
+                      DOB: {new Date(booking?.doctor?.dob).toLocaleDateString()}
                     </p>
                     <p className="text-gray-600">
-                      Address: {booking.doctor.address}
+                      Address: {booking?.doctor?.address}
                     </p>
                     <p className="text-gray-600">
-                      Phone: {booking.doctor.phone}
+                      Phone: {booking?.doctor?.phone}
                     </p>
                     <p className="text-gray-600">
-                      Email: {booking.doctor.email}
+                      Email: {booking?.doctor?.email}
                     </p>
                   </div>
                 </div>
@@ -177,19 +164,19 @@ export default function MyBookings() {
                   <div>
                     <p className="text-gray-600 flex items-center">
                       <CalendarIcon className="w-5 h-5 mr-2" /> Date of Visit:{" "}
-                      {new Date(booking.date_of_visit).toLocaleDateString()}
+                      {new Date(booking?.date_of_visit).toLocaleDateString()}
                     </p>
                     <p className="text-gray-600 flex items-center">
                       <ClockIcon className="w-5 h-5 mr-2" /> Start Time:{" "}
-                      {booking.start_time} 
+                      {booking?.start_time} 
                     </p>
                     <p className="text-gray-600">
-                      Purpose of Visit: {booking.purpose_visit}
+                      Purpose of Visit: {booking?.purpose_visit}
                     </p>
                   </div>
                   <div
                     className={`ml-12 px-3 py-1 rounded-full font-semibold text-sm ${
-                      booking.status === "Pending"
+                      booking.status === "booked"
                         ? "bg-yellow-100 text-yellow-600"
                         : "bg-green-100 text-green-600"
                     }`}
@@ -201,13 +188,13 @@ export default function MyBookings() {
               {/* Booking Status & Description */}
               <div className="mt-4">
                 <p className="text-gray-600">
-                  Description: {booking.description}
+                  Description: {booking?.description}
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="mt-4 flex space-x-4">
-                {booking.status === "Pending" ? (
+                {booking.status === "booked" ? (
                   <button
                     onClick={() => openDialog('reschedule', booking)} // Open Reschedule dialog
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
@@ -298,11 +285,11 @@ export default function MyBookings() {
                 <p>Loading records...</p>
               ) : (
               <ul className="space-y-4">
-                {medical_records.map((record, index) => (
+                {medical_records?.map((record, index) => (
                   <li key={index} className="p-4 bg-white shadow-md rounded-lg border border-gray-200">
                     <div className="flex flex-col">
                       <div className="mb-2">
-                        <strong>Date:</strong> <span className="text-gray-700">{record.record_date.toLocaleDateString()}</span>
+                        <strong>Date:</strong> <span className="text-gray-700">{record.record_date}</span>
                       </div>
                       <div className="mb-2">
                         <strong>Diagnosis:</strong> <span className="text-gray-700">{record.diagnosis}</span>
@@ -320,8 +307,45 @@ export default function MyBookings() {
                         <strong>Vital Signs:</strong> <span className="text-gray-700">{record.vital_signs}</span>
                       </div>
                       <div className="mb-2">
-                        <strong>Prescriptions:</strong> <span className="text-gray-700">{record.prescriptions.join(", ")}</span>
-                      </div>
+                          <strong>Prescriptions:</strong> 
+                          <span className="text-gray-700">
+                            {Array.isArray(record.prescriptions) && record.prescriptions.length > 0 ? (
+                              <ul className="list-disc pl-5 space-y-2">
+                                {record.prescriptions.map((prescription, index) => (
+                                  <li key={index} className="bg-gray-100 p-2 rounded-md shadow-sm">
+                                    <span className="font-semibold">{prescription.itemName}</span> - 
+                                    <span className="text-gray-600"> {prescription.dosage} (Quantity: {prescription.quantity})</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <span className="text-gray-500">No prescriptions available</span>
+                            )}
+                          </span>
+                        </div>
+                        <div className="mb-2">
+                            <strong>Attachments:</strong> 
+                            <span className="text-gray-700">
+                              {Array.isArray(record.attachments) && record.attachments.length > 0 ? (
+                                <ul className="list-disc pl-5 space-y-2">
+                                  {record.attachments.map((attachment, index) => (
+                                    <li key={index}>
+                                      <a 
+                                        href={attachment} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-600 hover:underline"
+                                      >
+                                        {attachment}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <span className="text-gray-500">No attachments available</span>
+                              )}
+                            </span>
+                          </div>
                     </div>
                   </li>
                 ))}

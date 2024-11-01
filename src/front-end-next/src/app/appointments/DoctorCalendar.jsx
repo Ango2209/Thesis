@@ -17,7 +17,7 @@ const DoctorCalendar = () => {
       end: new Date(2024, 7, 24, 13, 0),
       patientName: "Minah Mmassy",
       purpose: "Teeth Whitening",
-      date: "08/24/2024",
+      date: "11/24/2024",
       startTime: "12:00 PM",
       endTime: "1:00 PM",
       doctor: "Hugo Lloris",

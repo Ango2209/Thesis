@@ -76,7 +76,7 @@ function BookAppointment({ doctor }) {
       start_time: selectedTime,
       doctor: doctor._id,
       patient: user._id,
-      status: 'Pending',
+      status: 'booked',
       description: "General Medicine'",
     };
     const notification = {
