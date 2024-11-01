@@ -45,7 +45,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
   const { data, error, isValidating } = useSWR(
     pollingActive ? process.env.NEXT_PUBLIC_API_CHECK_BANK : null,
     fetcher,
-    { refreshInterval: pollingActive ? 5000 : 0 } // Kiểm tra mỗi 5 giây
+    { refreshInterval: pollingActive ? 2000 : 0 } // Kiểm tra mỗi 5 giây
   );
 
   const completeTransfer = async () => {
@@ -61,7 +61,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
     const lastPaid = data.data[data.data.length - 1];
     const lastPrice = lastPaid["Giá trị"];
     const lastContent = lastPaid["Mô tả"];
-    if (service?.price >= lastPrice && lastContent.includes(medicalTestDetail.medicalTestId)) {
+    if (lastPrice >= service?.price && lastContent.includes(medicalTestDetail.medicalTestId)) {
       setPollingActice(false);
       completeTransfer();
     }

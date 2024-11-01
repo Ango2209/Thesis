@@ -183,15 +183,62 @@ export const api = createApi({
         body: updateMedicalTestDto,
       }),
     }),
+
+    getPrescriptionsByDate: build.query({
+      query: ({ date, page = 1, limit = 10 }) => ({
+        url: "/patients/prescriptions",
+        params: { date, page, limit },
+      }),
+    }),
     uploadMultipleFiles: build.mutation({
       query: (files) => ({
         url: "/upload/multiple",
         method: "POST",
         body: files,
-        // Nếu bạn cần gửi file như form-data
-        // headers: {
-        //   'Content-Type': 'multipart/form-data',
-        // },
+      }),
+    }),
+
+    checkMedicinesAvailability: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "/medicines/check-medicines-availability",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+
+    lockMedicines: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "/medicines/lock-medicines",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+
+    unlockMedicines: build.mutation({
+      query: (medicinesToUnlock) => ({
+        url: "/medicines/unlock-medicines",
+        method: "POST",
+        body: medicinesToUnlock,
+      }),
+    }),
+    createInvoice: build.mutation({
+      query: (createInvoiceDto) => ({
+        url: "/invoices",
+        method: "POST",
+        body: createInvoiceDto,
+      }),
+    }),
+    reduceMedicines: build.mutation({
+      query: (medicinesToCheck) => ({
+        url: "medicines/reduce-medicines",
+        method: "POST",
+        body: medicinesToCheck,
+      }),
+    }),
+    changeToPaid: build.mutation({
+      query: (id) => ({
+        url: `/invoices/${id}/change-to-paid`,
+        method: "PATCH",
       }),
     }),
     login: build.mutation({
@@ -247,6 +294,13 @@ export const {
   useGetMedicalTestsByAppointmentIdQuery,
   useUploadMultipleFilesMutation,
   useUpdateIsExaminedMutation,
+  useGetPrescriptionsByDateQuery,
+  useCheckMedicinesAvailabilityMutation,
+  useUnlockMedicinesMutation,
+  useLockMedicinesMutation,
+  useCreateInvoiceMutation,
+  useReduceMedicinesMutation,
+  useChangeToPaidMutation,
   useLoginMutation,
   useSignUpMutation,
 } = api;

@@ -101,7 +101,10 @@ export class PatientService extends BaseServices<PatientDocument> {
         }
       }
     }
-
+    const recordCount = patient.medical_records.length + 1;
+    const recordNumber = recordCount.toString().padStart(4, '0');
+    const recordId = `MR${patient.patient_id}${recordNumber}`;
+    record.record_id = recordId;
     patient.medical_records.push(record);
     return patient.save();
   }
@@ -142,6 +145,73 @@ export class PatientService extends BaseServices<PatientDocument> {
     );
 
     return sortedRecords;
+  }
+
+  // Hàm lấy medical records theo ngày và chỉ lấy các records có prescriptions
+  async getMedicalRecordsByDate(
+    date: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    try {
+      // Kiểm tra ngày hợp lệ
+      const searchDate = new Date(date);
+      if (isNaN(searchDate.getTime())) {
+        throw new BadRequestException('Ngày không hợp lệ.');
+      }
+
+      // Đặt thời gian bắt đầu và kết thúc của ngày
+      const startOfDay = new Date(searchDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(searchDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // Lấy tất cả bệnh nhân có medical records trong ngày
+      const patients = await this.patientModel
+        .find({
+          'medical_records.record_date': { $gte: startOfDay, $lte: endOfDay },
+        })
+        .populate({
+          path: 'medical_records.doctor',
+          select: 'fullname doctor_id',
+        })
+        .select('fullname patient_id medical_records phone _id');
+
+      // Lọc ra các records có prescriptions và định dạng dữ liệu
+      const allRecords = patients.flatMap((patient) =>
+        patient.medical_records
+          .filter((record) => record.prescriptions.length > 0) // Chỉ lấy các records có prescriptions
+          .map((record) => ({
+            patient: {
+              patient_id: patient.patient_id,
+              fullname: patient.fullname,
+              phone: patient.phone,
+            },
+            doctor: record.doctor,
+            record_date: record.record_date,
+            record_id: record.record_id,
+            prescriptions: record.prescriptions,
+          })),
+      );
+
+      // Tính toán skip và limit trên kết quả cuối cùng
+      const total = allRecords.length;
+      const paginatedRecords = allRecords.slice(
+        (page - 1) * limit,
+        page * limit,
+      );
+
+      return {
+        total, // Tổng số records
+        page,
+        limit,
+        data: paginatedRecords,
+      };
+    } catch (error) {
+      console.error('Lỗi khi lấy dữ liệu:', error);
+      throw new Error('Không thể lấy medical records.');
+    }
   }
   async findOneByUsername(username: string) {
     const user = await this.patientModel.findOne({ username });

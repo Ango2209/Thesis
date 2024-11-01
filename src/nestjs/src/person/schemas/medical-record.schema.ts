@@ -5,6 +5,8 @@ import { Appointment } from 'src/appointment/schemas/appointment.schemas';
 @Schema()
 export class MedicalRecord {
   @Prop()
+  record_id: string;
+  @Prop()
   record_date: Date;
   @Prop()
   diagnosis: string;
