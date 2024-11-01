@@ -22,24 +22,22 @@ import { useRouter } from "next/navigation";
 
 
 export default function MyBookings() {
-  const router = useRouter();
-  if (typeof window !== "undefined") {
-    const patient = localStorage.getItem("Patient");
 
-    if (!patient) {
-      router.push('/login');
-      return null; 
-    }
-  }
   
   const user = JSON.parse(localStorage.getItem("Patient"))
   const [activeDialog, setActiveDialog] = useState(null);
   const [date, setDate] = useState(new Date());
   const [timeSlot, setTimeSlot] = useState([]);
-  const [updateAppointmentDate] = useUpdateAppointmentDateMutation(); 
+
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
- 
+  const [updateAppointmentDate] = useUpdateAppointmentDateMutation();
+  const {
+    data: bookings,
+    refetch,
+    error,
+    isLoading,
+  } = useGetAppointmentsPatientIdQuery(user._id); 
   const getTime = () => {
     const timeList = [];
 
@@ -65,6 +63,16 @@ export default function MyBookings() {
   useEffect(() => {
     getTime();
   }, []);
+
+  const router = useRouter();
+  if (typeof window !== "undefined") {
+    const patient = localStorage.getItem("Patient");
+
+    if (!patient) {
+      router.push('/login');
+      return null; 
+    }
+  }
 
   const isPastDay = (day) => {
     return day < new Date();
@@ -93,12 +101,7 @@ export default function MyBookings() {
   const closeDialog = () => {
     setActiveDialog(null); // Close the dialog
   };
-  const {
-    data: bookings,
-    refetch,
-    error,
-    isLoading,
-  } = useGetAppointmentsPatientIdQuery(user._id);
+
 
   // const {
   //   data: medical_records,

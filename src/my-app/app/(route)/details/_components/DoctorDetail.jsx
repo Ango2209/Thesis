@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useGetDoctorByIdQuery } from "@/state/api";
 
 function DoctorDetail({ recordId }) {
+  const { data: doctor, error, isLoading } = useGetDoctorByIdQuery(recordId);
   const router = useRouter();
   if (typeof window !== "undefined") {
     const patient = localStorage.getItem("Patient");
@@ -18,7 +19,7 @@ function DoctorDetail({ recordId }) {
     }
   }
   
-  const { data: doctor, error, isLoading } = useGetDoctorByIdQuery(recordId);
+  
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 border-[1px] p-5 mt-5 rounded-lg">
