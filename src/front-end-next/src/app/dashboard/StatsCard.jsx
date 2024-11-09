@@ -1,9 +1,9 @@
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import Chart from "chart.js/auto";
-const StatsCard = ({ title, value, percentage, chartData, chartColor }) => {
+const StatsCard = ({ title, value, percentage, chartData, chartColor, labels }) => {
   const data = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels,
     datasets: [
       {
         label: title,

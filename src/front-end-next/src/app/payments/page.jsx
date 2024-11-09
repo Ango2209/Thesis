@@ -17,6 +17,7 @@ const Payments = () => {
   const [isOpenQrCodeModal, setIsOpenQrCodeModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "awaiting payment,awaiting transfer", date: selectedDate, page: currentPage, limit: 10 });
+  const [invoice, setInvoice] = useState({});
 
   const [updateMedicalTest] = useUpdateMedicalTestMutation();
 
@@ -178,7 +179,16 @@ const Payments = () => {
           pageLinkClassName={"px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition"}
         />
       </div>
-      <PaymentModal isOpen={isModalOpen} openQrCodeModal={openQrCodeModal} medicalTestDetail={medicalTestDetail} updateMedicalTest={updateMedicalTest} onClose={closeModal} refetch={refetch} />
+      <PaymentModal
+        isOpen={isModalOpen}
+        openQrCodeModal={openQrCodeModal}
+        medicalTestDetail={medicalTestDetail}
+        updateMedicalTest={updateMedicalTest}
+        onClose={closeModal}
+        refetch={refetch}
+        setInvoice={setInvoice}
+        invoice={invoice}
+      />
       {isOpenQrCodeModal ? (
         <QrCodeModal
           isOpen={isOpenQrCodeModal}
@@ -187,6 +197,7 @@ const Payments = () => {
           onClose={closeQrCodeModal}
           refetch={refetch}
           confirmButton={confirmButton}
+          invoice={invoice}
         />
       ) : (
         ""

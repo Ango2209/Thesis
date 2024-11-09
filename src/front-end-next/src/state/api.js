@@ -255,6 +255,15 @@ export const api = createApi({
         body: signUpDto,
       }),
     }),
+    getLast7DaysRevenue: build.query({
+      query: () => "/invoices/last-7-days-revenue",
+    }),
+    getMonthlyRevenueByYear: build.query({
+      query: (year) => ({
+        url: "/invoices/monthly-revenue",
+        params: year,
+      }),
+    }),
   }),
 });
 
@@ -303,4 +312,6 @@ export const {
   useChangeToPaidMutation,
   useLoginMutation,
   useSignUpMutation,
+  useGetLast7DaysRevenueQuery,
+  useGetMonthlyRevenueByYearQuery,
 } = api;

@@ -4,14 +4,13 @@ import { toast } from "react-toastify";
 import ReactDOMServer from "react-dom/server"; // Đảm bảo bạn đã cài thư viện này
 import InvoiceContent from "./InvoiceContent";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
+import { useCreateInvoiceMutation } from "@/state/api";
 
-const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, refetch, updateMedicalTest }) => {
+const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, refetch, updateMedicalTest, setInvoice, invoice }) => {
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const { service, doctor, patient, createdAt } = medicalTestDetail;
-
-  // Example invoice code
-  const invoiceCode = "INV001";
+  const [createInvoice, { isLoading: isLoadingCreate }] = useCreateInvoiceMutation();
 
   const handlePrintInvoice = async () => {
     const width = window.innerWidth * 0.8;
@@ -26,7 +25,14 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
     }
     printWindow.addEventListener("load", () => {
       const invoiceContent = ReactDOMServer.renderToString(
-        <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} appointmentDate={"test"} />
+        <InvoiceContent
+          invoiceCode={invoice.invoiceId}
+          patient={patient}
+          doctor={doctor}
+          service={service}
+          paymentMethod={paymentMethod}
+          appointmentDate={formatDateToVietnamTime(invoice.createdAt)}
+        />
       );
 
       printWindow?.document.write(`
@@ -86,18 +92,37 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
 
   const handleSubmit = async () => {
     try {
+      let createInvoiceDto = {};
+      const serviceParams = {
+        serviceId: service._id,
+        unitPrice: service.price,
+      };
+      const params = {
+        patientId: patient.patient_id,
+        userId: "648d7c4f9a3f5a001e2c8e75", //test
+        invoiceType: "service",
+        services: [serviceParams],
+        status: "paid",
+        createdAt: Date.now(),
+      };
+      let invoice;
       if (paymentMethod === "transfer") {
         openQrCodeModal();
+        createInvoiceDto = { ...params, paymentMethod: "transfer", status: "awaiting transfer" };
+        invoice = await createInvoice(createInvoiceDto).unwrap();
         await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "awaiting transfer" } }).unwrap();
+        setInvoice(invoice);
+        openQrCodeModal();
         onClose();
         refetch();
       } else {
+        createInvoiceDto = { ...params, paymentMethod: "cash" };
+        invoice = await createInvoice(createInvoiceDto).unwrap();
         await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
+        setInvoice(invoice);
+        onClose();
         toast.success("Payment success");
         refetch();
-        //To do: create invoice
-        //....
-        //
         handleConfirmPrint();
       }
     } catch (err) {
