@@ -42,7 +42,8 @@ const StatsCard = ({ title, value, percentage, chartData, chartColor, labels }) 
       },
       y: {
         display: false,
-        suggestedMax: Math.max(...chartData) * 1.2, // Tạo khoảng trống phía trên các cột
+        // Kiểm tra nếu chartData có giá trị, nếu không mặc định là 1 để tránh lỗi
+        suggestedMax: chartData?.length ? Math.max(...chartData) * 1.2 : 1,
       },
     },
     plugins: {
