@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 const Login = () => {
   const router = useRouter();
@@ -10,26 +10,25 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("patient");
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-    const response = await axios.post('http://localhost:3002/auth/signIn', {
-        "username": email,
+      const response = await axios.post("http://localhost:3002/auth/signIn", {
+        username: email,
         password,
         role,
-    });
-    console.log("Patient data",response.data)
-    
-    const { user, tokens } = response.data;
-    localStorage.setItem("PatientRole",user.role)
-    localStorage.setItem('patientAccessToken', tokens.accessToken);
-    localStorage.setItem('patientRefreshToken', tokens.refreshToken);
-    localStorage.setItem("Patient",JSON.stringify(user))
-    router.push('/');
+      });
+      console.log("Patient data", response.data);
 
+      const { user, tokens } = response.data;
+      localStorage.setItem("PatientRole", user.role);
+      localStorage.setItem("patientAccessToken", tokens.accessToken);
+      localStorage.setItem("patientRefreshToken", tokens.refreshToken);
+      localStorage.setItem("Patient", JSON.stringify(user));
+      router.push("/");
     } catch (error) {
-      console.error('Error during login:', error);
-      toast.error('Login failed. Please check your credentials.');
+      console.error("Error during login:", error);
+      toast.error("Login failed. Please check your credentials.");
     }
   };
 
@@ -56,7 +55,6 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="johndoecvcvcv"
             />
           </div>
           <div>
@@ -69,7 +67,6 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-4 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-indigo-500"
-              placeholder="securePassword123"
             />
           </div>
           <button

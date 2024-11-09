@@ -1,5 +1,9 @@
 "use client";
-import { useGetAppointmentsPatientIdQuery,useGetMedicalRecordsQuery,useUpdateAppointmentDateMutation } from "@/state/api";
+import {
+  useGetAppointmentsPatientIdQuery,
+  useGetMedicalRecordsQuery,
+  useUpdateAppointmentDateMutation,
+} from "@/state/api";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
@@ -15,18 +19,16 @@ import {
 } from "@/components/ui/dialog";
 import { CalendarDays, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 
-
-
-export default function MyBookings() {  
-  const user = JSON.parse(localStorage.getItem("Patient"))
+export default function MyBookings() {
+  const user = JSON.parse(localStorage.getItem("Patient"));
   const [activeDialog, setActiveDialog] = useState(null);
   const [date, setDate] = useState(new Date());
   const [timeSlot, setTimeSlot] = useState([]);
-  const [updateAppointmentDate] = useUpdateAppointmentDateMutation(); 
+  const [updateAppointmentDate] = useUpdateAppointmentDateMutation();
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
   const {
@@ -66,20 +68,22 @@ export default function MyBookings() {
   };
 
   const openDialog = (dialogType, booking) => {
-    setActiveDialog(dialogType); 
-      setSelectedBooking(booking); 
-    
+    setActiveDialog(dialogType);
+    setSelectedBooking(booking);
   };
 
-  const handleCancel = async()=>{
-
-  }
+  const handleCancel = async () => {};
 
   const handleReschedule = async () => {
     try {
-      await updateAppointmentDate({ id: selectedBooking?._id, data: { date_of_visit: date, start_time: selectedTime } }).unwrap();
-      toast.success(`Rescheduled to: ${date.toLocaleDateString()} at ${selectedTime}`);
-      refetch()
+      await updateAppointmentDate({
+        id: selectedBooking?._id,
+        data: { date_of_visit: date, start_time: selectedTime },
+      }).unwrap();
+      toast.success(
+        `Rescheduled to: ${date.toLocaleDateString()} at ${selectedTime}`
+      );
+      refetch();
       closeDialog();
     } catch (error) {
       console.error("Failed to reschedule:", error);
@@ -89,10 +93,7 @@ export default function MyBookings() {
     setActiveDialog(null); // Close the dialog
   };
 
-
-  const {
-    data: medical_records,
-  }= useGetMedicalRecordsQuery(user._id)
+  const { data: medical_records } = useGetMedicalRecordsQuery(user._id);
 
   // const medical_records = [
   //   {
@@ -143,7 +144,7 @@ export default function MyBookings() {
                   />
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">
-                      Dr. {booking.doctor.fullname}
+                      {booking.doctor.fullname}
                     </h3>
                     <p className="text-gray-600">
                       DOB: {new Date(booking?.doctor?.dob).toLocaleDateString()}
@@ -168,7 +169,7 @@ export default function MyBookings() {
                     </p>
                     <p className="text-gray-600 flex items-center">
                       <ClockIcon className="w-5 h-5 mr-2" /> Start Time:{" "}
-                      {booking?.start_time} 
+                      {booking?.start_time}
                     </p>
                     <p className="text-gray-600">
                       Purpose of Visit: {booking?.purpose_visit}
@@ -196,21 +197,21 @@ export default function MyBookings() {
               <div className="mt-4 flex space-x-4">
                 {booking.status === "booked" ? (
                   <button
-                    onClick={() => openDialog('reschedule', booking)} // Open Reschedule dialog
+                    onClick={() => openDialog("reschedule", booking)} // Open Reschedule dialog
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                   >
                     Reschedule
                   </button>
                 ) : (
                   <button
-                    onClick={() => openDialog('viewMedicalRecords')} // Open View Medical Records dialog
+                    onClick={() => openDialog("viewMedicalRecords")} // Open View Medical Records dialog
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
                   >
                     View Medical Records
                   </button>
                 )}
                 <button
-                  onClick={() => openDialog('cancel')} // Open Cancel dialog
+                  onClick={() => openDialog("cancel")} // Open Cancel dialog
                   className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
                 >
                   Cancel
@@ -218,162 +219,215 @@ export default function MyBookings() {
               </div>
 
               {/* Dialogs */}
-              <Dialog open={activeDialog === "reschedule"} onOpenChange={closeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reschedule Appointment</DialogTitle>
-            <DialogDescription>
-       
-            <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 mt-5">
-                  {/* Calendar */}
-                  <div className="flex flex-col gap-3 items-baseline">
-                    <h2 className="flex gap-2 items-center">
-                      <CalendarDays className="text-primary h-5 w-5" />
-                    </h2>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-md border"
-                      disabled={isPastDay}
-                    />
-                  </div>
-
-                  {/* Time slot */}
-                  <div className="mt-3">
-                    <h2 className="flex gap-2 items-center mb-3">
-                      <Clock className="text-primary h-5 w-5" />
-                      Select Time Slot
-                    </h2>
-                    <div className="grid grid-cols-3 gap-3 border rounded-lg">
-                      {timeSlot.map((item, index) => {
-                        return (
-                          <h2
-                            key={index}
-                            onClick={() => setSelectedTime(item.time)}
-                            className={`p-2 border text-center hover:bg-primary hover:text-white cursor-pointer rounded-full ${
-                              item.time == selectedTime
-                                ? "bg-primary text-white"
-                                : ""
-                            }`}
-                          >
-                            {item.time}
-                          </h2>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={handleReschedule}>Confirm Reschedule</Button>
-            <Button onClick={closeDialog}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Medical Records Dialog */}
-      <Dialog open={activeDialog === "viewMedicalRecords"} onOpenChange={closeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Medical Records</DialogTitle>
-            <DialogDescription>
-              {isLoading ? (
-                <p>Loading records...</p>
-              ) : (
-              <ul className="space-y-4">
-                {medical_records?.map((record, index) => (
-                  <li key={index} className="p-4 bg-white shadow-md rounded-lg border border-gray-200">
-                    <div className="flex flex-col">
-                      <div className="mb-2">
-                        <strong>Date:</strong> <span className="text-gray-700">{record.record_date}</span>
-                      </div>
-                      <div className="mb-2">
-                        <strong>Diagnosis:</strong> <span className="text-gray-700">{record.diagnosis}</span>
-                      </div>
-                      <div className="mb-2">
-                        <strong>Notes:</strong> <span className="text-gray-700">{record.notes}</span>
-                      </div>
-                      <div className="mb-2">
-                        <strong>Complaint:</strong> <span className="text-gray-700">{record.complaint}</span>
-                      </div>
-                      <div className="mb-2">
-                        <strong>Treatment:</strong> <span className="text-gray-700">{record.treatment}</span>
-                      </div>
-                      <div className="mb-2">
-                        <strong>Vital Signs:</strong> <span className="text-gray-700">{record.vital_signs}</span>
-                      </div>
-                      <div className="mb-2">
-                          <strong>Prescriptions:</strong> 
-                          <span className="text-gray-700">
-                            {Array.isArray(record.prescriptions) && record.prescriptions.length > 0 ? (
-                              <ul className="list-disc pl-5 space-y-2">
-                                {record.prescriptions.map((prescription, index) => (
-                                  <li key={index} className="bg-gray-100 p-2 rounded-md shadow-sm">
-                                    <span className="font-semibold">{prescription.itemName}</span> - 
-                                    <span className="text-gray-600"> {prescription.dosage} (Quantity: {prescription.quantity})</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : (
-                              <span className="text-gray-500">No prescriptions available</span>
-                            )}
-                          </span>
-                        </div>
-                        <div className="mb-2">
-                            <strong>Attachments:</strong> 
-                            <span className="text-gray-700">
-                              {Array.isArray(record.attachments) && record.attachments.length > 0 ? (
-                                <ul className="list-disc pl-5 space-y-2">
-                                  {record.attachments.map((attachment, index) => (
-                                    <li key={index}>
-                                      <a 
-                                        href={attachment} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
-                                        className="text-blue-600 hover:underline"
-                                      >
-                                        {attachment}
-                                      </a>
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <span className="text-gray-500">No attachments available</span>
-                              )}
-                            </span>
+              <Dialog
+                open={activeDialog === "reschedule"}
+                onOpenChange={closeDialog}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reschedule Appointment</DialogTitle>
+                    <DialogDescription>
+                      <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 mt-5">
+                          {/* Calendar */}
+                          <div className="flex flex-col gap-3 items-baseline">
+                            <h2 className="flex gap-2 items-center">
+                              <CalendarDays className="text-primary h-5 w-5" />
+                            </h2>
+                            <Calendar
+                              mode="single"
+                              selected={date}
+                              onSelect={setDate}
+                              className="rounded-md border"
+                              disabled={isPastDay}
+                            />
                           </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={closeDialog}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
-      {/* Cancel Dialog */}
-      <Dialog open={activeDialog === "cancel"} onOpenChange={closeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Cancel Appointment</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel this appointment?
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={handleCancel}>Confirm Cancel</Button>
-            <Button onClick={closeDialog}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                          {/* Time slot */}
+                          <div className="mt-3">
+                            <h2 className="flex gap-2 items-center mb-3">
+                              <Clock className="text-primary h-5 w-5" />
+                              Select Time Slot
+                            </h2>
+                            <div className="grid grid-cols-3 gap-3 border rounded-lg">
+                              {timeSlot.map((item, index) => {
+                                return (
+                                  <h2
+                                    key={index}
+                                    onClick={() => setSelectedTime(item.time)}
+                                    className={`p-2 border text-center hover:bg-primary hover:text-white cursor-pointer rounded-full ${
+                                      item.time == selectedTime
+                                        ? "bg-primary text-white"
+                                        : ""
+                                    }`}
+                                  >
+                                    {item.time}
+                                  </h2>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={handleReschedule}>
+                      Confirm Reschedule
+                    </Button>
+                    <Button onClick={closeDialog}>Close</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* View Medical Records Dialog */}
+              <Dialog
+                open={activeDialog === "viewMedicalRecords"}
+                onOpenChange={closeDialog}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Medical Records</DialogTitle>
+                    <DialogDescription>
+                      {isLoading ? (
+                        <p>Loading records...</p>
+                      ) : (
+                        <ul className="space-y-4">
+                          {medical_records?.map((record, index) => (
+                            <li
+                              key={index}
+                              className="p-4 bg-white shadow-md rounded-lg border border-gray-200"
+                            >
+                              <div className="flex flex-col">
+                                <div className="mb-2">
+                                  <strong>Date:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.record_date}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Diagnosis:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.diagnosis}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Notes:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.notes}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Complaint:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.complaint}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Treatment:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.treatment}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Vital Signs:</strong>{" "}
+                                  <span className="text-gray-700">
+                                    {record.vital_signs}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Prescriptions:</strong>
+                                  <span className="text-gray-700">
+                                    {Array.isArray(record.prescriptions) &&
+                                    record.prescriptions.length > 0 ? (
+                                      <ul className="list-disc pl-5 space-y-2">
+                                        {record.prescriptions.map(
+                                          (prescription, index) => (
+                                            <li
+                                              key={index}
+                                              className="bg-gray-100 p-2 rounded-md shadow-sm"
+                                            >
+                                              <span className="font-semibold">
+                                                {prescription.itemName}
+                                              </span>{" "}
+                                              -
+                                              <span className="text-gray-600">
+                                                {" "}
+                                                {
+                                                  prescription.dosage
+                                                } (Quantity:{" "}
+                                                {prescription.quantity})
+                                              </span>
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    ) : (
+                                      <span className="text-gray-500">
+                                        No prescriptions available
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="mb-2">
+                                  <strong>Attachments:</strong>
+                                  <span className="text-gray-700">
+                                    {Array.isArray(record.attachments) &&
+                                    record.attachments.length > 0 ? (
+                                      <ul className="list-disc pl-5 space-y-2">
+                                        {record.attachments.map(
+                                          (attachment, index) => (
+                                            <li key={index}>
+                                              <a
+                                                href={attachment}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline"
+                                              >
+                                                {attachment}
+                                              </a>
+                                            </li>
+                                          )
+                                        )}
+                                      </ul>
+                                    ) : (
+                                      <span className="text-gray-500">
+                                        No attachments available
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={closeDialog}>Close</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Cancel Dialog */}
+              <Dialog
+                open={activeDialog === "cancel"}
+                onOpenChange={closeDialog}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Cancel Appointment</DialogTitle>
+                    <DialogDescription>
+                      Are you sure you want to cancel this appointment?
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={handleCancel}>Confirm Cancel</Button>
+                    <Button onClick={closeDialog}>Close</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </li>
           ))}
         </ul>
