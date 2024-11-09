@@ -90,81 +90,97 @@ export class InvoiceService {
     previousStartDate.setDate(startDate.getDate() - 7); // 7 ngày trước đó
     const previousEndDate = new Date(startDate);
 
-    // Doanh thu cho 7 ngày gần nhất chỉ bao gồm hóa đơn đã thanh toán
-    const recentRevenueData = await this.invoiceModel.aggregate([
-      {
-        $match: {
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
+    // Tạo một hàm con để tính doanh thu cho các điều kiện khác nhau
+    const getRevenueData = async (invoiceType?: string) => {
+      const matchCondition: any = {
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+        status: 'paid',
+      };
+      if (invoiceType) matchCondition.invoiceType = invoiceType;
+
+      const recentRevenueData = await this.invoiceModel.aggregate([
+        { $match: matchCondition },
+        {
+          $group: {
+            _id: {
+              date: {
+                $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+              },
+            },
+            totalRevenue: { $sum: '$totalAmount' },
           },
-          status: 'paid', // Chỉ tính các hóa đơn đã thanh toán
         },
-      },
-      {
-        $group: {
-          _id: {
-            date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+        { $sort: { '_id.date': 1 } },
+      ]);
+
+      // Doanh thu cho 7 ngày trước đó
+      const previousRevenueData = await this.invoiceModel.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: previousStartDate,
+              $lte: previousEndDate,
+            },
+            status: 'paid',
+            ...(invoiceType && { invoiceType }),
           },
-          totalRevenue: { $sum: '$totalAmount' },
         },
-      },
-      { $sort: { '_id.date': 1 } },
-    ]);
-
-    // Doanh thu cho 7 ngày trước đó chỉ bao gồm hóa đơn đã thanh toán
-    const previousRevenueData = await this.invoiceModel.aggregate([
-      {
-        $match: {
-          createdAt: {
-            $gte: previousStartDate,
-            $lte: previousEndDate,
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: '$totalAmount' },
           },
-          status: 'paid', // Chỉ tính các hóa đơn đã thanh toán
         },
-      },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: '$totalAmount' },
-        },
-      },
-    ]);
+      ]);
 
-    // Tạo mảng dữ liệu ngày và đảm bảo tất cả các ngày đều có giá trị
-    const chartData = [];
-    const labels = [];
-    let totalAmount = 0;
+      // Tạo mảng dữ liệu ngày và đảm bảo tất cả các ngày đều có giá trị
+      const chartData = [];
+      const labels = [];
+      let totalAmount = 0;
 
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      const dateString = currentDate.toISOString().split('T')[0];
+      for (let i = 0; i < 7; i++) {
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        const dateString = currentDate.toISOString().split('T')[0];
 
-      // Tìm doanh thu của ngày hiện tại, nếu không có thì gán bằng 0
-      const dayRevenue = recentRevenueData.find(
-        (day) => day._id.date === dateString,
-      );
-      const revenue = dayRevenue ? dayRevenue.totalRevenue : 0;
+        // Tìm doanh thu của ngày hiện tại, nếu không có thì gán bằng 0
+        const dayRevenue = recentRevenueData.find(
+          (day) => day._id.date === dateString,
+        );
+        const revenue = dayRevenue ? dayRevenue.totalRevenue : 0;
 
-      chartData.push(revenue);
-      labels.push(dateString);
-      totalAmount += revenue;
-    }
+        chartData.push(revenue);
+        labels.push(dateString);
+        totalAmount += revenue;
+      }
 
-    // Tính tỷ lệ thay đổi so với 7 ngày trước đó
-    const previousTotal = previousRevenueData[0]?.totalRevenue || 0;
-    const percentage = previousTotal
-      ? ((totalAmount - previousTotal) / previousTotal) * 100
-      : 0;
+      // Tính tỷ lệ thay đổi so với 7 ngày trước đó
+      const previousTotal = previousRevenueData[0]?.totalRevenue || 0;
+      const percentage = previousTotal
+        ? ((totalAmount - previousTotal) / previousTotal) * 100
+        : 0;
 
-    return {
-      title: 'Revenue in the Last 7 Days',
-      value: totalAmount + '₫',
-      chartData,
-      labels,
-      percentage: Math.round(percentage * 100) / 100, // Làm tròn hai chữ số thập phân
+      return {
+        title: invoiceType
+          ? `Revenue for ${invoiceType} in Last 7 Days`
+          : 'Total Revenue in Last 7 Days',
+        value: totalAmount + '₫',
+        chartData,
+        labels,
+        percentage: Math.round(percentage * 100) / 100, // Làm tròn hai chữ số thập phân
+      };
     };
+
+    // Tính toán ba loại doanh thu
+    const totalRevenue = await getRevenueData();
+    const medicineRevenue = await getRevenueData('medicine');
+    const serviceRevenue = await getRevenueData('service');
+
+    // Trả về kết quả dưới dạng mảng
+    return [medicineRevenue, serviceRevenue, totalRevenue];
   }
 
   async getMonthlyRevenueByYear(year: string) {

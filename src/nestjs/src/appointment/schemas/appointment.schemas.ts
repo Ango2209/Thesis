@@ -25,6 +25,11 @@ export class Appointment {
   description: string;
   @Prop({ type: String })
   specialized: string;
+  @Prop()
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);

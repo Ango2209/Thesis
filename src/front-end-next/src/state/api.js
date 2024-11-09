@@ -264,6 +264,12 @@ export const api = createApi({
         params: year,
       }),
     }),
+    getRecentPatient: build.query({
+      query: () => "/appointments/recent-patients",
+    }),
+    getLast7DaysfinishedAppointments: build.query({
+      query: () => "/appointments/finished-appointments-stats",
+    }),
   }),
 });
 
@@ -314,4 +320,6 @@ export const {
   useSignUpMutation,
   useGetLast7DaysRevenueQuery,
   useGetMonthlyRevenueByYearQuery,
+  useGetRecentPatientQuery,
+  useGetLast7DaysfinishedAppointmentsQuery,
 } = api;

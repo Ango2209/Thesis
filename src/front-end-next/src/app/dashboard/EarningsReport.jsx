@@ -31,7 +31,7 @@ const EarningsReport = ({ chartData, title, selectedYear, onYearChange }) => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md">
       <div className="flex justify-between items-center mb-2">
-        <h3 className="text-gray-500 text-3xl">{title}</h3>
+        <h3 className="text-gray-500 text-xl">{title}</h3>
         <select value={selectedYear} onChange={(e) => onYearChange(e.target.value)} className="border border-gray-300 rounded px-2 py-1 text-gray-700">
           {/* Populate the select with recent years */}
           {[...Array(5)].map((_, index) => {
