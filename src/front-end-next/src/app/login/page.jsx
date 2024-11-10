@@ -19,7 +19,7 @@ const Login = () => {
       //   password,
       //   role,
       // });
-      const response = await axios.post("http://192.168.1.141:3002/auth/signIn", {
+      const response = await axios.post("http://34.121.32.167:3002/auth/signIn", {
         username: email,
         password,
         role,
