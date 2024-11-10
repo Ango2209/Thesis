@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    // baseUrl: "http://localhost:4000",
-    baseUrl: "http://localhost:3002",
+    // baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    baseUrl: "http://192.168.1.141:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
@@ -270,6 +270,29 @@ export const api = createApi({
     getLast7DaysfinishedAppointments: build.query({
       query: () => "/appointments/finished-appointments-stats",
     }),
+    getTopItems: build.query({
+      query: ({ startDate, endDate, type }) => ({
+        url: "/invoices/top-items",
+        params: { startDate, endDate, type },
+      }),
+    }),
+    exportMedicinesToExcel: build.query({
+      query: ({ startDate, endDate }) => ({
+        url: `/invoices/medicines-excel?startDate=${startDate}&endDate=${endDate}`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          const today = new Date().toLocaleDateString().replace(/\//g, "-");
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `Medicines_Report_${today}.xlsx`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        },
+      }),
+    }),
   }),
 });
 
@@ -322,4 +345,6 @@ export const {
   useGetMonthlyRevenueByYearQuery,
   useGetRecentPatientQuery,
   useGetLast7DaysfinishedAppointmentsQuery,
+  useGetTopItemsQuery,
+  useLazyExportMedicinesToExcelQuery,
 } = api;

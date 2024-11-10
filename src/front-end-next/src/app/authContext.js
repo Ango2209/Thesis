@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from 'axios';
+import axios from "axios";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -11,22 +11,28 @@ export const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("accessToken"); // Example token check
     if (token) {
       setIsAuthenticated(true);
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, []);
 
   const login = async (username, password, role) => {
-    const response = await axios.post('http://localhost:3002/auth/signIn', {
+    // const response = await axios.post('http://localhost:3002/auth/signIn', {
+    //   username,
+    //   password,
+    //   role,
+    // });
+
+    const response = await axios.post("http://192.168.1.141:3002/auth/signIn", {
       username,
       password,
       role,
     });
 
     const { user, tokens } = response.data;
-    localStorage.setItem("userRole",user.role)
-    localStorage.setItem('accessToken', tokens.accessToken);
+    localStorage.setItem("userRole", user.role);
+    localStorage.setItem("accessToken", tokens.accessToken);
 
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    localStorage.setItem("refreshToken", tokens.refreshToken);
   };
 
   const logout = () => {
@@ -34,11 +40,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("accessToken"); // Clear token when logging out
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

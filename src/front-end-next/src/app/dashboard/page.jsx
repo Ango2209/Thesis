@@ -3,7 +3,16 @@ import React, { useState } from "react";
 import StatsCard from "./StatsCard";
 import EarningsReport from "./EarningsReport";
 import RecentPatients from "./RecentPatients";
-import { useGetLast7DaysfinishedAppointmentsQuery, useGetLast7DaysRevenueQuery, useGetMonthlyRevenueByYearQuery, useGetRecentPatientQuery } from "@/state/api";
+import {
+  useGetLast7DaysfinishedAppointmentsQuery,
+  useGetLast7DaysRevenueQuery,
+  useGetMonthlyRevenueByYearQuery,
+  useGetRecentPatientQuery,
+  useGetTopItemsQuery,
+  useLazyExportMedicinesToExcelQuery,
+} from "@/state/api";
+import TimeFilter from "./TimeFilter";
+import TopItemsTable from "./TopItemsTable";
 
 const Dashboard = () => {
   const { data: last7DaysRevenue } = useGetLast7DaysRevenueQuery();
@@ -11,6 +20,43 @@ const Dashboard = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const { data: monthlyRevenueByYear } = useGetMonthlyRevenueByYearQuery({ year });
   const { data: recentPatients } = useGetRecentPatientQuery({});
+  const [medicineTimeRange, setMedicineTimeRange] = useState({
+    startDate: null,
+    endDate: null,
+    filterType: "7days",
+  });
+  const [triggerExport] = useLazyExportMedicinesToExcelQuery();
+
+  const [serviceTimeRange, setServiceTimeRange] = useState({
+    startDate: null,
+    endDate: null,
+    filterType: "7days",
+  });
+
+  const {
+    data: topMedicinesData,
+    isLoading: loadingMedicines,
+    error: errorMedicines,
+  } = useGetTopItemsQuery({
+    startDate: medicineTimeRange.startDate,
+    endDate: medicineTimeRange.endDate,
+    type: "medicine",
+  });
+
+  const {
+    data: topServicesData,
+    isLoading: loadingServices,
+    error: errorServices,
+  } = useGetTopItemsQuery({
+    startDate: serviceTimeRange.startDate,
+    endDate: serviceTimeRange.endDate,
+    type: "service",
+  });
+
+  const columns = [
+    { key: "name", label: "Name" },
+    { key: "totalQuantity", label: "Quantity Sold" },
+  ];
 
   const chartColors = ["rgba(0, 200, 100, 0.6)", "rgba(255, 205, 86, 0.6)", "rgba(255, 99, 132, 0.6)"];
 
@@ -18,24 +64,69 @@ const Dashboard = () => {
     setYear(newYear);
   };
 
+  // Function to export medicines data to Excel
+  const handleExportMedicinesToExcel = () => {
+    // const workbook = XLSX.utils.book_new();
+    // const medicinesSheet = XLSX.utils.json_to_sheet(topMedicinesData?.topMedicines || []);
+    // XLSX.utils.book_append_sheet(workbook, medicinesSheet, "Top Medicines");
+    // const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    // const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    // saveAs(blob, `Top_Medicines.xlsx`);
+    triggerExport({ startDate: medicineTimeRange.startDate, endDate: medicineTimeRange.endDate });
+  };
+
+  // Function to export services data to Excel
+  const handleExportServicesToExcel = () => {
+    // const workbook = XLSX.utils.book_new();
+    // const servicesSheet = XLSX.utils.json_to_sheet(topServicesData?.topServices || []);
+    // XLSX.utils.book_append_sheet(workbook, servicesSheet, "Top Services");
+    // const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    // const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+    // saveAs(blob, `Top_Services.xlsx`);
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
-      {/* Hàng đầu tiên hiển thị tối đa 4 cột StatsCard */}
-      <div className="col-span-1 h-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 auto-rows-[minmax(200px, auto)]">
+      {/* Stats Cards */}
+      <div className="col-span-1 h-full min-h-[200px] bg-white p-4 rounded-lg shadow-md flex flex-col">
         <StatsCard {...last7DaysfinishedAppointments} chartColor="rgba(0, 200, 200, 0.6)" />
       </div>
       {last7DaysRevenue?.map((stat, index) => (
-        <div key={index} className="col-span-1 h-full">
+        <div key={index} className="col-span-1 h-full min-h-[200px] bg-white p-4 rounded-lg shadow-md flex flex-col">
           <StatsCard {...stat} chartColor={chartColors[index]} />
         </div>
       ))}
 
-      {/* Earnings report và Recent patients trên hàng thứ hai */}
-      <div className="col-span-1 lg:col-span-2 xl:col-span-3 h-full">
+      {/* Earnings Report */}
+      <div className="col-span-1 lg:col-span-2 xl:col-span-3 h-full min-h-[200px] bg-white p-6 rounded-lg shadow-md flex flex-col">
         <EarningsReport selectedYear={year} onYearChange={handleYearChange} chartData={monthlyRevenueByYear?.earningsChartData} title={monthlyRevenueByYear?.title} percentage={24} />
       </div>
-      <div className="col-span-1 lg:col-span-1 xl:col-span-1 h-full">
+
+      {/* Recent Patients */}
+      <div className="col-span-1 lg:col-span-1 xl:col-span-1 h-full min-h-[200px] bg-white p-6 rounded-lg shadow-md flex flex-col">
         <RecentPatients patients={recentPatients} />
+      </div>
+
+      {/* Top Medicines Table */}
+      <div className="col-span-1 lg:col-span-2 xl:col-span-2 h-full min-h-[200px] bg-white p-6 rounded-lg shadow-md flex flex-col">
+        <h2 className="text-xl font-bold mb-4">Top 5 Best-Selling Medicines</h2>
+        <TopItemsTable
+          columns={columns}
+          data={loadingMedicines || errorMedicines ? [] : topMedicinesData || []}
+          onExport={handleExportMedicinesToExcel}
+          TimeFilterComponent={<TimeFilter onChange={setMedicineTimeRange} />}
+        />
+      </div>
+
+      {/* Top Services Table */}
+      <div className="col-span-1 lg:col-span-2 xl:col-span-2 h-full min-h-[200px] bg-white p-6 rounded-lg shadow-md flex flex-col">
+        <h2 className="text-xl font-bold mb-4">Top 5 Most-Used Services</h2>
+        <TopItemsTable
+          columns={columns}
+          data={loadingServices || errorServices ? [] : topServicesData || []}
+          onExport={handleExportServicesToExcel}
+          TimeFilterComponent={<TimeFilter onChange={setServiceTimeRange} />}
+        />
       </div>
     </div>
   );

@@ -4,11 +4,17 @@ import { Model } from 'mongoose';
 import { BaseServices } from 'src/common/base.services';
 import { Invoice, InvoiceDocument } from './schemas/invoice.schema';
 import { CreateInvoiceDto } from './dto/dto';
+import {
+  Medicine,
+  MedicineDocument,
+} from 'src/medicine/schemas/medicine.schema';
 
 @Injectable()
 export class InvoiceService {
   constructor(
     @InjectModel(Invoice.name) private invoiceModel: Model<InvoiceDocument>,
+    @InjectModel(Medicine.name)
+    private readonly medicineModel: Model<MedicineDocument>,
   ) {}
 
   private async generateInvoiceId(): Promise<string> {
@@ -159,9 +165,7 @@ export class InvoiceService {
 
       // Tính tỷ lệ thay đổi so với 7 ngày trước đó
       const previousTotal = previousRevenueData[0]?.totalRevenue || 0;
-      const percentage = previousTotal
-        ? ((totalAmount - previousTotal) / previousTotal) * 100
-        : 0;
+      const percentage = ((totalAmount - previousTotal) / previousTotal) * 100;
 
       return {
         title: invoiceType
@@ -216,5 +220,146 @@ export class InvoiceService {
       year: year,
       earningsChartData,
     };
+  }
+
+  async getTopItems(startDate: Date, endDate: Date, type: string) {
+    // Khởi tạo pipeline
+    const pipeline: any[] = [];
+
+    // Giai đoạn $match
+    const matchStage: Record<string, any> = {
+      createdAt: { $gte: startDate, $lte: endDate },
+    };
+    if (type === 'medicine') {
+      matchStage['medicines'] = { $exists: true, $ne: [] };
+    } else if (type === 'service') {
+      matchStage['services'] = { $exists: true, $ne: [] };
+    }
+    pipeline.push({ $match: matchStage });
+
+    // Giai đoạn $unwind
+    pipeline.push({
+      $unwind: type === 'medicine' ? '$medicines' : '$services',
+    });
+
+    // Giai đoạn $group
+    const groupStage: Record<string, any> = {
+      _id:
+        type === 'medicine' ? '$medicines.medicineId' : '$services.serviceId',
+      totalQuantity: { $sum: type === 'medicine' ? '$medicines.quantity' : 1 },
+    };
+    pipeline.push({ $group: groupStage });
+
+    // Giai đoạn $sort và $limit
+    pipeline.push({ $sort: { totalQuantity: -1 } });
+    pipeline.push({ $limit: 5 });
+
+    // Giai đoạn $lookup
+    pipeline.push({
+      $lookup: {
+        from: type === 'medicine' ? 'medicines' : 'services',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'itemDetails',
+      },
+    });
+
+    // Giai đoạn $project
+    pipeline.push({
+      $project: {
+        name: { $arrayElemAt: ['$itemDetails.name', 0] },
+        totalQuantity: 1,
+      },
+    });
+
+    return this.invoiceModel.aggregate(pipeline);
+  }
+
+  async getDetailedMedicineData(startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    // Truy vấn tổng hợp để lấy dữ liệu chi tiết các loại thuốc, bao gồm cả những thuốc không có trong hóa đơn
+    const result = await this.medicineModel.aggregate([
+      // Bước 1: Kết hợp với bảng `Invoice` để lấy dữ liệu về số lượng bán và doanh thu
+      {
+        $lookup: {
+          from: 'invoices',
+          let: { medicineId: '$_id' },
+          pipeline: [
+            {
+              $match: { createdAt: { $gte: start, $lte: end }, status: 'paid' },
+            },
+            { $unwind: '$medicines' },
+            {
+              $match: {
+                $expr: { $eq: ['$medicines.medicineId', '$$medicineId'] },
+              },
+            },
+            {
+              $group: {
+                _id: '$medicines.medicineId',
+                totalQuantitySold: { $sum: '$medicines.quantity' },
+                totalRevenue: { $sum: '$medicines.totalPrice' },
+              },
+            },
+          ],
+          as: 'invoiceData',
+        },
+      },
+      {
+        $unwind: {
+          path: '$invoiceData',
+          preserveNullAndEmptyArrays: true, // Đảm bảo các thuốc không có trong hóa đơn vẫn xuất hiện
+        },
+      },
+      // Bước 2: Kết hợp với bảng `Batch` để lấy thông tin tồn kho và giá nhập trung bình
+      {
+        $lookup: {
+          from: 'batches',
+          localField: '_id',
+          foreignField: 'medicineId',
+          as: 'batchDetails',
+        },
+      },
+      // Bước 3: Tính tổng số lượng tồn kho và giá nhập trung bình từ các lô
+      {
+        $addFields: {
+          stockQuantity: { $sum: '$batchDetails.quantity' },
+          avgPurchasePrice: { $avg: '$batchDetails.purchasePrice' },
+          totalQuantitySold: { $ifNull: ['$invoiceData.totalQuantitySold', 0] },
+          totalRevenue: { $ifNull: ['$invoiceData.totalRevenue', 0] },
+        },
+      },
+      // Bước 4: Tính toán lợi nhuận (doanh thu - giá vốn)
+      {
+        $addFields: {
+          profit: {
+            $subtract: [
+              '$totalRevenue',
+              { $multiply: ['$totalQuantitySold', '$avgPurchasePrice'] },
+            ],
+          },
+        },
+      },
+      // Bước 5: Chọn các trường cần thiết
+      {
+        $project: {
+          _id: 0,
+          medicineId: '$_id',
+          medicineName: '$name',
+          basePrice: '$basePrice',
+          totalQuantitySold: 1,
+          totalRevenue: 1,
+          profit: 1,
+          stockQuantity: 1,
+          avgPurchasePrice: 1,
+        },
+      },
+      // Bước 6: Sắp xếp theo tổng số lượng bán giảm dần
+      { $sort: { totalQuantitySold: -1 } },
+    ]);
+
+    return result;
   }
 }

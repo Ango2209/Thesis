@@ -14,7 +14,12 @@ const Login = () => {
     e.preventDefault();
     try {
       // Replace with your authentication logic
-      const response = await axios.post("http://localhost:3002/auth/signIn", {
+      // const response = await axios.post("http://localhost:3002/auth/signIn", {
+      //   username: email,
+      //   password,
+      //   role,
+      // });
+      const response = await axios.post("http://192.168.1.141:3002/auth/signIn", {
         username: email,
         password,
         role,

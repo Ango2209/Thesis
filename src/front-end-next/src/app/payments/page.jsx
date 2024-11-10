@@ -25,6 +25,8 @@ const Payments = () => {
     refetch();
   }, [selectedDate, currentPage, refetch]);
 
+  console.log(medicalTestsData);
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const openQrCodeModal = () => setIsOpenQrCodeModal(true);

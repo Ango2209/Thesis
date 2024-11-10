@@ -14,9 +14,6 @@ const Detail = ({ params }) => {
   const { data: mrData, isError: isError2, refetch: refetchMr, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
   const { data: serviceRqData, error, refetch, isLoadingServiceRq, isError: isErrorServiceRq } = useGetMedicalTestsByAppointmentIdQuery(id);
   const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
-
-  console.log(serviceRqData);
-
   const [expandedRow, setExpandedRow] = useState(null);
   const [expandedRowFile, setExpandedRowFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
