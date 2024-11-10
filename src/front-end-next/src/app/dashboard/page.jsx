@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import StatsCard from "./StatsCard";
 import EarningsReport from "./EarningsReport";
 import RecentPatients from "./RecentPatients";
@@ -17,12 +17,11 @@ import TopItemsTable from "./TopItemsTable";
 import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
-  const router = useRouter();
-  const { data: last7DaysRevenue } = useGetLast7DaysRevenueQuery();
-  const { data: last7DaysfinishedAppointments } = useGetLast7DaysfinishedAppointmentsQuery();
+  const { data: last7DaysRevenue, refetch: refetch7DaysRevenue } = useGetLast7DaysRevenueQuery();
+  const { data: last7DaysfinishedAppointments, refetch: refetch7DaysFinnishedAppointments } = useGetLast7DaysfinishedAppointmentsQuery();
   const [year, setYear] = useState(new Date().getFullYear());
-  const { data: monthlyRevenueByYear } = useGetMonthlyRevenueByYearQuery({ year });
-  const { data: recentPatients } = useGetRecentPatientQuery({});
+  const { data: monthlyRevenueByYear, refetch: refetchMonthlyRevenueByYear } = useGetMonthlyRevenueByYearQuery({ year });
+  const { data: recentPatients, refetch: refetchRecentPatients } = useGetRecentPatientQuery({});
   const [medicineTimeRange, setMedicineTimeRange] = useState({
     startDate: null,
     endDate: null,
@@ -40,6 +39,7 @@ const Dashboard = () => {
   const {
     data: topMedicinesData,
     isLoading: loadingMedicines,
+    refetch: refetchTopMedicinesData,
     error: errorMedicines,
   } = useGetTopItemsQuery({
     startDate: medicineTimeRange.startDate,
@@ -50,6 +50,7 @@ const Dashboard = () => {
   const {
     data: topServicesData,
     isLoading: loadingServices,
+    refetch: refetchTopServicesData,
     error: errorServices,
   } = useGetTopItemsQuery({
     startDate: serviceTimeRange.startDate,
@@ -61,6 +62,15 @@ const Dashboard = () => {
     { key: "name", label: "Name" },
     { key: "totalQuantity", label: "Quantity Sold" },
   ];
+
+  useEffect(() => {
+    refetch7DaysRevenue();
+    refetch7DaysFinnishedAppointments();
+    refetchMonthlyRevenueByYear();
+    refetchRecentPatients();
+    refetchTopMedicinesData();
+    refetchTopServicesData();
+  }, []);
 
   const chartColors = ["rgba(0, 200, 100, 0.6)", "rgba(255, 205, 86, 0.6)", "rgba(255, 99, 132, 0.6)"];
 
