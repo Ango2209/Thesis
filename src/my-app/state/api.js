@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const api = createApi({
   baseQuery: fetchBaseQuery({
     // baseUrl: "http://localhost:4000",
-    baseUrl: "http://localhost:3002",
+    baseUrl: "http://34.121.32.167:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
@@ -47,16 +47,15 @@ export const api = createApi({
     getAppointmentsPatientId: build.query({
       query: (id) => `/appointments/patient/${id}`,
     }),
-    
-    updateAppointmentDate : build.mutation({
+
+    updateAppointmentDate: build.mutation({
       query: ({ id, data }) => ({
         url: `/appointments/${id}`,
         method: "PATCH",
-        body: { 
-          date_of_visit:data.date_of_visit,
-          start_time:data.start_time
-
-         },
+        body: {
+          date_of_visit: data.date_of_visit,
+          start_time: data.start_time,
+        },
       }),
     }),
     getMedicalRecords: build.query({
@@ -75,5 +74,5 @@ export const {
   useGetAppointmentsPatientIdQuery,
   useGetMedicalRecordsQuery,
   useCreateUserMutation,
-  useUpdateAppointmentDateMutation
+  useUpdateAppointmentDateMutation,
 } = api;
