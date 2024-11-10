@@ -10,6 +10,7 @@ import {
   useGetRecentPatientQuery,
   useGetTopItemsQuery,
   useLazyExportMedicinesToExcelQuery,
+  useLazyExportServicesToExcelQuery,
 } from "@/state/api";
 import TimeFilter from "./TimeFilter";
 import TopItemsTable from "./TopItemsTable";
@@ -26,6 +27,7 @@ const Dashboard = () => {
     filterType: "7days",
   });
   const [triggerExport] = useLazyExportMedicinesToExcelQuery();
+  const [triggerExportServices] = useLazyExportServicesToExcelQuery();
 
   const [serviceTimeRange, setServiceTimeRange] = useState({
     startDate: null,
@@ -66,23 +68,12 @@ const Dashboard = () => {
 
   // Function to export medicines data to Excel
   const handleExportMedicinesToExcel = () => {
-    // const workbook = XLSX.utils.book_new();
-    // const medicinesSheet = XLSX.utils.json_to_sheet(topMedicinesData?.topMedicines || []);
-    // XLSX.utils.book_append_sheet(workbook, medicinesSheet, "Top Medicines");
-    // const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    // const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    // saveAs(blob, `Top_Medicines.xlsx`);
     triggerExport({ startDate: medicineTimeRange.startDate, endDate: medicineTimeRange.endDate });
   };
 
   // Function to export services data to Excel
   const handleExportServicesToExcel = () => {
-    // const workbook = XLSX.utils.book_new();
-    // const servicesSheet = XLSX.utils.json_to_sheet(topServicesData?.topServices || []);
-    // XLSX.utils.book_append_sheet(workbook, servicesSheet, "Top Services");
-    // const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    // const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-    // saveAs(blob, `Top_Services.xlsx`);
+    triggerExportServices({ startDate: serviceTimeRange.startDate, endDate: serviceTimeRange.endDate });
   };
 
   return (

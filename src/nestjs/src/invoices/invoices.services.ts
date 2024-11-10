@@ -278,6 +278,7 @@ export class InvoiceService {
   async getDetailedMedicineData(startDate: string, endDate: string) {
     const start = new Date(startDate);
     const end = new Date(endDate);
+    end.setUTCHours(23, 59, 59, 999);
 
     // Truy vấn tổng hợp để lấy dữ liệu chi tiết các loại thuốc, bao gồm cả những thuốc không có trong hóa đơn
     const result = await this.medicineModel.aggregate([
@@ -361,5 +362,56 @@ export class InvoiceService {
     ]);
 
     return result;
+  }
+
+  async getDetailedServiceData(startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setUTCHours(23, 59, 59, 999); // Đảm bảo bao gồm cả cuối ngày endDate
+
+    const statistics = await this.invoiceModel.aggregate([
+      {
+        $match: {
+          status: 'paid',
+          createdAt: { $gte: start, $lte: end }, // Lọc theo khoảng thời gian
+        },
+      },
+      {
+        $unwind: '$services', // Tách từng dịch vụ trong mảng "services"
+      },
+      {
+        $group: {
+          _id: '$services.serviceId', // Gom nhóm theo "serviceId"
+          usageCount: { $sum: 1 }, // Tính số lần mỗi dịch vụ được sử dụng
+          totalRevenue: { $sum: '$services.totalPrice' }, // Tính tổng doanh thu từ dịch vụ
+        },
+      },
+      {
+        $lookup: {
+          from: 'services', // Kết nối với bảng "Service"
+          localField: '_id',
+          foreignField: '_id',
+          as: 'serviceInfo',
+        },
+      },
+      {
+        $unwind: '$serviceInfo', // Tách thông tin dịch vụ từ mảng "serviceInfo"
+      },
+      {
+        $project: {
+          _id: 0, // Không trả về "_id" của nhóm
+          serviceId: '$_id',
+          serviceName: '$serviceInfo.name',
+          servicePrice: '$serviceInfo.price',
+          usageCount: 1,
+          totalRevenue: 1,
+        },
+      },
+      {
+        $sort: { usageCount: -1 }, // Sắp xếp theo số lần sử dụng (giảm dần)
+      },
+    ]);
+
+    return statistics;
   }
 }

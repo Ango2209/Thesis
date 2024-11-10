@@ -293,6 +293,23 @@ export const api = createApi({
         },
       }),
     }),
+    exportServicesToExcel: build.query({
+      query: ({ startDate, endDate }) => ({
+        url: `/invoices/services-excel?startDate=${startDate}&endDate=${endDate}`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          const today = new Date().toLocaleDateString().replace(/\//g, "-");
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `Services_Report_${today}.xlsx`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        },
+      }),
+    }),
   }),
 });
 
@@ -347,4 +364,5 @@ export const {
   useGetLast7DaysfinishedAppointmentsQuery,
   useGetTopItemsQuery,
   useLazyExportMedicinesToExcelQuery,
+  useLazyExportServicesToExcelQuery,
 } = api;

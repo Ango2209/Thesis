@@ -8,7 +8,7 @@ const TopItemsTable = ({ columns, data, onExport, TimeFilterComponent }) => {
       <div className="flex flex-wrap items-center gap-4 mb-4">
         <div className="flex-grow">{TimeFilterComponent}</div>
         <button onClick={onExport} className="px-4 py-2 bg-blue-500 text-white rounded-md h-10 text-sm">
-          Export to Excel
+          Export Details
         </button>
       </div>
 
