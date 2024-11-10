@@ -14,8 +14,10 @@ import {
 } from "@/state/api";
 import TimeFilter from "./TimeFilter";
 import TopItemsTable from "./TopItemsTable";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
+  const router = useRouter();
   const { data: last7DaysRevenue } = useGetLast7DaysRevenueQuery();
   const { data: last7DaysfinishedAppointments } = useGetLast7DaysfinishedAppointmentsQuery();
   const [year, setYear] = useState(new Date().getFullYear());

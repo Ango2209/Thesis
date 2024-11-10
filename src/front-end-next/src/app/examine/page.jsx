@@ -44,10 +44,10 @@ const AppointmentList = () => {
 
   const handleExamine = async (id) => {
     await updateAppointmentStatus({ id: id, status: "examining" }).unwrap();
-    router.push(`examine/${id}`);
+    router.push(`/examine/${id}?research=${encodeURIComponent(Date.now())}`);
   };
   const handleContinue = async (id) => {
-    router.push(`examine/${id}`);
+    router.push(`/examine/${id}?research=${encodeURIComponent(Date.now())}`);
   };
 
   return (
