@@ -9,14 +9,12 @@ import { toast } from "react-toastify";
 
 const Detail = ({ params }) => {
   const router = useRouter();
+  const research = router.isReady ? router.query.research : "";
   const { id } = params;
   const { data, isError, isLoading, refetch: refetchAppointment } = useGetAppointmentQuery(id);
   const { data: mrData, isError: isError2, refetch: refetchMr, isLoading: isLoading2 } = useGetMedicaRecordsQuery(data?.patient?._id);
   const { data: serviceRqData, error, refetch, isLoadingServiceRq, isError: isErrorServiceRq } = useGetMedicalTestsByAppointmentIdQuery(id);
   const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
-
-  console.log(serviceRqData);
-
   const [expandedRow, setExpandedRow] = useState(null);
   const [expandedRowFile, setExpandedRowFile] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,7 +22,7 @@ const Detail = ({ params }) => {
   useEffect(() => {
     refetchAppointment();
     refetchMr();
-  }, [router.query?.timestamp]);
+  }, [research]);
 
   const openModal = () => {
     setIsModalOpen(true);

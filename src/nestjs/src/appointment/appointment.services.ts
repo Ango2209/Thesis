@@ -131,12 +131,14 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       .exec();
 
     if (!appointments.length) {
-      throw new NotFoundException(`No appointments found for patient ID ${patientId}`);
+      throw new NotFoundException(
+        `No appointments found for patient ID ${patientId}`,
+      );
     }
 
     return appointments;
   }
-  
+
   async getAppointmentsByDoctorId(patientId: string): Promise<Appointment[]> {
     const appointments = await this.appointmentModel
       .find({ doctor: patientId })
@@ -144,9 +146,148 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       .exec();
 
     if (!appointments.length) {
-      throw new NotFoundException(`No appointments found for patient ID ${patientId}`);
+      throw new NotFoundException(
+        `No appointments found for patient ID ${patientId}`,
+      );
     }
 
     return appointments;
+  }
+
+  async getRecentPatients(): Promise<{ patient: any; updatedAt: string }[]> {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    const recentPatients = await this.appointmentModel.aggregate([
+      {
+        $match: {
+          updatedAt: { $gte: oneMonthAgo },
+          status: { $nin: ['booked', 'cancel'] },
+        },
+      },
+      {
+        $sort: { updatedAt: -1 }, // Sắp xếp giảm dần theo thời gian cập nhật
+      },
+      {
+        $group: {
+          _id: '$patient', // Gom nhóm theo bệnh nhân
+          updatedAt: { $first: '$updatedAt' }, // Lấy thời gian cập nhật mới nhất
+        },
+      },
+      {
+        $lookup: {
+          from: 'patients', // Tên collection chứa dữ liệu bệnh nhân
+          localField: '_id',
+          foreignField: '_id',
+          as: 'patientData',
+        },
+      },
+      {
+        $unwind: '$patientData', // Giải nén mảng patientData để lấy ra object bệnh nhân
+      },
+      {
+        $sort: { updatedAt: -1 }, // Sắp xếp lại lần cuối theo updatedAt sau khi lấy đủ thông tin bệnh nhân
+      },
+      {
+        $limit: 5, // Giới hạn 5 bệnh nhân
+      },
+    ]);
+
+    // Định dạng dữ liệu trả về với updatedAt dưới dạng HH:MM
+    return recentPatients.map((record) => ({
+      patient: record.patientData,
+      updatedAt: record.updatedAt,
+    }));
+  }
+
+  async getLast7DaysFinishedAppointments() {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 6); // 7 ngày gần nhất
+
+    const previousStartDate = new Date();
+    previousStartDate.setDate(startDate.getDate() - 7); // 7 ngày trước đó
+    const previousEndDate = new Date(startDate);
+
+    // Truy vấn cho 7 ngày gần nhất
+    const recentFinishedAppointmentsData =
+      await this.appointmentModel.aggregate([
+        {
+          $match: {
+            updatedAt: {
+              $gte: startDate,
+              $lte: endDate,
+            },
+            status: 'finished',
+          },
+        },
+        {
+          $group: {
+            _id: {
+              date: {
+                $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' },
+              },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { '_id.date': 1 } },
+      ]);
+
+    // Truy vấn cho 7 ngày trước đó
+    const previousFinishedAppointmentsData =
+      await this.appointmentModel.aggregate([
+        {
+          $match: {
+            updatedAt: {
+              $gte: previousStartDate,
+              $lte: previousEndDate,
+            },
+            status: 'finished',
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+    // Tạo mảng dữ liệu cho 7 ngày gần nhất và đảm bảo tất cả các ngày đều có giá trị
+    const chartData = [];
+    const labels = [];
+    let recentTotal = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dateString = currentDate.toISOString().split('T')[0];
+
+      const dayData = recentFinishedAppointmentsData.find(
+        (day) => day._id.date === dateString,
+      );
+      const count = dayData ? dayData.count : 0;
+
+      chartData.push(count);
+      labels.push(dateString);
+      recentTotal += count;
+    }
+
+    // Tổng số lịch khám "finished" trong 7 ngày trước đó
+    const previousTotal = previousFinishedAppointmentsData[0]?.count || 0;
+
+    // Tính phần trăm thay đổi
+    const percentage = previousTotal
+      ? ((recentTotal - previousTotal) / previousTotal) * 100
+      : 0;
+
+    return {
+      title: 'Finished Appointments in the Last 7 Days',
+      value: recentTotal,
+      chartData,
+      labels,
+      percentage: Math.round(percentage * 100) / 100, // Làm tròn hai chữ số thập phân
+    };
   }
 }

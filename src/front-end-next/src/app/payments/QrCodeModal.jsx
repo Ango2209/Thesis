@@ -5,12 +5,13 @@ import ReactDOMServer from "react-dom/server";
 import InvoiceContent from "./InvoiceContent";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import useSWR from "swr";
+import { useChangeToPaidMutation } from "@/state/api";
 
-const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest, confirmButton }) => {
+const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedicalTest, confirmButton, invoice }) => {
   const { service, doctor, patient, createdAt } = medicalTestDetail;
   const [pollingActive, setPollingActice] = useState(true);
-  // Example invoice code
-  const invoiceCode = "INV001";
+  const [payting, setPayting] = useState(false);
+  const [changeToPaid] = useChangeToPaidMutation();
 
   const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -22,7 +23,14 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
 
     const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
     const invoiceContent = ReactDOMServer.renderToString(
-      <InvoiceContent invoiceCode={invoiceCode} patient={patient} doctor={doctor} service={service} paymentMethod={"Bank Tranfer"} appointmentDate={"test"} />
+      <InvoiceContent
+        invoiceCode={invoice.invoiceIdd}
+        patient={patient}
+        doctor={doctor}
+        service={service}
+        paymentMethod={"Bank Tranfer"}
+        appointmentDate={formatDateToVietnamTime(invoice.createdAt)}
+      />
     );
 
     printWindow?.document.write(`
@@ -42,18 +50,17 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
   };
 
   // Sử dụng SWR với polling mỗi 5 giây (5000ms)
-  const { data, error, isValidating } = useSWR(
-    pollingActive ? process.env.NEXT_PUBLIC_API_CHECK_BANK : null,
-    fetcher,
-    { refreshInterval: pollingActive ? 2000 : 0 } // Kiểm tra mỗi 5 giây
-  );
+  const { data, error, isValidating } = useSWR(pollingActive ? process.env.NEXT_PUBLIC_API_CHECK_BANK : null, fetcher, { refreshInterval: pollingActive ? 2000 : 0 });
 
   const completeTransfer = async () => {
+    setPayting(true);
     await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
+    await changeToPaid(invoice._id);
     toast.success("Payment success");
     onClose();
     handlePrintInvoice();
     refetch();
+    setPayting(false);
   };
 
   if (data) {
@@ -69,9 +76,6 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
 
   const handleSubmit = async () => {
     try {
-      //To do: create invoice
-      //....
-      //
       completeTransfer();
     } catch (err) {
       toast.error("Failed to payment. Please try again.");
@@ -88,6 +92,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
           src={`https://img.vietqr.io/image/${process.env.NEXT_PUBLIC_BANK_ID}-${process.env.NEXT_PUBLIC_ACCOUNT_NO}-print.png?amount=${service.price}&addInfo=${medicalTestDetail.medicalTestId}&accountName=${process.env.NEXT_PUBLIC_ACCOUNT_NAME}`}
           alt="Qr code"
         />
+        {payting ? <p className="text-center text-green-200">Payment successful, waiting for redirection in a moment</p> : ""}
         {/* Action Buttons */}
         <div className="flex gap-4 mt-6">
           <button
@@ -96,6 +101,7 @@ const QrCodeModal = ({ isOpen, onClose, medicalTestDetail, refetch, updateMedica
               toast.dismiss();
               onClose();
             }}
+            disabled={payting}
           >
             Close
           </button>

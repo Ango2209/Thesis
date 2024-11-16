@@ -71,7 +71,7 @@ export class MedicineService extends BaseServices<MedicineDocument> {
     medicineId: string,
     addNewBatchDto: AddNewBatchDto,
   ): Promise<any> {
-    const profitMargin = 1.5;
+    const profitMargin = 3;
     this.validateExpiryDate(addNewBatchDto.expiryDate);
 
     const result = await this.batchModel.updateMany(

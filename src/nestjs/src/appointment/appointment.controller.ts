@@ -25,7 +25,6 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
   async getAppointmentsByDoctorId(@Param('doctorId') doctorId: string) {
     return this.appointmentService.getAppointmentsByDoctorId(doctorId);
   }
-  
 
   @Get('filter')
   async getAppointments(
@@ -56,5 +55,15 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
   @Patch(':id/examined')
   async markAppointmentAsExamined(@Param('id') id: string) {
     return this.appointmentService.markAsExamined(id);
+  }
+
+  @Get('recent-patients')
+  async getRecentPatients(): Promise<{ patient: any; updatedAt: string }[]> {
+    return await this.appointmentService.getRecentPatients();
+  }
+
+  @Get('finished-appointments-stats')
+  async getFinishedAppointmentsStats() {
+    return await this.appointmentService.getLast7DaysFinishedAppointments();
   }
 }

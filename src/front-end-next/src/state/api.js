@@ -2,8 +2,8 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    // baseUrl: "http://localhost:4000",
-    baseUrl: "http://localhost:3002",
+    // baseUrl: process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    baseUrl: "http://34.121.32.167:3002",
   }),
   reducerPath: "api",
   tagTypes: [],
@@ -255,6 +255,61 @@ export const api = createApi({
         body: signUpDto,
       }),
     }),
+    getLast7DaysRevenue: build.query({
+      query: () => "/invoices/last-7-days-revenue",
+    }),
+    getMonthlyRevenueByYear: build.query({
+      query: (year) => ({
+        url: "/invoices/monthly-revenue",
+        params: year,
+      }),
+    }),
+    getRecentPatient: build.query({
+      query: () => "/appointments/recent-patients",
+    }),
+    getLast7DaysfinishedAppointments: build.query({
+      query: () => "/appointments/finished-appointments-stats",
+    }),
+    getTopItems: build.query({
+      query: ({ startDate, endDate, type }) => ({
+        url: "/invoices/top-items",
+        params: { startDate, endDate, type },
+      }),
+    }),
+    exportMedicinesToExcel: build.query({
+      query: ({ startDate, endDate }) => ({
+        url: `/invoices/medicines-excel?startDate=${startDate}&endDate=${endDate}`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          const today = new Date().toLocaleDateString().replace(/\//g, "-");
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `Medicines_Report_${today}.xlsx`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        },
+      }),
+    }),
+    exportServicesToExcel: build.query({
+      query: ({ startDate, endDate }) => ({
+        url: `/invoices/services-excel?startDate=${startDate}&endDate=${endDate}`,
+        method: "GET",
+        responseHandler: async (response) => {
+          const blob = await response.blob();
+          const today = new Date().toLocaleDateString().replace(/\//g, "-");
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `Services_Report_${today}.xlsx`);
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode.removeChild(link);
+        },
+      }),
+    }),
   }),
 });
 
@@ -303,4 +358,11 @@ export const {
   useChangeToPaidMutation,
   useLoginMutation,
   useSignUpMutation,
+  useGetLast7DaysRevenueQuery,
+  useGetMonthlyRevenueByYearQuery,
+  useGetRecentPatientQuery,
+  useGetLast7DaysfinishedAppointmentsQuery,
+  useGetTopItemsQuery,
+  useLazyExportMedicinesToExcelQuery,
+  useLazyExportServicesToExcelQuery,
 } = api;
