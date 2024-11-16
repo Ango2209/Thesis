@@ -1,10 +1,13 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import StatsCard from "./StatsCard";
 import EarningsReport from "./EarningsReport";
 import RecentPatients from "./RecentPatients";
-
+import { useGetPatientsQuery } from "@/state/api";
 const Dashboard = () => {
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data, error, isLoading } = useGetPatientsQuery({ page, limit });
   const statsData = [
     {
       title: "Total Patients",

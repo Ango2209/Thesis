@@ -5,7 +5,7 @@ const RecentPatients = ({ patients }) => {
     <div className="bg-white p-4 rounded-lg shadow-md">
       <h3 className="text-gray-500 text-sm mb-2">Recent Patients</h3>
       <ul>
-        {patients.map((patient, index) => (
+        {patients?.map((patient, index) => (
           <li
             key={index}
             className="flex justify-between items-center mb-2 h-16"

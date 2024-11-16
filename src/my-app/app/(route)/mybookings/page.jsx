@@ -95,31 +95,6 @@ export default function MyBookings() {
 
   const { data: medical_records } = useGetMedicalRecordsQuery(user._id);
 
-  // const medical_records = [
-  //   {
-  //     record_date: new Date('2023-01-01'),
-  //     diagnosis: "Flu",
-  //     notes: "Patient showed symptoms of flu.",
-  //     complaint: "Fever and cough",
-  //     treatment: "Rest and hydration",
-  //     vital_signs: "BP: 120/80, Temp: 101°F",
-  //     prescriptions: ["Paracetamol", "Cough Syrup"],
-  //     attachments: [],
-  //     doctor: "60d5ec49f1b2c8b1f8c8e4b1" // Example ObjectId
-  //   },
-  //   {
-  //     record_date: new Date('2023-02-15'),
-  //     diagnosis: "Allergy",
-  //     notes: "Patient has seasonal allergies.",
-  //     complaint: "Sneezing and itchy eyes",
-  //     treatment: "Antihistamines",
-  //     vital_signs: "BP: 118/76, Temp: 98.6°F",
-  //     prescriptions: ["Antihistamine"],
-  //     attachments: [],
-  //     doctor: "60d5ec49f1b2c8b1f8c8e4b2" // Example ObjectId
-  //   }
-  // ];
-
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error loading bookings</p>;
 
@@ -210,12 +185,16 @@ export default function MyBookings() {
                     View Medical Records
                   </button>
                 )}
-                <button
-                  onClick={() => openDialog("cancel")} // Open Cancel dialog
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                >
-                  Cancel
-                </button>
+                {booking.status != "finished" ? (
+                  <button
+                    onClick={() => openDialog("cancel")} // Open Cancel dialog
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                  >
+                    Cancel
+                  </button>
+                ) : (
+                  <></>
+                )}
               </div>
 
               {/* Dialogs */}
@@ -292,7 +271,7 @@ export default function MyBookings() {
                       {isLoading ? (
                         <p>Loading records...</p>
                       ) : (
-                        <ul className="space-y-4">
+                        <ul className="space-y-4 max-h-[80vh] overflow-y-auto">
                           {medical_records?.map((record, index) => (
                             <li
                               key={index}
