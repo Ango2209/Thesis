@@ -53,7 +53,7 @@ const Navbar = () => {
       {/* LEFT SIDE */}
       <div className="flex justify-between items-center gap-5">
         <button
-          className="px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100"
+          className="px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100 block md:hidden"
           onClick={toggleSidebar}
         >
           <Menu className="w-4 h-4" />

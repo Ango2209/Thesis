@@ -58,13 +58,7 @@ function CategorySearch() {
       <h2 className="font-bold text-4xl tracking-wide">
         Search <span className="text-primary">Doctors</span>
       </h2>
-      <h2 className="text-gray-500 text-xl">
-        Search Your Doctor and Book Appointment in one click
-      </h2>
-      <div className="flex w-full max-w-sm items-center space-x-2">
-        <Input type="email" placeholder="Email" />
-        {/* <Button type="submit">Search</Button> */}
-      </div>
+
       <div className="grid grid-cols-3 md:grid-cols-4 mt-5 lg:grid-cols-6">
         {categoryList.length > 0
           ? categoryList.map((category, index) => (

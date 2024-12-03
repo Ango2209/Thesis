@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 
 function DoctorList({ doctorList, heading = "Popular Doctors" }) {
   const router = useRouter();
-  console.log("Doctor list", doctorList);
+
   return (
-    <div className="mb-10 px-24 ">
+    <div className="mb-10 px-4 sm:px-8 md:px-16 lg:px-24">
       <h2 className="font-bold text-xl">{heading}</h2>
-      <div className="grid grid-cols-5 gap-7 mt-4"> {/* Changed to 5 columns */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-4">
+        {" "}
+        {/* Changed to 5 columns */}
         {doctorList?.length > 0
           ? doctorList.map((doctor, index) => (
               <div
