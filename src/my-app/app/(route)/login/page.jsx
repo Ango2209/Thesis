@@ -13,11 +13,14 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:3002/auth/signIn", {
-        username: email,
-        password,
-        role,
-      });
+      const response = await axios.post(
+        "http://34.121.32.167:3002/auth/signIn",
+        {
+          username: email,
+          password,
+          role,
+        }
+      );
       console.log("Patient data", response.data);
 
       const { user, tokens } = response.data;
