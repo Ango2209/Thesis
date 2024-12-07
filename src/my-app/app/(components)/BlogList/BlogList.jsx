@@ -38,8 +38,8 @@ function BlogList() {
         <h2 className="font-bold text-xl">Blogs</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
           {/* <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-4"> */}
-          {blogs.map((blog) => (
-            <button onClick={() => router.push(`/blog/${blog.id}`)}>
+          {blogs.map((blog, index) => (
+            <button key={index} onClick={() => router.push(`/blog/${blog.id}`)}>
               <article
                 key={blog.id}
                 className="overflow-hidden rounded-lg shadow transition hover:shadow-lg"
