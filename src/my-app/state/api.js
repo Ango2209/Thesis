@@ -32,7 +32,7 @@ export const api = createApi({
     }),
     addBookingAppointment: build.mutation({
       query: (appointment) => ({
-        url: "/appointments",
+        url: "/appointments/create",
         method: "POST",
         body: appointment,
       }),
@@ -61,6 +61,20 @@ export const api = createApi({
     getMedicalRecords: build.query({
       query: (id) => `patients/${id}/medical-records`,
     }),
+    updateAppointmentStatus: build.mutation({
+      query: ({ id, status }) => ({
+        url: `/appointments/${id}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+    }),
+    createInvoice: build.mutation({
+      query: (createInvoiceDto) => ({
+        url: "/invoices",
+        method: "POST",
+        body: createInvoiceDto,
+      }),
+    }),
   }),
 });
 
@@ -75,4 +89,6 @@ export const {
   useGetMedicalRecordsQuery,
   useCreateUserMutation,
   useUpdateAppointmentDateMutation,
+  useUpdateAppointmentStatusMutation,
+  useCreateInvoiceMutation,
 } = api;

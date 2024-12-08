@@ -5,6 +5,7 @@ import {
   Injectable,
   Param,
   Patch,
+  Post,
   Query,
 } from '@nestjs/common';
 import { BaseController } from 'src/common/base.controller';
@@ -16,6 +17,10 @@ import { ChangeStatusDto } from './dto/changeStatus.dto';
 export class AppointmentController extends BaseController<AppointmentDocument> {
   constructor(private readonly appointmentService: AppointmentService) {
     super(appointmentService);
+  }
+  @Post('create')
+  async createInvoice(@Body() dto: any) {
+    return await this.appointmentService.createAppointment(dto);
   }
   @Get('patient/:patientId')
   async getAppointmentsByPatientId(@Param('patientId') patientId: string) {

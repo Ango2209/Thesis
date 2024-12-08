@@ -1,37 +1,28 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarDays, Clock } from "lucide-react";
 import { toast } from "react-toastify"; // Assuming you are using react-toastify for notifications
 import "react-toastify/dist/ReactToastify.css"; // Import styles for notifications
-import {
-  useAddBookingAppointmentMutation,
-  useAddNotificationMutation,
-} from "@/state/api";
+import { useAddBookingAppointmentMutation, useAddNotificationMutation } from "@/state/api";
+import QrCodeModal from "./QrCodeModal";
 
-
-function BookAppointment({ doctor }) {
+function BookAppointment({ doctor, type }) {
   const [date, setDate] = useState(new Date());
   const [timeSlot, setTimeSlot] = useState([]);
   const [selectedTime, setSelectedTime] = useState("");
   const [purposeVisit, setPurposeVisit] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false); // Control dialog open state
-
-  const [addBookingAppointment, { isLoading }] =
-    useAddBookingAppointmentMutation(); // Initialize mutation
-
+  const [isOpenQrCodeModal, setIsOpenQrCodeModal] = useState(false);
+  const [addBookingAppointment, { isLoading }] = useAddBookingAppointmentMutation(); // Initialize mutation
+  const [appointment, setAppointment] = useState("");
   const [addNotification] = useAddNotificationMutation(); // Initialize mutation
-  const  user  = JSON.parse(localStorage.getItem("Patient"))
+  const user = JSON.parse(localStorage.getItem("Patient"));
+
+  const openQrCodeModal = () => setIsOpenQrCodeModal(true);
+  const closeQrCodeModal = () => setIsOpenQrCodeModal(false);
 
   const getTime = () => {
     const timeList = [];
@@ -76,24 +67,15 @@ function BookAppointment({ doctor }) {
       start_time: selectedTime,
       doctor: doctor._id,
       patient: user._id,
-      status: 'booked',
+      status: "awaiting tranfer",
       description: "General Medicine'",
+      price: type?.price,
     };
-    const notification = {
-      patientId: null,
-      doctorId: doctor._id,
-      title: "New Appointment",
-      content: `You have a new appointment with Patient ${
-        user.fullname
-      } on ${date} at ${selectedTime}`,
-      isRead: false,
-      date,
-    };
+
     try {
-      await addBookingAppointment(appointment).unwrap(); // Execute the mutation
-      console.log("Apoint ",appointment)
-      await addNotification(notification).unwrap(); // Execute the mutation
-      toast.success("Appointment booked successfully!");
+      const data = await addBookingAppointment(appointment).unwrap(); // Execute the mutation
+      setAppointment(data);
+      openQrCodeModal();
       setDialogOpen(false); // Close the modal on success
     } catch (error) {
       // Handle error (e.g., display an error message)
@@ -108,77 +90,65 @@ function BookAppointment({ doctor }) {
         <DialogTrigger>
           <Button className="mt-4">Book Appointment</Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="max-w-3xl w-full overflow-y-auto max-h-[calc(100vh-4rem)] p-4">
           <DialogHeader>
-            <DialogTitle>Book Appointment</DialogTitle>
-            <DialogDescription>
-              <div>
-                <div className="grid grid-cols-1 md:grid-cols-2 mt-5">
-                  {/* Calendar */}
-                  <div className="flex flex-col gap-3 items-baseline">
-                    <h2 className="flex gap-2 items-center">
-                      <CalendarDays className="text-primary h-5 w-5" />
-                    </h2>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      className="rounded-md border"
-                      disabled={isPastDay}
-                    />
-                  </div>
-
-                  {/* Time slot */}
-                  <div className="mt-3">
-                    <h2 className="flex gap-2 items-center mb-3">
-                      <Clock className="text-primary h-5 w-5" />
-                      Select Time Slot
-                    </h2>
-                    <div className="grid grid-cols-3 gap-3 border rounded-lg">
-                      {timeSlot.map((item, index) => {
-                        return (
-                          <h2
-                            key={index}
-                            onClick={() => setSelectedTime(item.time)}
-                            className={`p-2 border text-center hover:bg-primary hover:text-white cursor-pointer rounded-full ${
-                              item.time == selectedTime
-                                ? "bg-primary text-white"
-                                : ""
-                            }`}
-                          >
-                            {item.time}
-                          </h2>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </DialogDescription>
+            <DialogTitle className="text-center">Book Appointment</DialogTitle>
+            {/* Price and Type Display */}
+            <div className="flex flex-col items-center mb-5">
+              <h2 className="font-bold text-2xl text-primary">{new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(type?.price || 0)}</h2>
+              <p className="text-sm text-gray-500">{type?.name || "Appointment Type"}</p>
+            </div>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div>
-              <label
-                for="Purpose"
-                class="block text-sm font-medium text-gray-700"
-              >
-                {" "}
-                Purpose{" "}
-              </label>
+          <DialogDescription>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Calendar */}
+              <div className="flex flex-col items-center gap-4">
+                <h2 className="flex items-center gap-2 text-lg">
+                  <CalendarDays className="text-primary h-5 w-5" />
+                  Select a Date
+                </h2>
+                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border shadow-sm w-full max-w-xs md:max-w-sm" disabled={isPastDay} />
+              </div>
 
-              <textarea
-                id="purpose_visit"
-                class="mt-2 w-full rounded-lg border-gray-200 align-top shadow-sm sm:text-sm"
-                rows="4"
-                placeholder="Enter any additional order notes..."
-                value={purposeVisit}
-                onChange={(e) => setPurposeVisit(e.target.value)}
-              ></textarea>
+              {/* Time Slot Selection */}
+              <div className="flex flex-col items-center gap-4">
+                <h2 className="flex items-center gap-2 text-lg">
+                  <Clock className="text-primary h-5 w-5" />
+                  Select Time Slot
+                </h2>
+                <div className="grid grid-cols-3 gap-3 w-full">
+                  {timeSlot.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setSelectedTime(item.time)}
+                      className={`p-2 text-center border rounded-lg cursor-pointer transition ${item.time === selectedTime ? "bg-primary text-white" : "hover:bg-gray-100"}`}
+                    >
+                      {item.time}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
+          </DialogDescription>
+
+          {/* Purpose of Visit Section */}
+          <div className="mt-5">
+            <label htmlFor="purpose_visit" className="block text-sm font-medium text-gray-700">
+              Purpose
+            </label>
+            <textarea
+              id="purpose_visit"
+              className="mt-2 w-full rounded-lg border-gray-300 shadow-sm sm:text-sm p-2"
+              rows="4"
+              placeholder="Enter any additional notes or purpose..."
+              value={purposeVisit}
+              onChange={(e) => setPurposeVisit(e.target.value)}
+            />
           </div>
-          <DialogFooter className="sm:justify-end">
-            <>
+
+          <DialogFooter className="mt-6">
+            <div className="flex justify-between w-full">
               <Button
                 type="button"
                 className="text-red-500 border-red-500"
@@ -194,9 +164,14 @@ function BookAppointment({ doctor }) {
               >
                 {isLoading ? "Submitting..." : "Submit"}
               </Button>
-            </>
+            </div>
           </DialogFooter>
         </DialogContent>
+        {isOpenQrCodeModal ? (
+          <QrCodeModal isOpen={isOpenQrCodeModal} onClose={closeQrCodeModal} appointment={appointment} patient={user} date={date} selectedTime={selectedTime} doctor={doctor} />
+        ) : (
+          ""
+        )}
       </Dialog>
     </>
   );

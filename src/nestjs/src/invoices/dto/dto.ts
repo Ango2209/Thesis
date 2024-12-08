@@ -6,7 +6,7 @@ export class CreateInvoiceDto {
   customerName?: string;
   customerPhone?: string;
   userId: Types.ObjectId;
-  invoiceType: 'medicine' | 'service';
+  invoiceType: 'medicine' | 'service' | 'booked';
   medicines?: {
     medicineId: Types.ObjectId;
     quantity: number;

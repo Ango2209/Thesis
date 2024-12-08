@@ -36,6 +36,31 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
     return updatedAppointment;
   }
 
+  private async generateAppointmentId(): Promise<string> {
+    const date = new Date();
+    const datePart = date.toISOString().slice(0, 10).replace(/-/g, '');
+
+    const startOfDay = new Date(date.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(date.setHours(23, 59, 59, 999));
+
+    const appointmentCount = await this.appointmentModel.countDocuments({
+      createdAt: { $gte: startOfDay, $lt: endOfDay },
+    });
+
+    const orderNumber = (appointmentCount + 1).toString().padStart(4, '0');
+    return `APM${datePart}${orderNumber}`; // Ví dụ: INV202410310001
+  }
+
+  async createAppointment(dto: any): Promise<Appointment> {
+    const appointmentId = await this.generateAppointmentId();
+
+    const newAppointment = new this.appointmentModel({
+      appointmentId,
+      ...dto,
+    });
+    return await newAppointment.save();
+  }
+
   async getAppointments(
     statuses?: string[],
     date?: string,

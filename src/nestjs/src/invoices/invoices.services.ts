@@ -63,19 +63,24 @@ export class InvoiceService {
 
   async create(createInvoiceDto: CreateInvoiceDto): Promise<Invoice> {
     const invoiceId = await this.generateInvoiceId();
-
-    const { medicines, services, totalAmount } = this.calculateTotals(
-      createInvoiceDto.medicines,
-      createInvoiceDto.services,
-    );
-
-    const newInvoice = new this.invoiceModel({
+    let newInvoice = new this.invoiceModel({
       ...createInvoiceDto,
       invoiceId,
-      medicines,
-      services,
-      totalAmount,
     });
+    if (createInvoiceDto.invoiceType !== 'booked') {
+      const { medicines, services, totalAmount } = this.calculateTotals(
+        createInvoiceDto.medicines,
+        createInvoiceDto.services,
+      );
+
+      newInvoice = new this.invoiceModel({
+        ...createInvoiceDto,
+        invoiceId,
+        medicines,
+        services,
+        totalAmount,
+      });
+    }
     return await newInvoice.save();
   }
 

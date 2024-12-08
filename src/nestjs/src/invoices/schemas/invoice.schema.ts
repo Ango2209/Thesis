@@ -20,7 +20,7 @@ export class Invoice {
 
   @Prop({
     required: true,
-    enum: ['medicine', 'service'],
+    enum: ['medicine', 'service', 'booked'],
   })
   invoiceType: string;
 
