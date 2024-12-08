@@ -322,7 +322,7 @@ const Detail = ({ params }) => {
                 )}
                 {mrData?.map((data, index) => (
                   <>
-                    <tr key={index}>
+                    <tr key={index} className={`${!data?.valid ? "bg-red-100 border border-red-500" : ""}`}>
                       <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data?.record_date)}</td>
                       <td className="py-2 px-4 border-b">
                         <div className="flex items-center">
@@ -337,7 +337,8 @@ const Detail = ({ params }) => {
                       <td className="py-2 px-4 border-b">{data?.diagnosis}</td>
                       <td className="py-2 px-4 border-b">{data?.notes}</td>
                       <td className="py-2 px-4 border-b text-center">
-                        <button type="button" className="text-blue-500 hover:text-blue-700" onClick={() => toggleRow(index)}>
+                        {!data?.valid && <span className="text-red-500 font-semibold">⚠ Untrustworthy</span>}
+                        <button type="button" className="ml-2 text-blue-500 hover:text-blue-700" onClick={() => toggleRow(index)}>
                           {expandedRow === index ? (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 12H6" />
