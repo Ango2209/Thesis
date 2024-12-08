@@ -90,9 +90,9 @@ export const api = createApi({
       query: (doctorId) => `/notifications/doctor/${doctorId}`,
     }),
     getAppointmentsByStatusAndDate: build.query({
-      query: ({ statuses, date, page = 1, limit = 10 }) => ({
+      query: ({ statuses, date, page = 1, limit = 10, doctorId }) => ({
         url: "/appointments/filter",
-        params: { statuses, date, page, limit },
+        params: { statuses, date, page, limit, doctorId },
       }),
     }),
     getAppointment: build.query({

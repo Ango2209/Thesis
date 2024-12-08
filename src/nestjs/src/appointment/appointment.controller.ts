@@ -37,6 +37,7 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
     @Query('date') date?: string,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
+    @Query('doctorId') doctor_id?: string,
   ) {
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
@@ -46,6 +47,7 @@ export class AppointmentController extends BaseController<AppointmentDocument> {
       date,
       pageNumber,
       limitNumber,
+      doctor_id,
     );
   }
 

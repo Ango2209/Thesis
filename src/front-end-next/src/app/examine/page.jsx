@@ -9,12 +9,14 @@ const AppointmentList = () => {
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
   const [currentPage, setCurrentPage] = useState(1);
+  const user = JSON.parse(localStorage.getItem("doctor"));
 
   const { data, refetch, isLoading, isError } = useGetAppointmentsByStatusAndDateQuery({
     statuses: "waiting,examining,awaiting results",
     date: selectedDate,
     page: currentPage,
     limit: 10,
+    doctorId: user._id,
   });
   const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
 
