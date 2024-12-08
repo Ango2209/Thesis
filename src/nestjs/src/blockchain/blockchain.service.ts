@@ -1,6 +1,7 @@
 // blockchain.service.ts
 import { Injectable } from '@nestjs/common';
 import * as contractABI from './abi.json';
+import { Worker } from 'worker_threads';
 import Web3 from 'web3';
 
 @Injectable()
@@ -25,45 +26,36 @@ export class BlockchainService {
     recordDate: string,
     recordHash: string,
     doctorId: string,
-  ) {
-    const account = this.web3.eth.accounts.privateKeyToAccount(
-      process.env.PRIVATE_KEY,
-    );
-    this.web3.eth.accounts.wallet.add(account);
-    this.web3.eth.defaultAccount = account.address;
+  ): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const workerData = { patientId, recordDate, recordHash, doctorId };
 
-    const data = this.contract.methods
-      .addMedicalRecord(patientId, recordDate, recordHash, doctorId)
-      .encodeABI();
+      // Tạo Worker Thread
+      const worker = new Worker('./src/blockchain/blockchain.worker.js', {
+        workerData,
+      });
 
-    const gasPrice = await this.web3.eth.getGasPrice(); // Lấy giá gas hiện tại
-    const gas = await this.web3.eth.estimateGas({
-      to: this.contract.options.address,
-      data: data,
-      from: account.address,
+      // Nhận kết quả từ Worker
+      worker.on('message', (message) => {
+        if (message.status === 'success') {
+          resolve(message.transactionHash); // Trả về transaction hash
+        } else {
+          reject(new Error(message.error)); // Trả về lỗi
+        }
+      });
+
+      // Bắt lỗi từ Worker
+      worker.on('error', (error) => {
+        reject(error);
+      });
+
+      // Lắng nghe sự kiện kết thúc Worker
+      worker.on('exit', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
     });
-
-    const tx = {
-      to: this.contract.options.address,
-      data: data,
-      gas: gas,
-      gasPrice: gasPrice,
-      from: account.address,
-    };
-
-    const signed = await this.web3.eth.accounts.signTransaction(
-      tx,
-      process.env.PRIVATE_KEY,
-    );
-
-    const receipt = await this.web3.eth.sendSignedTransaction(
-      signed.rawTransaction,
-    );
-
-    return {
-      transactionHash: receipt.transactionHash.toString(),
-      status: receipt.status.toString(),
-    };
   }
 
   async getMedicalRecords(patientId: string) {

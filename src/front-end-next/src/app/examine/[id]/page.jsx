@@ -303,8 +303,6 @@ const Detail = ({ params }) => {
                   <th className="py-2 px-4 border-b text-left">Result</th>
                   <th className="py-2 px-4 border-b text-left">Notes</th>
                   <th className="py-2 px-4 border-b text-center">Prescription</th>
-                  <th className="py-2 px-4 border-b text-center">Materials</th>
-                  <th className="py-2 px-4 border-b text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -325,18 +323,18 @@ const Detail = ({ params }) => {
                 {mrData?.map((data, index) => (
                   <>
                     <tr key={index}>
-                      <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data.record_date)}</td>
+                      <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data?.record_date)}</td>
                       <td className="py-2 px-4 border-b">
                         <div className="flex items-center">
                           <div>
-                            <div className="font-semibold">{data.doctor.fullname}</div>
-                            <a href={`tel:${data.doctor.phone}`} className="text-blue-500">
-                              {data.doctor.phone}
+                            <div className="font-semibold">{data?.doctor?.fullname}</div>
+                            <a href={`tel:${data?.doctor?.phone}`} className="text-blue-500">
+                              {data?.doctor?.phone}
                             </a>
                           </div>
                         </div>
                       </td>
-                      <td className="py-2 px-4 border-b">{data.diagnosis}</td>
+                      <td className="py-2 px-4 border-b">{data?.diagnosis}</td>
                       <td className="py-2 px-4 border-b">{data?.notes}</td>
                       <td className="py-2 px-4 border-b text-center">
                         <button type="button" className="text-blue-500 hover:text-blue-700" onClick={() => toggleRow(index)}>
@@ -349,20 +347,6 @@ const Detail = ({ params }) => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9l6 6 6-6" />
                             </svg>
                           )}
-                        </button>
-                      </td>
-                      <td className="py-2 px-4 border-b text-center">
-                        <button type="button" className="text-gray-500 hover:text-gray-700">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18m-7 5h7" />
-                          </svg>
-                        </button>
-                      </td>
-                      <td className="py-2 px-4 border-b">
-                        <button type="button" className="text-green-500 hover:text-green-700">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l-5 5 5 5M6 12h13" />
-                          </svg>
                         </button>
                       </td>
                     </tr>
@@ -383,10 +367,10 @@ const Detail = ({ params }) => {
                               <tbody>
                                 {data.prescriptions.map((item, index) => (
                                   <tr key={index}>
-                                    <td className="py-2 px-4 border-b">{item.itemName}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item.dosage}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item.instraction}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item.quantity}</td>
+                                    <td className="py-2 px-4 border-b">{item?.itemName}</td>
+                                    <td className="py-2 px-4 border-b text-center">{item?.dosage}</td>
+                                    <td className="py-2 px-4 border-b text-center">{item?.instraction}</td>
+                                    <td className="py-2 px-4 border-b text-center">{item?.quantity}</td>
                                   </tr>
                                 ))}
                               </tbody>

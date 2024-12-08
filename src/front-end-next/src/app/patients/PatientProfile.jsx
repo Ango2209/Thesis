@@ -39,17 +39,18 @@ const PatientProfile = ({ patient, onBack }) => {
         </div>
         <div className="space-y-4 animate-fadeIn">
           {data?.map((record, index) => (
-            <div key={index} className="p-4 bg-gray-100 rounded-lg shadow-md">
+            <div key={index} className={`p-4 rounded-lg shadow-md ${record?.valid ? "bg-gray-100" : "bg-orange-100 border border-orange-500"}`}>
               <div className="flex justify-between">
                 <div>
-                  <div className="text-sm text-gray-600">{formatDate(record.record_date)}</div>
-                  <div className="font-semibold">Complaint: {record.complaint}</div>
-                  <div>Diagnosis: {record.diagnosis}</div>
-                  <div>Treatment: {record.treatment}</div>
-                  <div>Prescription: {record.prescriptions.map((p) => p.itemName).join(",")}</div>
+                  <div className="text-sm text-gray-600">{formatDate(record?.record_date)}</div>
+                  <div className="font-semibold">Complaint: {record?.complaint}</div>
+                  <div>Diagnosis: {record?.diagnosis}</div>
+                  <div>Treatment: {record?.treatment}</div>
+                  <div>Prescription: {record?.prescriptions?.map((p) => p.itemName).join(", ")}</div>
+                  {!record?.valid && <div className="text-orange-500 font-semibold mt-2">⚠️ This record is untrustworthy.</div>}
                 </div>
                 <div className="text-right">
-                  <div className="text-sm text-teal-500">(Tsh) {record.cost}</div>
+                  <div className="text-sm text-teal-500">(Tsh) {record?.cost}</div>
                   <div className="flex mt-4 space-x-2">
                     <button
                       className="text-gray-500 hover:text-gray-700"
@@ -61,9 +62,6 @@ const PatientProfile = ({ patient, onBack }) => {
                       <Eye />
                     </button>
                     {isOpenPopup && <MedicalRecordDetail isOpen={isOpenPopup} onClose={handleClosePopUp} record={selectedRecord} />}
-                    <button className="text-gray-500 hover:text-red-500">
-                      <Trash2 />
-                    </button>
                   </div>
                 </div>
               </div>

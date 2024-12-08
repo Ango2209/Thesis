@@ -10,7 +10,10 @@ import { BaseServices } from 'src/common/base.services';
 import { MedicalRecord } from './schemas/medical-record.schema';
 import { DoctorService } from './doctor.services';
 import { MedicineService } from 'src/medicine/medicine.services';
-
+import { HashUtils } from 'src/utils/hash.utils';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
+import { Worker } from 'worker_threads';
+import * as path from 'path';
 @Injectable()
 export class PatientService extends BaseServices<PatientDocument> {
   constructor(
@@ -18,6 +21,7 @@ export class PatientService extends BaseServices<PatientDocument> {
     private readonly patientModel: Model<PatientDocument>,
     private readonly doctorService: DoctorService,
     private readonly medicineService: MedicineService,
+    private readonly blockchainService: BlockchainService,
   ) {
     super(patientModel);
   }
@@ -68,16 +72,13 @@ export class PatientService extends BaseServices<PatientDocument> {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
 
-    // Check if the doctor_id is valid
-    if (record.doctor_id_object) {
-      const isValidDoctor = await this.doctorService.findOne(
-        record.doctor_id_object.toString(),
+    const isValidDoctor = await this.doctorService.findOne(
+      record.doctor.toString(),
+    );
+    if (!isValidDoctor) {
+      throw new BadRequestException(
+        `Invalid doctor ID: ${record.doctor_id_object}`,
       );
-      if (!isValidDoctor) {
-        throw new BadRequestException(
-          `Invalid doctor ID: ${record.doctor_id_object}`,
-        );
-      }
     }
 
     // Handle prescription if provided
@@ -105,8 +106,28 @@ export class PatientService extends BaseServices<PatientDocument> {
     const recordNumber = recordCount.toString().padStart(4, '0');
     const recordId = `MR${patient.patient_id}${recordNumber}`;
     record.record_id = recordId;
+    console.log(record);
+    const hash = HashUtils.hashData(record);
     patient.medical_records.push(record);
-    return patient.save();
+    const savedPatient = await patient.save();
+    // Gọi Worker để lưu hash lên blockchain
+    new Worker(path.resolve(__dirname, '../blockchain/blockchain.worker.js'), {
+      workerData: {
+        recordHash: hash,
+        patientId: patient.patient_id,
+        recordDate: record.record_date,
+        doctorId: record.doctor,
+      },
+    }).on('message', (message) => {
+      if (message.status === 'success') {
+        console.log(
+          `Blockchain transaction successful: ${message.transactionHash}`,
+        );
+      } else {
+        console.error(`Blockchain transaction failed: ${message.error}`);
+      }
+    });
+    return savedPatient;
   }
 
   async findAllPatients(page: number, limit: number): Promise<any> {
@@ -138,13 +159,47 @@ export class PatientService extends BaseServices<PatientDocument> {
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
+    const recordsFromBlockchain =
+      await this.blockchainService.getMedicalRecords(patient.patient_id);
+
+    const hashesFromBlockchain = recordsFromBlockchain.map(
+      (record: any) => record.recordHash,
+    );
 
     const sortedRecords = patient.medical_records.sort(
       (a, b) =>
         new Date(b.record_date).getTime() - new Date(a.record_date).getTime(),
     );
 
-    return sortedRecords;
+    // Gắn cờ valid/invalid cho mỗi bản ghi từ MongoDB
+    const validatedRecords = patient.medical_records.map((dbRecord: any) => {
+      const recordToHash = {
+        prescriptions: dbRecord.prescriptions,
+        doctor: dbRecord.doctor._id.toString(),
+        record_date: dbRecord.record_date,
+        complaint: dbRecord.complaint,
+        notes: dbRecord.notes,
+        diagnosis: dbRecord.diagnosis,
+        vital_signs: dbRecord.vital_signs,
+        treatment: dbRecord.treatment,
+        attachments: dbRecord.attachments,
+        record_id: dbRecord.record_id,
+      };
+      // Tạo hash từ MongoDB record sử dụng HashUtils
+      const recordHash = HashUtils.hashData(recordToHash);
+
+      // Kiểm tra hash có tồn tại trên blockchain
+      const isValid = hashesFromBlockchain.includes(recordHash);
+
+      // Trả về bản ghi kèm trạng thái valid/invalid
+      return {
+        ...dbRecord.toObject(),
+        record_hash: recordHash,
+        valid: isValid,
+      };
+    });
+
+    return validatedRecords;
   }
 
   // Hàm lấy medical records theo ngày và chỉ lấy các records có prescriptions

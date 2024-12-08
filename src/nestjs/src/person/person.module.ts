@@ -10,6 +10,7 @@ import { Person, PersonSchema } from './schemas/person.schemas';
 import { UploadModule } from 'src/upload/upload.module';
 import { PersonService } from './person.services';
 import { MedicineModule } from 'src/medicine/medicine.module';
+import { BlockchainService } from 'src/blockchain/blockchain.service';
 
 @Module({
   imports: [
@@ -22,7 +23,7 @@ import { MedicineModule } from 'src/medicine/medicine.module';
     MedicineModule,
   ],
   controllers: [PatientController, DoctorController],
-  providers: [PatientService, DoctorService,PersonService],
-  exports: [PatientService, DoctorService,PersonService],
+  providers: [PatientService, DoctorService, PersonService, BlockchainService],
+  exports: [PatientService, DoctorService, PersonService],
 })
 export class PersonModule {}
