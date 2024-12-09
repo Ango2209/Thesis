@@ -1,13 +1,9 @@
-"use client"
-
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "./(components)/Header/Header";
-import Footer from "./(components)/Footer/Footer";
+import ClientLayoutWrapper from "./layoutWrapper.jsx";
 import StoreProvider, { useAppSelector } from "./redux";
 import { ToastContainer } from "react-toastify";
-import ChatBot from "./(components)/ChatBot/ChatBot";
-import { usePathname } from "next/navigation";
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -32,25 +28,12 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  const pathname = usePathname();
-  const standaloneRoutes = ["/login", "/register"];
-
-  const isStandalonePage = standaloneRoutes.includes(pathname);
   return (
     <html lang="en">
       <body className={inter.className}>
         <ToastContainer />
         <StoreProvider>
-        {isStandalonePage ? (
-          children
-        ) : (
-          <div className="md:px-20 ">
-            <Header />
-            {children}
-            <ChatBot />
-            <Footer />
-          </div>
-          )}
+          <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
         </StoreProvider>
       </body>
     </html>
