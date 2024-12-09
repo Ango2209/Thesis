@@ -13,21 +13,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Replace with your authentication logic
-      // const response = await axios.post("http://localhost:3002/auth/signIn", {
-      //   username: email,
-      //   password,
-      //   role,
-      // });
-      const response = await axios.post(
-        "http://localhost:3002/auth/signIn",
-        // "http://34.121.32.167:3002/auth/signIn",
-        {
-          username: email,
-          password,
-          role,
-        }
-      );
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/signIn`, {
+        username: email,
+        password,
+        role,
+      });
       // Extract user and tokens from the response
       const { user, tokens } = response.data;
       if (role === "admin") {
@@ -59,15 +49,11 @@ const Login = () => {
       }}
     >
       <div className="w-full max-w-md p-8 space-y-6 bg-white/90 rounded-lg shadow-lg backdrop-blur-md">
-        <h1 className="text-3xl font-bold text-center text-indigo-600">
-          Welcome Back
-        </h1>
+        <h1 className="text-3xl font-bold text-center text-indigo-600">Welcome Back</h1>
         <p className="text-sm text-center text-gray-500">Sign in to continue</p>
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              User Name
-            </label>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">User Name</label>
             <input
               type="text"
               value={email}
@@ -78,9 +64,7 @@ const Login = () => {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-semibold text-gray-700">
-              Password
-            </label>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">Password</label>
             <input
               type="password"
               value={password}
@@ -91,10 +75,7 @@ const Login = () => {
             />
           </div>
           <RoleSelector role={role} setRole={setRole} />
-          <button
-            type="submit"
-            className="w-full py-3 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:scale-105"
-          >
+          <button type="submit" className="w-full py-3 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 transition duration-300 ease-in-out transform hover:scale-105">
             Sign In
           </button>
         </form>

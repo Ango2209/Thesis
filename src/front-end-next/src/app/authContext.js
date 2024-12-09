@@ -16,13 +16,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (username, password, role) => {
-    // const response = await axios.post('http://localhost:3002/auth/signIn', {
-    //   username,
-    //   password,
-    //   role,
-    // });
-
-    const response = await axios.post("http://localhost:3002/auth/signIn", {
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_API_URL}/auth/signIn`, {
       username,
       password,
       role,
@@ -40,11 +34,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("accessToken"); // Clear token when logging out
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ isAuthenticated, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
