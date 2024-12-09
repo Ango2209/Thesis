@@ -3,6 +3,7 @@ import {
   useGetAppointmentsPatientIdQuery,
   useGetMedicalRecordsQuery,
   useUpdateAppointmentDateMutation,
+  useUpdateAppointmentStatusMutation
 } from "@/state/api";
 import { CalendarIcon, ClockIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
@@ -24,6 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 
 export default function MyBookings() {
+  const [updateAppointmentStatus] = useUpdateAppointmentStatusMutation();
   const user = JSON.parse(localStorage.getItem("Patient"));
   const [activeDialog, setActiveDialog] = useState(null);
   const [date, setDate] = useState(new Date());
@@ -72,7 +74,16 @@ export default function MyBookings() {
     setSelectedBooking(booking);
   };
 
-  const handleCancel = async () => {};
+  const handleCancel = async () => {
+    try {
+      await updateAppointmentStatus({ id: selectedBooking?._id, status: "cancel" }).unwrap();
+      refetch();
+      toast.success("Cancel appointment successfully!");
+      closeDialog();
+    } catch (error) {
+      console.error("Failed to check in:", error);
+    }
+  };
 
   const handleReschedule = async () => {
     try {
@@ -151,11 +162,16 @@ export default function MyBookings() {
                     </p>
                   </div>
                   <div
-                    className={`ml-12 px-3 py-1 rounded-full font-semibold text-sm ${
-                      booking.status === "booked"
+                    className={`ml-12 px-3 py-1 rounded-full font-semibold text-sm ${booking.status === "booked" || booking.status === "awaiting tranfer" || booking.status.startsWith("waiting")
                         ? "bg-yellow-100 text-yellow-600"
-                        : "bg-green-100 text-green-600"
-                    }`}
+                        : booking.status === "finished"
+                          ? "bg-green-100 text-green-600"
+                          : booking.status === "examining"
+                            ? "bg-red-100 text-red-600"
+                            : booking.status === "cancel"
+                              ? "bg-gray-100 text-gray-600"
+                              : ""
+                      }`}
                   >
                     {booking.status}
                   </div>
@@ -170,14 +186,17 @@ export default function MyBookings() {
 
               {/* Action Buttons */}
               <div className="mt-4 flex space-x-4">
-                {booking.status === "booked" ? (
+
+                {booking.status === "booked" && (
                   <button
                     onClick={() => openDialog("reschedule", booking)} // Open Reschedule dialog
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
                   >
                     Reschedule
                   </button>
-                ) : (
+                )}
+
+                {booking.status === "finished" && (
                   <button
                     onClick={() => openDialog("viewMedicalRecords")} // Open View Medical Records dialog
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
@@ -185,9 +204,9 @@ export default function MyBookings() {
                     View Medical Records
                   </button>
                 )}
-                {booking.status != "finished" ? (
+                {booking.status == "booked" ? (
                   <button
-                    onClick={() => openDialog("cancel")} // Open Cancel dialog
+                    onClick={() => openDialog("cancel", booking)} // Open Cancel dialog
                     className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
                   >
                     Cancel
@@ -234,11 +253,10 @@ export default function MyBookings() {
                                   <h2
                                     key={index}
                                     onClick={() => setSelectedTime(item.time)}
-                                    className={`p-2 border text-center hover:bg-primary hover:text-white cursor-pointer rounded-full ${
-                                      item.time == selectedTime
-                                        ? "bg-primary text-white"
-                                        : ""
-                                    }`}
+                                    className={`p-2 border text-center hover:bg-primary hover:text-white cursor-pointer rounded-full ${item.time == selectedTime
+                                      ? "bg-primary text-white"
+                                      : ""
+                                      }`}
                                   >
                                     {item.time}
                                   </h2>
@@ -264,14 +282,14 @@ export default function MyBookings() {
                 open={activeDialog === "viewMedicalRecords"}
                 onOpenChange={closeDialog}
               >
-                <DialogContent>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Medical Records</DialogTitle>
                     <DialogDescription>
                       {isLoading ? (
                         <p>Loading records...</p>
                       ) : (
-                        <ul className="space-y-4 max-h-[80vh] overflow-y-auto">
+                        <ul className="space-y-4">
                           {medical_records?.map((record, index) => (
                             <li
                               key={index}
@@ -280,66 +298,50 @@ export default function MyBookings() {
                               <div className="flex flex-col">
                                 <div className="mb-2">
                                   <strong>Date:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.record_date}
-                                  </span>
+                                  <span className="text-gray-700">{record.record_date}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Diagnosis:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.diagnosis}
-                                  </span>
+                                  <span className="text-gray-700">{record.diagnosis}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Notes:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.notes}
-                                  </span>
+                                  <span className="text-gray-700">{record.notes}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Complaint:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.complaint}
-                                  </span>
+                                  <span className="text-gray-700">{record.complaint}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Treatment:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.treatment}
-                                  </span>
+                                  <span className="text-gray-700">{record.treatment}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Vital Signs:</strong>{" "}
-                                  <span className="text-gray-700">
-                                    {record.vital_signs}
-                                  </span>
+                                  <span className="text-gray-700">{record.vital_signs}</span>
                                 </div>
                                 <div className="mb-2">
                                   <strong>Prescriptions:</strong>
                                   <span className="text-gray-700">
                                     {Array.isArray(record.prescriptions) &&
-                                    record.prescriptions.length > 0 ? (
+                                      record.prescriptions.length > 0 ? (
                                       <ul className="list-disc pl-5 space-y-2">
-                                        {record.prescriptions.map(
-                                          (prescription, index) => (
-                                            <li
-                                              key={index}
-                                              className="bg-gray-100 p-2 rounded-md shadow-sm"
-                                            >
-                                              <span className="font-semibold">
-                                                {prescription.itemName}
-                                              </span>{" "}
-                                              -
-                                              <span className="text-gray-600">
-                                                {" "}
-                                                {
-                                                  prescription.dosage
-                                                } (Quantity:{" "}
-                                                {prescription.quantity})
-                                              </span>
-                                            </li>
-                                          )
-                                        )}
+                                        {record.prescriptions.map((prescription, index) => (
+                                          <li
+                                            key={index}
+                                            className="bg-gray-100 p-2 rounded-md shadow-sm"
+                                          >
+                                            <span className="font-semibold">
+                                              {prescription.itemName}
+                                            </span>{" "}
+                                            -
+                                            <span className="text-gray-600">
+                                              {" "}
+                                              {prescription.dosage} (Quantity:{" "}
+                                              {prescription.quantity})
+                                            </span>
+                                          </li>
+                                        ))}
                                       </ul>
                                     ) : (
                                       <span className="text-gray-500">
@@ -352,22 +354,20 @@ export default function MyBookings() {
                                   <strong>Attachments:</strong>
                                   <span className="text-gray-700">
                                     {Array.isArray(record.attachments) &&
-                                    record.attachments.length > 0 ? (
+                                      record.attachments.length > 0 ? (
                                       <ul className="list-disc pl-5 space-y-2">
-                                        {record.attachments.map(
-                                          (attachment, index) => (
-                                            <li key={index}>
-                                              <a
-                                                href={attachment}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:underline"
-                                              >
-                                                {attachment}
-                                              </a>
-                                            </li>
-                                          )
-                                        )}
+                                        {record.attachments.map((attachment, index) => (
+                                          <li key={index}>
+                                            <a
+                                              href={attachment}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="text-blue-600 hover:underline"
+                                            >
+                                              {attachment}
+                                            </a>
+                                          </li>
+                                        ))}
                                       </ul>
                                     ) : (
                                       <span className="text-gray-500">
@@ -388,6 +388,7 @@ export default function MyBookings() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
 
               {/* Cancel Dialog */}
               <Dialog

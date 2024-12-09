@@ -20,7 +20,8 @@ const Login = () => {
       //   role,
       // });
       const response = await axios.post(
-        "http://34.121.32.167:3002/auth/signIn",
+        "http://localhost:3002/auth/signIn",
+        // "http://34.121.32.167:3002/auth/signIn",
         {
           username: email,
           password,
