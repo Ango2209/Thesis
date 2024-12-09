@@ -22,8 +22,8 @@ export class MedicalRecord {
   prescriptions: [];
   @Prop({ default: [] })
   attachments: string[];
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Patient' })
-  appointment : Appointment
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Appointment' })
+  appointment: Appointment;
   @Prop({ type: Types.ObjectId, ref: Doctor.name })
   doctor: Types.ObjectId; // Reference to a doctor
 }

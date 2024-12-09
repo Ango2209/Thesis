@@ -320,68 +320,73 @@ const Detail = ({ params }) => {
                     </td>
                   </tr>
                 )}
-                {mrData?.map((data, index) => (
-                  <>
-                    <tr key={index} className={`${!data?.valid ? "bg-red-100 border border-red-500" : ""}`}>
-                      <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data?.record_date)}</td>
-                      <td className="py-2 px-4 border-b">
-                        <div className="flex items-center">
-                          <div>
-                            <div className="font-semibold">{data?.doctor?.fullname}</div>
-                            <a href={`tel:${data?.doctor?.phone}`} className="text-blue-500">
-                              {data?.doctor?.phone}
-                            </a>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-2 px-4 border-b">{data?.diagnosis}</td>
-                      <td className="py-2 px-4 border-b">{data?.notes}</td>
-                      <td className="py-2 px-4 border-b text-center">
-                        {!data?.valid && <span className="text-red-500 font-semibold">⚠ Untrustworthy</span>}
-                        <button type="button" className="ml-2 text-blue-500 hover:text-blue-700" onClick={() => toggleRow(index)}>
-                          {expandedRow === index ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 12H6" />
-                            </svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9l6 6 6-6" />
-                            </svg>
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                    {expandedRow === index && (
-                      <tr>
-                        <td colSpan="7" className="px-4 py-2 border-b">
-                          <div className="p-4 bg-gray-50 rounded-lg">
-                            <h4 className="text-lg font-semibold mb-4">Prescription Details</h4>
-                            <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-                              <thead className="bg-gray-100">
-                                <tr>
-                                  <th className="py-2 px-4 border-b text-left">Medicine Name</th>
-                                  <th className="py-2 px-4 border-b text-center">Dosage</th>
-                                  <th className="py-2 px-4 border-b text-center">Instraction</th>
-                                  <th className="py-2 px-4 border-b text-center">Quantity</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {data.prescriptions.map((item, index) => (
-                                  <tr key={index}>
-                                    <td className="py-2 px-4 border-b">{item?.itemName}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item?.dosage}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item?.instraction}</td>
-                                    <td className="py-2 px-4 border-b text-center">{item?.quantity}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                {mrData?.map((data, index) => {
+                  const isAppointmentMatch = data?.appointment === id; // Kiểm tra nếu appointment khớp với id
+
+                  return (
+                    <>
+                      <tr key={index} className={`${!isAppointmentMatch && !data?.valid ? "bg-red-100 border border-red-500" : ""}`}>
+                        <td className="py-2 px-4 border-b">{formatDateToVietnamTime(data?.record_date)}</td>
+                        <td className="py-2 px-4 border-b">
+                          <div className="flex items-center">
+                            <div>
+                              <div className="font-semibold">{data?.doctor?.fullname}</div>
+                              <a href={`tel:${data?.doctor?.phone}`} className="text-blue-500">
+                                {data?.doctor?.phone}
+                              </a>
+                            </div>
                           </div>
                         </td>
+                        <td className="py-2 px-4 border-b">{data?.diagnosis}</td>
+                        <td className="py-2 px-4 border-b">{data?.notes}</td>
+                        <td className="py-2 px-4 border-b text-center">
+                          {/* Chỉ hiển thị Untrustworthy nếu appointment không khớp và record không valid */}
+                          {!isAppointmentMatch && !data?.valid && <span className="text-red-500 font-semibold">⚠ Untrustworthy</span>}
+                          <button type="button" className="ml-2 text-blue-500 hover:text-blue-700" onClick={() => toggleRow(index)}>
+                            {expandedRow === index ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 12H6" />
+                              </svg>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 9l6 6 6-6" />
+                              </svg>
+                            )}
+                          </button>
+                        </td>
                       </tr>
-                    )}
-                  </>
-                ))}
+                      {expandedRow === index && (
+                        <tr>
+                          <td colSpan="7" className="px-4 py-2 border-b">
+                            <div className="p-4 bg-gray-50 rounded-lg">
+                              <h4 className="text-lg font-semibold mb-4">Prescription Details</h4>
+                              <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <thead className="bg-gray-100">
+                                  <tr>
+                                    <th className="py-2 px-4 border-b text-left">Medicine Name</th>
+                                    <th className="py-2 px-4 border-b text-center">Dosage</th>
+                                    <th className="py-2 px-4 border-b text-center">Instraction</th>
+                                    <th className="py-2 px-4 border-b text-center">Quantity</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {data.prescriptions.map((item, index) => (
+                                    <tr key={index}>
+                                      <td className="py-2 px-4 border-b">{item?.itemName}</td>
+                                      <td className="py-2 px-4 border-b text-center">{item?.dosage}</td>
+                                      <td className="py-2 px-4 border-b text-center">{item?.instraction}</td>
+                                      <td className="py-2 px-4 border-b text-center">{item?.quantity}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  );
+                })}
               </tbody>
             </table>
           </div>

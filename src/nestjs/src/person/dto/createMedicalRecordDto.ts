@@ -12,37 +12,40 @@ import { CreatePrescriptionItemDto } from 'src/medicine/dto/createPrescriptionDt
 export class MedicalRecordDto {
   @IsDateString()
   @IsNotEmpty()
-  record_date: Date;
+  record_date?: Date;
 
   @IsString()
   @IsNotEmpty()
-  diagnosis: string;
+  diagnosis?: string;
 
   @IsString()
   @IsNotEmpty()
-  complaint: string;
+  complaint?: string;
 
   @IsString()
   @IsOptional()
-  treatment: string;
+  treatment?: string;
 
   @IsString()
   @IsOptional()
-  vital_signs: string;
+  vital_signs?: string;
 
   @IsString()
   @IsOptional()
-  notes: string;
+  notes?: string;
 
   @IsArray()
   @IsOptional()
-  prescriptions: CreatePrescriptionItemDto[] = [];
+  prescriptions?: CreatePrescriptionItemDto[] = [];
 
   @IsArray()
   @IsOptional()
-  attachments: string[];
+  attachments?: string[];
 
   @IsMongoId()
   @IsNotEmpty()
-  doctor: string;
+  doctor?: string;
+  @IsMongoId()
+  @IsNotEmpty()
+  appointment?: string;
 }

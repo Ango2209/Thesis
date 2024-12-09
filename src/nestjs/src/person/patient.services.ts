@@ -172,9 +172,10 @@ export class PatientService extends BaseServices<PatientDocument> {
     );
 
     // Gắn cờ valid/invalid cho mỗi bản ghi từ MongoDB
-    const validatedRecords = patient.medical_records.map((dbRecord: any) => {
+    const validatedRecords = sortedRecords.map((dbRecord: any) => {
       const recordToHash = {
         prescriptions: dbRecord.prescriptions,
+        ...(dbRecord.appointment && { appointment: dbRecord.appointment }),
         doctor: dbRecord.doctor._id.toString(),
         record_date: dbRecord.record_date,
         complaint: dbRecord.complaint,
