@@ -120,9 +120,9 @@ export default function MyBookings() {
               key={booking._id}
               className="p-6 bg-white shadow-md rounded-lg transition-transform transform"
             >
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between">
                 {/* Doctor Info */}
-                <div className="flex items-start space-x-6 mt-4 ml-16">
+                <div className="flex items-start space-x-6 mt-4 ml-16 sm:items-center sm:space-x-4 sm:mt-0 sm:ml-0">
                   <img
                     src={booking.doctor.avatar}
                     alt={booking.doctor.fullname}
@@ -147,36 +147,36 @@ export default function MyBookings() {
                   </div>
                 </div>
                 {/* Patient Info */}
-                <div className="flex justify-between items-center mb-4 mr-16">
+                <div className="flex flex-col sm:flex-row sm:justify-between items-center mb-4 mr-16 sm:mb-0 sm:mr-0">
                   <div>
                     <p className="text-gray-600 flex items-center">
                       <CalendarIcon className="w-5 h-5 mr-2" /> Date of Visit:{" "}
                       {new Date(booking?.date_of_visit).toLocaleDateString()}
                     </p>
                     <p className="text-gray-600 flex items-center">
-                      <ClockIcon className="w-5 h-5 mr-2" /> Start Time:{" "}
-                      {booking?.start_time}
+                      <ClockIcon className="w-5 h-5 mr-2" /> Start Time: {booking?.start_time}
                     </p>
                     <p className="text-gray-600">
                       Purpose of Visit: {booking?.purpose_visit}
                     </p>
                   </div>
                   <div
-                    className={`ml-12 px-3 py-1 rounded-full font-semibold text-sm ${booking.status === "booked" || booking.status === "awaiting tranfer" || booking.status.startsWith("waiting")
-                        ? "bg-yellow-100 text-yellow-600"
-                        : booking.status === "finished"
-                          ? "bg-green-100 text-green-600"
-                          : booking.status === "examining"
-                            ? "bg-red-100 text-red-600"
-                            : booking.status === "cancel"
-                              ? "bg-gray-100 text-gray-600"
-                              : ""
+                    className={`mt-4 sm:mt-0 px-3 py-1 rounded-full font-semibold text-sm ${booking.status === "booked" || booking.status === "awaiting tranfer" || booking.status.startsWith("waiting")
+                      ? "bg-yellow-100 text-yellow-600"
+                      : booking.status === "finished"
+                        ? "bg-green-100 text-green-600"
+                        : booking.status === "examining"
+                          ? "bg-red-100 text-red-600"
+                          : booking.status === "cancel"
+                            ? "bg-gray-100 text-gray-600"
+                            : ""
                       }`}
                   >
                     {booking.status}
                   </div>
                 </div>
               </div>
+
               {/* Booking Status & Description */}
               <div className="mt-4">
                 <p className="text-gray-600">
@@ -362,7 +362,7 @@ export default function MyBookings() {
                                               href={attachment}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="text-blue-600 hover:underline"
+                                              className="text-blue-600 hover:underline overflow-hidden"
                                             >
                                               {attachment}
                                             </a>
