@@ -231,6 +231,7 @@ const SellMedicine = () => {
         setMedicines={setMedicines}
         openQrCodeModal={openQrCodeModal}
         setInvoice={setInvoice}
+        invoice={invoice}
       ></SellMedicineModal>
       {isOpenQrCodeModal ? <QrCodeModal unlockMedicines={unlockMedicines} isOpen={isOpenQrCodeModal} onClose={closeQrCodeModal} invoice={invoice} /> : ""}
     </div>

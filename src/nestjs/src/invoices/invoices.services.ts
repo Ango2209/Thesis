@@ -61,11 +61,12 @@ export class InvoiceService {
     };
   }
 
-  async create(createInvoiceDto: CreateInvoiceDto): Promise<Invoice> {
+  async create(createInvoiceDto: CreateInvoiceDto): Promise<any> {
     const invoiceId = await this.generateInvoiceId();
     let newInvoice = new this.invoiceModel({
       ...createInvoiceDto,
       invoiceId,
+      createdAt: new Date(),
     });
     if (createInvoiceDto.invoiceType !== 'booked') {
       const { medicines, services, totalAmount } = this.calculateTotals(
@@ -81,7 +82,8 @@ export class InvoiceService {
         totalAmount,
       });
     }
-    return await newInvoice.save();
+    const savedInvoice = await newInvoice.save();
+    return savedInvoice;
   }
 
   async changeToPaid(id: string): Promise<any> {

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import MedicalServiceRequest from "./MedicalServiceRequest";
 import { formatDateToVietnamTime } from "@/lib/dateUtils";
 import { toast } from "react-toastify";
+import Spinner from "@/app/(components)/Spinner";
 
 const Detail = ({ params }) => {
   const router = useRouter();
@@ -306,13 +307,7 @@ const Detail = ({ params }) => {
                 </tr>
               </thead>
               <tbody>
-                {isLoading2 && (
-                  <tr>
-                    <td colSpan="8" className="text-center py-4">
-                      Loading...
-                    </td>
-                  </tr>
-                )}
+                {isLoading2 && <Spinner></Spinner>}
                 {isError2 && (
                   <tr>
                     <td colSpan="8" className="text-center py-4">

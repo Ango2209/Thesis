@@ -17,15 +17,13 @@ const Payments = () => {
   const [isOpenQrCodeModal, setIsOpenQrCodeModal] = useState(false);
   const [confirmButton, setConfirmButton] = useState(false);
   const { data: medicalTestsData, error, refetch, isLoading, isError } = useGetMedicalTestsQuery({ statuses: "awaiting payment,awaiting transfer", date: selectedDate, page: currentPage, limit: 10 });
-  const [invoice, setInvoice] = useState({});
+  const [invoice, setInvoice] = useState(null);
 
   const [updateMedicalTest] = useUpdateMedicalTestMutation();
 
   useEffect(() => {
     refetch();
   }, [selectedDate, currentPage, refetch]);
-
-  console.log(medicalTestsData);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);

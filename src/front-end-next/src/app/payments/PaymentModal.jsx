@@ -10,7 +10,7 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const { service, doctor, patient, createdAt } = medicalTestDetail;
-  const [createInvoice, { isLoading: isLoadingCreate }] = useCreateInvoiceMutation();
+  const [createInvoice] = useCreateInvoiceMutation();
 
   const handlePrintInvoice = async () => {
     const width = window.innerWidth * 0.8;
@@ -25,14 +25,7 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
     }
     printWindow.addEventListener("load", () => {
       const invoiceContent = ReactDOMServer.renderToString(
-        <InvoiceContent
-          invoiceCode={invoice.invoiceId}
-          patient={patient}
-          doctor={doctor}
-          service={service}
-          paymentMethod={paymentMethod}
-          appointmentDate={formatDateToVietnamTime(invoice.createdAt)}
-        />
+        <InvoiceContent invoiceCode={invoice?.invoiceId} patient={patient} doctor={doctor} service={service} paymentMethod={paymentMethod} date={formatDateToVietnamTime(invoice?.createdAt)} />
       );
 
       printWindow?.document.write(`
@@ -105,21 +98,20 @@ const PaymentModal = ({ isOpen, onClose, medicalTestDetail, openQrCodeModal, ref
         status: "paid",
         createdAt: Date.now(),
       };
-      let invoice;
       if (paymentMethod === "transfer") {
         openQrCodeModal();
         createInvoiceDto = { ...params, paymentMethod: "transfer", status: "awaiting transfer" };
-        invoice = await createInvoice(createInvoiceDto).unwrap();
+        const data = await createInvoice(createInvoiceDto).unwrap();
+        setInvoice(data);
         await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "awaiting transfer" } }).unwrap();
-        setInvoice(invoice);
         openQrCodeModal();
         onClose();
         refetch();
       } else {
         createInvoiceDto = { ...params, paymentMethod: "cash" };
-        invoice = await createInvoice(createInvoiceDto).unwrap();
+        const data = await createInvoice(createInvoiceDto).unwrap();
+        setInvoice(data);
         await updateMedicalTest({ id: medicalTestDetail._id, updateMedicalTestDto: { status: "paid" } }).unwrap();
-        setInvoice(invoice);
         onClose();
         toast.success("Payment success");
         refetch();

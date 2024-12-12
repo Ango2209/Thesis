@@ -17,17 +17,11 @@ import TopItemsTable from "./TopItemsTable";
 import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
-  const { data: last7DaysRevenue, refetch: refetch7DaysRevenue } =
-    useGetLast7DaysRevenueQuery();
-  const {
-    data: last7DaysfinishedAppointments,
-    refetch: refetch7DaysFinnishedAppointments,
-  } = useGetLast7DaysfinishedAppointmentsQuery();
+  const { data: last7DaysRevenue, refetch: refetch7DaysRevenue } = useGetLast7DaysRevenueQuery();
+  const { data: last7DaysfinishedAppointments, refetch: refetch7DaysFinnishedAppointments } = useGetLast7DaysfinishedAppointmentsQuery();
   const [year, setYear] = useState(new Date().getFullYear());
-  const { data: monthlyRevenueByYear, refetch: refetchMonthlyRevenueByYear } =
-    useGetMonthlyRevenueByYearQuery({ year });
-  const { data: recentPatients, refetch: refetchRecentPatients } =
-    useGetRecentPatientQuery({});
+  const { data: monthlyRevenueByYear, refetch: refetchMonthlyRevenueByYear } = useGetMonthlyRevenueByYearQuery({ year });
+  const { data: recentPatients, refetch: refetchRecentPatients } = useGetRecentPatientQuery({});
   const [medicineTimeRange, setMedicineTimeRange] = useState({
     startDate: null,
     endDate: null,
@@ -78,11 +72,7 @@ const Dashboard = () => {
     refetchTopServicesData();
   }, []);
 
-  const chartColors = [
-    "rgba(0, 200, 100, 0.6)",
-    "rgba(255, 205, 86, 0.6)",
-    "rgba(255, 99, 132, 0.6)",
-  ];
+  const chartColors = ["rgba(0, 200, 100, 0.6)", "rgba(255, 205, 86, 0.6)", "rgba(255, 99, 132, 0.6)"];
 
   const handleYearChange = (newYear) => {
     setYear(newYear);
@@ -108,29 +98,17 @@ const Dashboard = () => {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 auto-rows-[minmax(200px, auto)]">
       {/* Stats Cards */}
       <div className="col-span-1 h-full min-h-[200px] bg-white p-4 rounded-lg shadow-md flex flex-col">
-        <StatsCard
-          {...last7DaysfinishedAppointments}
-          chartColor="rgba(0, 200, 200, 0.6)"
-        />
+        <StatsCard {...last7DaysfinishedAppointments} chartColor="rgba(0, 200, 200, 0.6)" />
       </div>
       {last7DaysRevenue?.map((stat, index) => (
-        <div
-          key={index}
-          className="col-span-1 h-full min-h-[200px] bg-white p-4 rounded-lg shadow-md flex flex-col"
-        >
+        <div key={index} className="col-span-1 h-full min-h-[200px] bg-white p-4 rounded-lg shadow-md flex flex-col">
           <StatsCard {...stat} chartColor={chartColors[index]} />
         </div>
       ))}
 
       {/* Earnings Report */}
       <div className="col-span-1 lg:col-span-2 xl:col-span-3 h-full min-h-[200px] bg-white p-6 rounded-lg shadow-md flex flex-col">
-        <EarningsReport
-          selectedYear={year}
-          onYearChange={handleYearChange}
-          chartData={monthlyRevenueByYear?.earningsChartData}
-          title={monthlyRevenueByYear?.title}
-          percentage={24}
-        />
+        <EarningsReport selectedYear={year} onYearChange={handleYearChange} chartData={monthlyRevenueByYear?.earningsChartData} title={monthlyRevenueByYear?.title} percentage={24} />
       </div>
 
       {/* Recent Patients */}
@@ -143,9 +121,7 @@ const Dashboard = () => {
         <h2 className="text-xl font-bold mb-4">Top 5 Best-Selling Medicines</h2>
         <TopItemsTable
           columns={columns}
-          data={
-            loadingMedicines || errorMedicines ? [] : topMedicinesData || []
-          }
+          data={loadingMedicines || errorMedicines ? [] : topMedicinesData || []}
           onExport={handleExportMedicinesToExcel}
           TimeFilterComponent={<TimeFilter onChange={setMedicineTimeRange} />}
         />

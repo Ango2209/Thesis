@@ -1,40 +1,73 @@
-// InvoiceContent.jsx
+"use client";
 import React from "react";
 
-const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service }) => {
+const MedicalInvoice = ({ invoiceCode, date, patient, doctor, service, paymentMethod }) => {
+  console.log(invoiceCode);
   return (
-    <div style={containerStyle}>
-      <h2 style={headerStyle}>Medical Invoice</h2>
-      <h3 style={invoiceCodeStyle}>Invoice Code: {invoiceCode}</h3>
+    <div style={invoiceContainerStyle}>
+      {/* Header */}
+      <div style={headerStyle}>
+        <div style={logoContainerStyle}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="35" fill="#4CAF50" />
+            <rect x="30" y="20" width="20" height="40" fill="#fff" />
+            <rect x="20" y="30" width="40" height="20" fill="#fff" />
+          </svg>
+        </div>
+        <div>
+          <h2 style={hospitalNameStyle}>NSHealthCare</h2>
+          <p style={hospitalInfoStyle}>12 Nguyen Van Bao, Ward 4, Go Vap District, Ho Chi Minh City</p>
+          <p style={hospitalInfoStyle}>Phone: 0905999999</p>
+          <p style={hospitalInfoStyle}>Email: nshealthcare@gmail.com</p>
+        </div>
+      </div>
 
-      <div style={infoContainerStyle}>
+      {/* Invoice Details */}
+      <div style={sectionStyle}>
+        <h3>Invoice</h3>
+        <p>
+          <strong>Invoice Code:</strong> {invoiceCode}
+        </p>
+        <p>
+          <strong>Date:</strong> {date}
+        </p>
+      </div>
+
+      {/* Patient and Doctor Details */}
+      <div style={infoSectionContainerStyle}>
         <div style={infoSectionStyle}>
-          <h4>Patient Information</h4>
+          <h4>Patient Details</h4>
           <p>
             <strong>Name:</strong> {patient.fullname}
           </p>
           <p>
-            <strong>Patient Code:</strong> {patient.patient_id}
+            <strong>ID:</strong> {patient.patient_id}
           </p>
           <p>
             <strong>Phone:</strong> {patient.phone}
           </p>
+          <p>
+            <strong>Address:</strong> {patient.address}
+          </p>
         </div>
 
         <div style={infoSectionStyle}>
-          <h4>Doctor Information</h4>
+          <h4>Doctor Details</h4>
           <p>
             <strong>Name:</strong> {doctor.fullname}
           </p>
           <p>
-            <strong>Doctor Code:</strong> {doctor.doctor_id}
+            <strong>ID:</strong> {doctor.doctor_id}
+          </p>
+          <p>
+            <strong>Contact:</strong> {doctor.phone}
           </p>
         </div>
       </div>
 
-      {/* Phần dịch vụ được trình bày trong một bảng */}
+      {/* Services Table */}
       <div style={serviceContainerStyle}>
-        <h4>Service Details</h4>
+        <h4>Services Provided</h4>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -51,65 +84,85 @@ const InvoiceContent = ({ invoiceCode, patient, doctor, paymentMethod, service }
         </table>
       </div>
 
-      <div style={infoContainerStyle}>
-        <div style={totalSectionStyle}>
-          <h4>Total Amount:</h4>
-          <p style={totalAmountStyle}>{service.price}</p>
-        </div>
+      {/* Total and Payment */}
+      <div style={totalContainerStyle}>
+        <h4>Total Amount</h4>
+        <p style={totalAmountStyle}>${service.price}</p>
       </div>
 
-      {/* Cải thiện phần phương thức thanh toán */}
-      <div style={paymentMethodContainerStyle}>
-        <h4>Payment Method</h4>
+      <div style={paymentContainerStyle}>
+        <h4>Payment Details</h4>
         <p>
-          <strong>{`Payment Method: ${paymentMethod}`}</strong>
+          <strong>Method:</strong> {paymentMethod}
         </p>
+        <p>
+          <strong>Status:</strong> Paid
+        </p>
+      </div>
+
+      {/* Footer */}
+      <div style={footerStyle}>
+        <p>Thank you for choosing NSHealthCare!</p>
+        <p>Terms and conditions apply. Please retain this invoice for your records.</p>
       </div>
     </div>
   );
 };
 
-// Các kiểu CSS cho hóa đơn
-const containerStyle = {
-  padding: "20px",
+// Styles
+const invoiceContainerStyle = {
   fontFamily: "Arial, sans-serif",
-  maxWidth: "600px",
+  padding: "10px",
+  maxWidth: "420px", // A5 width
   margin: "0 auto",
-  border: "1px solid #ddd", // Thêm viền cho hóa đơn
-  borderRadius: "5px", // Bo tròn góc
-  backgroundColor: "#fff", // Màu nền trắng
+  border: "1px solid #ccc",
+  borderRadius: "5px",
+  backgroundColor: "#fff",
 };
 
 const headerStyle = {
-  textAlign: "center",
-  marginBottom: "10px",
-  color: "#333", // Màu chữ
-};
-
-const invoiceCodeStyle = {
-  textAlign: "center",
-  marginBottom: "20px",
-  fontWeight: "normal",
-};
-
-const infoContainerStyle = {
   display: "flex",
-  justifyContent: "space-between",
+  alignItems: "center",
   borderBottom: "1px solid #ddd",
   paddingBottom: "10px",
+  marginBottom: "10px",
+};
+
+const logoContainerStyle = {
+  marginRight: "10px",
+};
+
+const hospitalNameStyle = {
+  margin: 0,
+  fontSize: "18px",
+  fontWeight: "bold",
+};
+
+const hospitalInfoStyle = {
+  margin: 0,
+  fontSize: "12px",
+  color: "#555",
+};
+
+const sectionStyle = {
+  marginBottom: "10px",
+};
+
+const infoSectionContainerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
   marginBottom: "15px",
+  paddingBottom: "10px",
+  borderBottom: "1px solid #ddd",
 };
 
 const infoSectionStyle = {
-  flex: "1", // Chia đều không gian giữa các phần tử
-  paddingRight: "10px",
-  paddingLeft: "10px",
+  flex: "1",
+  padding: "5px",
 };
 
 const serviceContainerStyle = {
-  marginBottom: "20px", // Khoảng cách cho phần dịch vụ
-  padding: "10px 0",
-  borderBottom: "1px solid #ddd", // Đường phân cách cho phần dịch vụ
+  marginBottom: "15px",
 };
 
 const tableStyle = {
@@ -120,32 +173,34 @@ const tableStyle = {
 
 const tableHeaderStyle = {
   borderBottom: "2px solid #ddd",
-  padding: "10px",
+  padding: "8px",
   textAlign: "left",
 };
 
 const tableCellStyle = {
   borderBottom: "1px solid #ddd",
-  padding: "10px",
+  padding: "8px",
 };
 
-const totalSectionStyle = {
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  alignItems: "flex-start",
-  flex: "1",
+const totalContainerStyle = {
+  textAlign: "right",
+  marginTop: "15px",
 };
 
 const totalAmountStyle = {
-  fontSize: "18px",
+  fontSize: "20px",
   fontWeight: "bold",
 };
 
-const paymentMethodContainerStyle = {
-  marginTop: "20px",
-  padding: "10px",
-  borderTop: "1px solid #ddd", // Thêm đường phân cách cho phần phương thức thanh toán
+const paymentContainerStyle = {
+  marginTop: "10px",
 };
 
-export default InvoiceContent;
+const footerStyle = {
+  marginTop: "20px",
+  textAlign: "center",
+  fontSize: "12px",
+  color: "#666",
+};
+
+export default MedicalInvoice;

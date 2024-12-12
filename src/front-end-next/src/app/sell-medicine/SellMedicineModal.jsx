@@ -10,9 +10,10 @@ import {
 import ReactDOMServer from "react-dom/server"; // Đả
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import InvoiceContent from "./MedicineInvoice"
+import InvoiceContent from "./MedicineInvoice";
+import { formatDateToVietnamTime } from "@/lib/dateUtils";
 const invoiceCode = "INV001";
-const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, openQrCodeModal, setInvoice }) => {
+const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, openQrCodeModal, setInvoice, invoice }) => {
   const { patient } = record;
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [checkMedicinesAvailability, { isLoading: isLoadingCheck }] = useCheckMedicinesAvailabilityMutation();
@@ -25,23 +26,11 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
     const height = window.innerHeight * 0.8;
     const left = (window.innerWidth - width) / 2;
     const top = (window.innerHeight - height) / 2;
-    const medicines = [
-      { name: "Aspirin", price: 100, quantity: 20 },
-      { name: "Ibuprofen", price: 150, quantity: 10 },
-
-    ];
-
-    const totalAmount = medicines.reduce((acc, medicine) => acc + (medicine.price * medicine.quantity), 0); // Calculate total based on medicines
+    const totalAmount = medicines.reduce((acc, medicine) => acc + medicine.basePrice * medicine.quantityToUse, 0); // Calculate total based on medicines
     const printWindow = window.open("", "", `width=${width},height=${height},top=${top},left=${left}`);
-    
+
     const invoiceContent = ReactDOMServer.renderToString(
-      <InvoiceContent 
-      invoiceCode="INV001" 
-      patient={{ fullname: "Jane Doe", phone: "987-654-3210", patient_id: "PAT123" }} 
-      doctor={{ fullname: "Dr. John Smith", doctor_id: "DOC456" }} 
-      service={{ medicines: medicines, price: totalAmount }} // Pass medicines and total amount
-      paymentMethod="Bank Transfer" 
-    />
+      <InvoiceContent invoiceCode={invoice?.invoiceId} patient={patient} medicines={medicines} totalAmount={totalAmount} paymentMethod="Cash" date={formatDateToVietnamTime(invoice?.createdAt)} />
     );
 
     printWindow?.document.write(`
@@ -59,9 +48,6 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
     printWindow?.focus();
     printWindow?.print();
   };
-
-
-
 
   const handleConfirmPrint = () => {
     toast(
@@ -256,7 +242,8 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
     let createInvoiceDto = {};
     if (paymentMethod === "cash") {
       createInvoiceDto = { ...params, paymentMethod: "cash" };
-      await createInvoice(createInvoiceDto).unwrap();
+      const invoice = await createInvoice(createInvoiceDto).unwrap();
+      setInvoice(invoice);
       await reduceMedicines(medicinesToCheck).unwrap();
       toast.success("Payment success");
       handleConfirmPrint();
@@ -268,7 +255,6 @@ const SellMedicineModal = ({ isOpen, onClose, medicines, setMedicines, record, o
       setInvoice(invoice);
       onClose();
       openQrCodeModal();
-      handleConfirmPrint();
     }
   };
 
