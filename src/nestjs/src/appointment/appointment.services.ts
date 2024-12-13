@@ -66,7 +66,7 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
     date?: string,
     page: number = 1,
     limit: number = 10,
-    doctor_id?: string,
+    doctor_id: string = '',
   ): Promise<{
     appointments: Appointment[];
     total: number;
@@ -98,11 +98,14 @@ export class AppointmentService extends BaseServices<AppointmentDocument> {
       const startOfDay = new Date(date);
       const endOfDay = new Date(date);
       endOfDay.setUTCHours(23, 59, 59, 999); //24h
+      console.log(startOfDay);
+      console.log(endOfDay);
+
       query.date_of_visit = { $gte: startOfDay, $lte: endOfDay };
     }
 
     // Filter by doctor_id if provided
-    if (doctor_id) {
+    if (doctor_id !== '') {
       query.doctor = doctor_id;
     }
 

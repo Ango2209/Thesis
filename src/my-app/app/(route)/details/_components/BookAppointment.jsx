@@ -54,6 +54,14 @@ function BookAppointment({ doctor, type }) {
     return day < new Date();
   };
 
+  const handleSelectDate = (selectedDate) => {
+    // Chuyển đổi ngày được chọn về múi giờ UTC+7
+    const vnDate = new Date(selectedDate.getTime() - selectedDate.getTimezoneOffset() * 60000);
+
+    // setDate sẽ lưu giá trị đã điều chỉnh
+    setDate(vnDate);
+  };
+
   const handleSubmit = async () => {
     if (!purposeVisit) {
       toast.error("Purpose of visit is required.");
@@ -108,7 +116,7 @@ function BookAppointment({ doctor, type }) {
                   <CalendarDays className="text-primary h-5 w-5" />
                   Select a Date
                 </h2>
-                <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border shadow-sm w-full max-w-xs md:max-w-sm" disabled={isPastDay} />
+                <Calendar mode="single" selected={date} onSelect={handleSelectDate} className="rounded-md border shadow-sm w-full max-w-xs md:max-w-sm" disabled={isPastDay} />
               </div>
 
               {/* Time Slot Selection */}

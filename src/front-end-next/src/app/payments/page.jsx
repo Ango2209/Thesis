@@ -1,6 +1,6 @@
 // pages/services.js
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import PaymentModal from "./PaymentModal";
 import { useGetAllServicesQuery, useGetMedicalTestsQuery, useUpdateMedicalTestMutation } from "@/state/api";
 import { DollarSign, Check } from "lucide-react";

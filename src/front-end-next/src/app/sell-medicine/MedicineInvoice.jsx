@@ -2,7 +2,6 @@
 import React from "react";
 
 const MedicalInvoice = ({ invoiceCode, date, patient, medicines, totalAmount, paymentMethod }) => {
-  console.log(medicines);
   return (
     <div style={invoiceContainerStyle}>
       {/* Header */}

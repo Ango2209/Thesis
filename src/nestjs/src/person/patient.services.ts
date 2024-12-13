@@ -218,10 +218,10 @@ export class PatientService extends BaseServices<PatientDocument> {
 
       // Đặt thời gian bắt đầu và kết thúc của ngày
       const startOfDay = new Date(searchDate);
-      startOfDay.setHours(0, 0, 0, 0);
+      startOfDay.setUTCHours(0, 0, 0, 0);
 
       const endOfDay = new Date(searchDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      endOfDay.setUTCHours(23, 59, 59, 999);
 
       // Lấy tất cả bệnh nhân có medical records trong ngày
       const patients = await this.patientModel
@@ -237,7 +237,15 @@ export class PatientService extends BaseServices<PatientDocument> {
       // Lọc ra các records có prescriptions và định dạng dữ liệu
       const allRecords = patients.flatMap((patient) =>
         patient.medical_records
-          .filter((record) => record.prescriptions.length > 0) // Chỉ lấy các records có prescriptions
+          .filter((record) => {
+            // Kiểm tra ngày của record
+            const recordDate = new Date(record.record_date);
+            return (
+              recordDate >= startOfDay &&
+              recordDate <= endOfDay &&
+              record.prescriptions.length > 0 // Chỉ lấy các record có prescriptions
+            );
+          })
           .map((record) => ({
             patient: {
               patient_id: patient.patient_id,
@@ -247,7 +255,7 @@ export class PatientService extends BaseServices<PatientDocument> {
             doctor: record.doctor,
             record_date: record.record_date,
             record_id: record.record_id,
-            prescriptions: record.prescriptions,
+            prescriptions: record.prescriptions, // Giữ toàn bộ prescriptions của record
           })),
       );
 
